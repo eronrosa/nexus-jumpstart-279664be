@@ -1,4 +1,4 @@
-import { Search, Mic, User, LogIn } from "lucide-react";
+import { Search, Mic, User, LogIn, Home, ClipboardList, Sparkles, CreditCard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BannerCarousel from "@/components/BannerCarousel";
 import ServicesGrid from "@/components/ServicesGrid";
