@@ -1,3 +1,5 @@
+import { motion } from "framer-motion";
+
 const coupons = [
   {
     image: "https://images.unsplash.com/photo-1591047139829-d919b5ca4d3a?auto=format&fit=crop&w=600&q=80",
@@ -38,8 +40,16 @@ const CouponsSection = () => (
     <h2 className="text-base font-bold text-foreground mb-1">Cupons Desconto</h2>
     <p className="text-xs text-muted-foreground mb-3">Super promoções para você, aproveite!</p>
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      {coupons.map((c) => (
-        <div key={c.title} className="bg-card rounded-2xl overflow-hidden border border-border hover:shadow-md transition-shadow cursor-pointer">
+      {coupons.map((c, i) => (
+        <motion.div
+          key={c.title}
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ delay: i * 0.08, duration: 0.35, ease: "easeOut" }}
+          whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
+          className="bg-card rounded-2xl overflow-hidden border border-border cursor-pointer"
+        >
           <div className="relative">
             <img src={c.image} alt={c.title} className="w-full h-28 object-cover" />
             <span className="absolute top-2 right-2 bg-primary text-primary-foreground text-xs font-extrabold px-2 py-0.5 rounded-full">
@@ -54,7 +64,7 @@ const CouponsSection = () => (
               <span className="text-[10px] text-primary font-semibold">{c.remaining} restantes</span>
             </div>
           </div>
-        </div>
+        </motion.div>
       ))}
     </div>
   </section>

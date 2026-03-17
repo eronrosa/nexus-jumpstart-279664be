@@ -3,6 +3,7 @@ import {
   MessageCircle, ShoppingBag, Tag, Phone, CreditCard, MapPin,
   Dumbbell, TrendingUp, Scissors
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 const services = [
   { icon: Utensils, label: "ZuuFood", color: "bg-orange-50 text-orange-500" },
@@ -28,16 +29,22 @@ const ServicesGrid = () => {
     <section>
       <h2 className="text-base font-bold text-foreground mb-3">Nossos Serviços</h2>
       <div className="bg-card rounded-2xl p-4 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
-        {services.map(({ icon: Icon, label, color }) => (
-          <button
+        {services.map(({ icon: Icon, label, color }, i) => (
+          <motion.button
             key={label}
-            className="flex flex-col items-center gap-2 group"
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: "-20px" }}
+            transition={{ delay: i * 0.04, duration: 0.3, ease: "easeOut" }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex flex-col items-center gap-2"
           >
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${color} group-hover:scale-105 transition-transform`}>
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${color}`}>
               <Icon size={22} />
             </div>
             <span className="text-[11px] text-center text-foreground/80 leading-tight font-medium">{label}</span>
-          </button>
+          </motion.button>
         ))}
       </div>
     </section>

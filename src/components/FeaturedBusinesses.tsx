@@ -1,3 +1,5 @@
+import { motion } from "framer-motion";
+
 const businesses = [
   {
     name: "Pizzaria Bella Napoli",
@@ -29,13 +31,31 @@ const businesses = [
   },
 ];
 
+const cardVariants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.08, duration: 0.4, ease: [0.4, 0, 0.2, 1] as const },
+  }),
+};
+
 const FeaturedBusinesses = () => (
   <section>
     <h2 className="text-base font-bold text-foreground mb-1">Empresas em Destaque</h2>
     <p className="text-xs text-muted-foreground mb-3">Conheça negócios e serviços perto de você</p>
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      {businesses.map((b) => (
-        <div key={b.name} className="bg-card rounded-2xl overflow-hidden border border-border hover:shadow-md transition-shadow">
+      {businesses.map((b, i) => (
+        <motion.div
+          key={b.name}
+          custom={i}
+          variants={cardVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-40px" }}
+          whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
+          className="bg-card rounded-2xl overflow-hidden border border-border cursor-pointer"
+        >
           <img src={b.image} alt={b.name} className="w-full h-28 object-cover" />
           <div className="p-3">
             <p className="font-semibold text-sm leading-tight">{b.name}</p>
@@ -45,7 +65,7 @@ const FeaturedBusinesses = () => (
               <button className="text-xs text-primary font-semibold hover:underline">{b.cta}</button>
             </div>
           </div>
-        </div>
+        </motion.div>
       ))}
     </div>
   </section>
