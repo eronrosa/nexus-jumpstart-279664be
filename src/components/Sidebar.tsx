@@ -9,7 +9,7 @@ const Sidebar = () => {
 
   const navItems = [
     { icon: Home, label: "Início", path: "/", active: true },
-    { icon: List, label: "Pedidos", path: "/" },
+    { icon: List, label: "Pedidos", path: "/pedidos" },
     { icon: Sparkles, label: "ZUZU", path: "/" },
     { icon: Wallet, label: "Zuupay", path: "/" },
   ];
