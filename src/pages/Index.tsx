@@ -89,7 +89,7 @@ const Index = () => {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border flex justify-around py-2 z-50">
         {[
           { icon: Home, label: "Início", path: "/" },
-          { icon: ClipboardList, label: "Pedidos", path: "/" },
+          { icon: ClipboardList, label: "Pedidos", path: "/pedidos" },
           { icon: Sparkles, label: "ZUZU", path: "/" },
           { icon: CreditCard, label: "Zuupay", path: "/" },
           { icon: User, label: "Perfil", path: user ? "/perfil" : "/auth" },
