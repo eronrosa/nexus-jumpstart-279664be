@@ -2,25 +2,25 @@ import { motion } from "framer-motion";
 
 const listings = [
   {
-    image: "https://images.unsplash.com/photo-1576435728678-68d0fbf94e91?auto=format&fit=crop&q=80&w=800",
+    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&q=80&w=800",
     category: "esporte_lazer",
     title: "Bicicleta Aro 29 - Nova",
     price: "R$ 950,00",
   },
   {
-    image: "https://images.unsplash.com/photo-1678639833215-a08b071485b3?auto=format&fit=crop&q=80&w=800",
+    image: "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?auto=format&fit=crop&q=80&w=800",
     category: "eletronicos",
     title: "iPhone 14 Pro Max 256GB",
     price: "R$ 4.200,00",
   },
   {
-    image: "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?auto=format&fit=crop&q=80&w=800",
+    image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&q=80&w=800",
     category: "eletronicos",
     title: "Notebook Gamer Ryzen 7 / 16GB",
     price: "R$ 6.200,00",
   },
   {
-    image: "https://images.unsplash.com/photo-1625043818495-301138a35367?auto=format&fit=crop&q=80&w=800",
+    image: "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=800",
     category: "motos",
     title: "Yamaha Fazer 250 - 2019",
     price: "R$ 18.500,00",
