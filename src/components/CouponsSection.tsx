@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 const coupons = [
   {
     id: "coupon-1",
-    image: "https://images.unsplash.com/photo-1591047139829-d919b5ca4d3a?auto=format&fit=crop&w=600&q=80",
+    image: "https://images.unsplash.com/photo-1551232864-3f0890e580d9?auto=format&fit=crop&w=600&q=80",
     brand: "SHOULDER",
     discount: "-30%",
     title: "Jaquetas importadas com 30% em desconto",
@@ -31,7 +31,7 @@ const coupons = [
   },
   {
     id: "coupon-4",
-    image: "https://images.unsplash.com/photo-1579781354199-2cf394134aa7?auto=format&fit=crop&w=600&q=80",
+    image: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=600&q=80",
     brand: "STARBUCKS",
     discount: "2x1",
     title: "Compre um Frappuccino e ganhe outro",
