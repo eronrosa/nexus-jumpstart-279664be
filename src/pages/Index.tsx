@@ -86,17 +86,21 @@ const Index = () => {
       </main>
 
       {/* Mobile Bottom Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border flex justify-around py-3 z-50">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border flex justify-around py-2 z-50">
         {[
-          { emoji: "🏠", label: "Início", path: "/" },
-          { emoji: "📋", label: "Pedidos", path: "/" },
-          { emoji: "✨", label: "ZUZU", path: "/" },
-          { emoji: "💳", label: "Zuupay", path: "/" },
-          { emoji: "👤", label: "Perfil", path: user ? "/perfil" : "/auth" },
-        ].map((item) => (
-          <button key={item.label} onClick={() => navigate(item.path)} className="flex flex-col items-center text-[11px] text-muted-foreground gap-0.5 px-2">
-            <span className="text-lg leading-none">{item.emoji}</span>
-            <span>{item.label}</span>
+          { icon: Home, label: "Início", path: "/" },
+          { icon: ClipboardList, label: "Pedidos", path: "/" },
+          { icon: Sparkles, label: "ZUZU", path: "/" },
+          { icon: CreditCard, label: "Zuupay", path: "/" },
+          { icon: User, label: "Perfil", path: user ? "/perfil" : "/auth" },
+        ].map(({ icon: Icon, label, path }) => (
+          <button
+            key={label}
+            onClick={() => navigate(path)}
+            className="flex flex-col items-center gap-1 px-3 py-1 text-muted-foreground hover:text-primary transition-colors"
+          >
+            <Icon size={20} strokeWidth={1.8} />
+            <span className="text-[10px] font-medium">{label}</span>
           </button>
         ))}
       </nav>
