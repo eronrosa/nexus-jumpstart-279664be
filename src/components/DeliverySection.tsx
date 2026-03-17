@@ -1,3 +1,5 @@
+import { motion } from "framer-motion";
+
 const deliveries = [
   {
     name: "Restaurante Mitsuba",
@@ -31,8 +33,16 @@ const DeliverySection = () => (
     <h2 className="text-base font-bold text-foreground mb-1">Deliverys em Alta</h2>
     <p className="text-xs text-muted-foreground mb-3">Bateu aquela fome? Bora fazer um pedido!</p>
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      {deliveries.map((d) => (
-        <div key={d.name} className="relative bg-card rounded-2xl overflow-hidden border border-border hover:shadow-md transition-shadow cursor-pointer">
+      {deliveries.map((d, i) => (
+        <motion.div
+          key={d.name}
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ delay: i * 0.08, duration: 0.4, ease: "easeOut" }}
+          whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
+          className="relative bg-card rounded-2xl overflow-hidden border border-border cursor-pointer"
+        >
           <img src={d.image} alt={d.name} className="w-full h-28 object-cover" />
           <span className="absolute top-2 left-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">DELIVERY</span>
           {d.badge && (
@@ -45,7 +55,7 @@ const DeliverySection = () => (
               <p className="text-[11px] text-muted-foreground">{d.category}</p>
             </div>
           </div>
-        </div>
+        </motion.div>
       ))}
     </div>
   </section>
