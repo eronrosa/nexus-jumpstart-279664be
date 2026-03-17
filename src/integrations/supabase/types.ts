@@ -62,6 +62,77 @@ export type Database = {
         }
         Relationships: []
       }
+      order_items: {
+        Row: {
+          id: string
+          item_id: string
+          item_image: string | null
+          item_name: string
+          item_price: number
+          order_id: string
+          quantity: number
+        }
+        Insert: {
+          id?: string
+          item_id: string
+          item_image?: string | null
+          item_name: string
+          item_price: number
+          order_id: string
+          quantity?: number
+        }
+        Update: {
+          id?: string
+          item_id?: string
+          item_image?: string | null
+          item_name?: string
+          item_price?: number
+          order_id?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          delivery_fee: number
+          id: string
+          restaurant_id: string
+          restaurant_name: string
+          status: string
+          total: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delivery_fee?: number
+          id?: string
+          restaurant_id: string
+          restaurant_name: string
+          status?: string
+          total: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delivery_fee?: number
+          id?: string
+          restaurant_id?: string
+          restaurant_name?: string
+          status?: string
+          total?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
