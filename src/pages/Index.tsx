@@ -1,4 +1,5 @@
-import { Search, Mic } from "lucide-react";
+import { Search, Mic, User, LogIn } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import BannerCarousel from "@/components/BannerCarousel";
 import ServicesGrid from "@/components/ServicesGrid";
 import FeaturedBusinesses from "@/components/FeaturedBusinesses";
@@ -6,6 +7,7 @@ import DeliverySection from "@/components/DeliverySection";
 import CouponsSection from "@/components/CouponsSection";
 import ClassifiedsSection from "@/components/ClassifiedsSection";
 import Sidebar from "@/components/Sidebar";
+import { useAuth } from "@/contexts/AuthContext";
 
 const dailyOffers = [
   { emoji: "🍕", label: "Pizza Hut 2x1" },
