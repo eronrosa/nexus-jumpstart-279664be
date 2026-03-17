@@ -6,6 +6,8 @@ import {
   Trash2, ChevronRight, X, MapPin, Bike, CheckCircle
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 /* ─── Data ─── */
 const CATEGORIES = ["Todos", "Japonês", "Hambúrguer", "Pizza", "Lanches", "Saudável", "Sobremesas", "Árabe"];
