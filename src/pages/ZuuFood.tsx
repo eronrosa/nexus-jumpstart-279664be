@@ -8,6 +8,7 @@ import {
 import { useCart } from "@/contexts/CartContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 /* ─── Data ─── */
 const CATEGORIES = ["Todos", "Japonês", "Hambúrguer", "Pizza", "Lanches", "Saudável", "Sobremesas", "Árabe"];
@@ -72,49 +73,61 @@ const fmt = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { items, increment, decrement, remove, total, count, clear } = useCart();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [ordered, setOrdered] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const handleOrder = async () => {
     if (items.length === 0) return;
-    setSaving(true);
 
-    if (user) {
-      try {
-        const restaurant = items[0];
-        const deliveryFee = 0; // default; could pull from cart metadata
-        const { data: orderData, error: orderError } = await supabase
-          .from("orders")
-          .insert({
-            user_id: user.id,
-            restaurant_id: restaurant.restaurantId,
-            restaurant_name: restaurant.restaurantName,
-            status: "pendente",
-            total: total,
-            delivery_fee: deliveryFee,
-          })
-          .select()
-          .single();
-
-        if (!orderError && orderData) {
-          const orderItems = items.map(item => ({
-            order_id: orderData.id,
-            item_id: item.id,
-            item_name: item.name,
-            item_price: item.price,
-            quantity: item.qty,
-            item_image: item.image,
-          }));
-          await supabase.from("order_items").insert(orderItems);
-        }
-      } catch (_) {
-        // fail silently, order UI still shows success
-      }
+    if (!user) {
+      onClose();
+      navigate("/auth");
+      return;
     }
 
-    setSaving(false);
-    setOrdered(true);
-    setTimeout(() => { setOrdered(false); clear(); onClose(); }, 2800);
+    setSaving(true);
+    try {
+      const restaurant = items[0];
+      // Pull delivery fee from restaurant data (default 0 = free)
+      const deliveryFee = 0;
+
+      const { data: orderData, error: orderError } = await supabase
+        .from("orders")
+        .insert({
+          user_id: user.id,
+          restaurant_id: restaurant.restaurantId,
+          restaurant_name: restaurant.restaurantName,
+          status: "pendente",
+          total: total,
+          delivery_fee: deliveryFee,
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      if (orderData) {
+        const orderItems = items.map(item => ({
+          order_id: orderData.id,
+          item_id: item.id,
+          item_name: item.name,
+          item_price: item.price,
+          quantity: item.qty,
+          item_image: item.image,
+        }));
+        const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
+        if (itemsError) throw itemsError;
+      }
+
+      setSaving(false);
+      setOrdered(true);
+      setTimeout(() => { setOrdered(false); clear(); onClose(); }, 2800);
+    } catch (err) {
+      console.error("Erro ao salvar pedido:", err);
+      toast.error("Erro ao salvar pedido. Tente novamente.");
+      setSaving(false);
+    }
   };
 
 
