@@ -38,6 +38,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/coupondetail" element={<CouponDetail />} />
               <Route path="/zuufood" element={<ZuuFood />} />
+              <Route path="/pedidos" element={<ProtectedRoute><PedidosPage /></ProtectedRoute>} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/perfil" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
