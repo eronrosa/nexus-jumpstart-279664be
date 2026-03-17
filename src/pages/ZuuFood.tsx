@@ -19,11 +19,11 @@ const RESTAURANTS = [
     image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&q=80&fit=crop",
     logo: "https://img.icons8.com/color/96/sushi.png",
     menu: [
-      { id: "m1", category: "Entradas", name: "Temaki Salmão", price: 22.90, image: "https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=400&q=80&fit=crop", description: "Temaki com salmão fresco e cream cheese" },
-      { id: "m2", category: "Entradas", name: "Edamame", price: 14.90, image: "https://images.unsplash.com/photo-1615361200141-f45040f367be?w=400&q=80&fit=crop", description: "Feijão de soja no vapor com sal" },
-      { id: "m3", category: "Pratos", name: "Combinado 20 peças", price: 59.90, image: "https://images.unsplash.com/photo-1617196034099-5b50f4a9a52d?w=400&q=80&fit=crop", description: "Seleção de nigiris e sashimis frescos" },
-      { id: "m4", category: "Pratos", name: "Hot Roll Salmão (8 un)", price: 34.90, image: "https://images.unsplash.com/photo-1617196034262-15a11a87b3cd?w=400&q=80&fit=crop", description: "Hot roll empanado com salmão e cream cheese" },
-      { id: "m5", category: "Bebidas", name: "Saquê Quente", price: 18.00, image: "https://images.unsplash.com/photo-1558618047-f4e2b82fd0e7?w=400&q=80&fit=crop", description: "Saquê tradicional japonês servido quente" },
+      { id: "m1", category: "Entradas", name: "Temaki Salmão", price: 22.90, image: "https://images.unsplash.com/photo-1562802378-063ec186a863?w=400&q=80&fit=crop", description: "Temaki com salmão fresco e cream cheese" },
+      { id: "m2", category: "Entradas", name: "Edamame", price: 14.90, image: "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&q=80&fit=crop", description: "Feijão de soja no vapor com sal" },
+      { id: "m3", category: "Pratos", name: "Combinado 20 peças", price: 59.90, image: "https://images.unsplash.com/photo-1553621042-f6e147245754?w=400&q=80&fit=crop", description: "Seleção de nigiris e sashimis frescos" },
+      { id: "m4", category: "Pratos", name: "Hot Roll Salmão (8 un)", price: 34.90, image: "https://images.unsplash.com/photo-1559410545-0bdcd187e0a6?w=400&q=80&fit=crop", description: "Hot roll empanado com salmão e cream cheese" },
+      { id: "m5", category: "Bebidas", name: "Saquê Quente", price: 18.00, image: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&q=80&fit=crop", description: "Saquê tradicional japonês servido quente" },
     ],
   },
   {
