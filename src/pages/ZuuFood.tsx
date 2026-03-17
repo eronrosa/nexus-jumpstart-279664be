@@ -222,9 +222,10 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                 <motion.button
                   whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
                   onClick={handleOrder}
-                  className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:opacity-90 transition-opacity"
+                  disabled={saving}
+                  className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-70"
                 >
-                  Fazer pedido · {fmt(total)}
+                  {saving ? "Salvando pedido..." : `Fazer pedido · ${fmt(total)}`}
                 </motion.button>
               </div>
             )}
