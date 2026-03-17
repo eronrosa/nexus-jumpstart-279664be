@@ -8,6 +8,7 @@ import {
 import { useCart } from "@/contexts/CartContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 /* ─── Data ─── */
 const CATEGORIES = ["Todos", "Japonês", "Hambúrguer", "Pizza", "Lanches", "Saudável", "Sobremesas", "Árabe"];
