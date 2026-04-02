@@ -452,6 +452,8 @@ const PainelPage = () => {
   const [editName, setEditName] = useState("");
   const [editCategory, setEditCategory] = useState("");
   const [editDescription, setEditDescription] = useState("");
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -501,6 +503,24 @@ const PainelPage = () => {
     setStore({ ...store, name: editName.trim(), category: editCategory, description: editDescription.trim() || null });
     setEditingStore(false);
     toast.success("Dados atualizados!");
+  };
+
+  const handleImageUpload = async (file: File, type: "logo" | "cover") => {
+    if (!store) return;
+    const setter = type === "logo" ? setUploadingLogo : setUploadingCover;
+    setter(true);
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `${store.id}/${type}_${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from("menu-images").upload(path, file, { upsert: true });
+    if (upErr) { toast.error("Erro ao enviar imagem"); setter(false); return; }
+    const { data: urlData } = supabase.storage.from("menu-images").getPublicUrl(path);
+    const url = urlData.publicUrl;
+    const updateCol = type === "logo" ? { logo_url: url } : { cover_url: url };
+    const { error: dbErr } = await supabase.from("stores").update(updateCol).eq("id", store.id);
+    if (dbErr) { toast.error("Erro ao salvar URL"); setter(false); return; }
+    setStore({ ...store, ...updateCol });
+    setter(false);
+    toast.success(`${type === "logo" ? "Logo" : "Capa"} atualizada!`);
   };
 
   if (authLoading || storeLoading) {
@@ -573,6 +593,55 @@ const PainelPage = () => {
       case "loja":
         return (
           <div className="space-y-6">
+            {/* Logo & Cover Upload */}
+            <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
+              {/* Cover */}
+              <div className="relative h-40 bg-muted">
+                {store.cover_url ? (
+                  <img src={store.cover_url} alt="Capa" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                    <ImagePlus size={32} className="text-muted-foreground/40" />
+                  </div>
+                )}
+                <label className={`absolute bottom-3 right-3 flex items-center gap-2 text-xs font-bold px-3 py-2 rounded-lg cursor-pointer transition-all ${
+                  uploadingCover ? "bg-muted text-muted-foreground" : "bg-card/90 backdrop-blur text-foreground hover:bg-card"
+                } border border-border shadow-sm`}>
+                  <ImagePlus size={14} />
+                  {uploadingCover ? "Enviando..." : "Alterar capa"}
+                  <input type="file" accept="image/*" className="hidden" disabled={uploadingCover}
+                    onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f, "cover"); }} />
+                </label>
+              </div>
+              {/* Logo */}
+              <div className="px-6 pb-6 -mt-10 relative">
+                <div className="flex items-end gap-4">
+                  <label className="relative cursor-pointer group">
+                    <div className="w-20 h-20 rounded-2xl border-4 border-card bg-card shadow-lg overflow-hidden">
+                      {store.logo_url ? (
+                        <img src={store.logo_url} alt="Logo" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                          <Store size={28} className="text-primary" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <ImagePlus size={18} className="text-white" />
+                    </div>
+                    <input type="file" accept="image/*" className="hidden" disabled={uploadingLogo}
+                      onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f, "logo"); }} />
+                    {uploadingLogo && <div className="absolute inset-0 rounded-2xl bg-background/60 flex items-center justify-center"><span className="w-5 h-5 border-2 border-primary/20 border-t-primary rounded-full animate-spin" /></div>}
+                  </label>
+                  <div className="pb-1">
+                    <p className="font-bold text-foreground text-lg">{store.name}</p>
+                    <p className="text-sm text-muted-foreground">{store.category}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Store Data */}
             <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-bold text-foreground text-xl">Dados do Estabelecimento</h3>
@@ -610,15 +679,6 @@ const PainelPage = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl flex items-center justify-center shadow-inner">
-                      <Store size={28} className="text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-foreground text-lg">{store.name}</p>
-                      <p className="text-sm text-muted-foreground">{store.category}</p>
-                    </div>
-                  </div>
                   {store.description && <p className="text-sm text-muted-foreground leading-relaxed">{store.description}</p>}
                   <div className="bg-muted/30 rounded-xl p-4">
                     <p className="text-xs font-semibold text-muted-foreground mb-1">ID da loja</p>
