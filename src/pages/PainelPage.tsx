@@ -8,7 +8,10 @@ import {
   ChevronDown, ChevronUp, ArrowLeft, Plus, Pencil, Trash2, Save, X,
   UtensilsCrossed, ImagePlus, ToggleLeft, ToggleRight,
   LayoutDashboard, History, Settings, Bell, MapPin,
-  Menu as MenuIcon, Activity, Zap, Search
+  Menu as MenuIcon, Activity, Zap, Search,
+  Star, TrendingUp, FileText, Truck, CreditCard, HelpCircle,
+  MessageSquare, Timer, Eye, DollarSign, ShoppingBag, Users,
+  ChevronRight, BarChart3, Wallet, CircleDot, Power
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardTab from "@/components/DashboardTab";
@@ -53,22 +56,40 @@ const statusConfig: Record<string, { label: string; icon: React.ElementType; col
 };
 const MENU_CATEGORIES = ["Entradas", "Pratos", "Lanches", "Bebidas", "Sobremesas", "Combos", "Outro"];
 
+/* ─── Sidebar Section Title ─── */
+function SidebarSection({ title }: { title: string }) {
+  return <p className="text-[10px] font-extrabold text-muted-foreground/70 uppercase tracking-[0.15em] px-3 pt-5 pb-1.5">{title}</p>;
+}
+
 /* ─── Sidebar Nav Item ─── */
-function NavItem({ icon: Icon, label, active, badge, onClick }: {
-  icon: React.ElementType; label: string; active: boolean; badge?: number; onClick: () => void;
+function NavItem({ icon: Icon, label, active, badge, onClick, collapsed }: {
+  icon: React.ElementType; label: string; active: boolean; badge?: number; onClick: () => void; collapsed?: boolean;
 }) {
+  if (collapsed) {
+    return (
+      <button onClick={onClick} title={label}
+        className={`w-full flex items-center justify-center p-2.5 rounded-xl transition-all relative ${
+          active ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+        }`}>
+        <Icon size={18} />
+        {badge != null && badge > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-destructive text-destructive-foreground text-[9px] font-bold rounded-full flex items-center justify-center">{badge}</span>
+        )}
+      </button>
+    );
+  }
   return (
     <button onClick={onClick}
-      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative ${
+      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all duration-200 group ${
         active
           ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
           : "text-muted-foreground hover:text-foreground hover:bg-secondary/80"
       }`}>
-      <Icon size={18} className={active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"} />
+      <Icon size={16} className={active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"} />
       <span className="flex-1 text-left">{label}</span>
       {badge != null && badge > 0 && (
-        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${
-          active ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary text-primary-foreground"
+        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center ${
+          active ? "bg-primary-foreground/20 text-primary-foreground" : "bg-destructive text-destructive-foreground"
         }`}>{badge}</span>
       )}
     </button>
@@ -99,8 +120,7 @@ function StoreSetupForm({ onCreated }: { onCreated: (s: StoreData) => void }) {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-md w-full">
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-primary/5 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-primary/10">
             <Store size={36} className="text-primary" />
@@ -142,7 +162,6 @@ function OrderCard({ order, onStatusChange }: { order: Order; onStatusChange: (i
   const cfg = statusConfig[order.status] ?? statusConfig.pendente;
   const Icon = cfg.icon;
   const next = (() => { const idx = STATUS_FLOW.indexOf(order.status); return idx < 2 ? STATUS_FLOW[idx + 1] : null; })();
-
   const formatDate = (iso: string) => {
     const d = new Date(iso);
     return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }) + " • " +
@@ -306,9 +325,7 @@ function MenuItemForm({ storeId, item, onSaved, onCancel }: {
           className="mt-1.5 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all resize-none" />
       </div>
       <div className="flex gap-3 pt-1">
-        <button onClick={onCancel} className="flex-1 border border-border text-foreground font-semibold py-3 rounded-xl text-sm hover:bg-secondary transition-all">
-          Cancelar
-        </button>
+        <button onClick={onCancel} className="flex-1 border border-border text-foreground font-semibold py-3 rounded-xl text-sm hover:bg-secondary transition-all">Cancelar</button>
         <button onClick={handleSave} disabled={!name.trim() || !price || saving}
           className="flex-1 bg-primary text-primary-foreground font-bold py-3 rounded-xl text-sm hover:bg-primary/90 transition-all disabled:opacity-50 shadow-md shadow-primary/20 flex items-center justify-center gap-2">
           <Save size={14} /> {saving ? "Salvando..." : item ? "Atualizar" : "Adicionar"}
@@ -375,11 +392,9 @@ function CardapioTab({ storeId }: { storeId: string }) {
           </button>
         )}
       </div>
-
       {(showForm || editingItem) && (
         <MenuItemForm storeId={storeId} item={editingItem} onSaved={handleSaved} onCancel={() => { setShowForm(false); setEditingItem(null); }} />
       )}
-
       {menuItems.length > 0 && !showForm && !editingItem && (
         <div className="space-y-3">
           <div className="relative">
@@ -397,7 +412,6 @@ function CardapioTab({ storeId }: { storeId: string }) {
           </div>
         </div>
       )}
-
       {!showForm && !editingItem && (
         menuItems.length === 0 ? (
           <div className="text-center py-20">
@@ -450,6 +464,20 @@ function CardapioTab({ storeId }: { storeId: string }) {
   );
 }
 
+/* ─── Placeholder Tab (for features not yet built) ─── */
+function PlaceholderTab({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) {
+  return (
+    <div className="text-center py-20">
+      <div className="w-20 h-20 bg-muted/50 rounded-3xl flex items-center justify-center mx-auto mb-4">
+        <Icon size={32} className="text-muted-foreground/40" />
+      </div>
+      <p className="font-bold text-foreground text-lg">{title}</p>
+      <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">{description}</p>
+      <span className="inline-block mt-4 text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full">Em breve</span>
+    </div>
+  );
+}
+
 /* ═══════════════════ Main Page ═══════════════════ */
 const PainelPage = () => {
   const navigate = useNavigate();
@@ -458,7 +486,7 @@ const PainelPage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [storeLoading, setStoreLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("inicio");
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const [editingStore, setEditingStore] = useState(false);
@@ -501,7 +529,7 @@ const PainelPage = () => {
         async (payload) => {
           if (payload.eventType === 'INSERT') {
             const { data } = await supabase.from("orders").select("*, order_items(*)").eq("id", payload.new.id).single();
-            if (data) { setOrders(prev => [data as Order, ...prev]); toast.info("Novo pedido recebido!"); }
+            if (data) { setOrders(prev => [data as Order, ...prev]); toast.info("🔔 Novo pedido recebido!"); }
           } else if (payload.eventType === 'UPDATE') {
             setOrders(prev => prev.map(o => o.id === payload.new.id ? { ...o, ...payload.new } : o));
           }
@@ -561,6 +589,14 @@ const PainelPage = () => {
     toast.success(`${type === "logo" ? "Logo" : "Capa"} atualizada!`);
   };
 
+  const handleToggleActive = async () => {
+    if (!store) return;
+    const { error } = await supabase.from("stores").update({ is_active: !store.is_active }).eq("id", store.id);
+    if (error) { toast.error("Erro ao atualizar status"); return; }
+    setStore({ ...store, is_active: !store.is_active });
+    toast.success(store.is_active ? "Loja fechada" : "Loja aberta!");
+  };
+
   if (authLoading || storeLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -580,20 +616,193 @@ const PainelPage = () => {
   const preparingOrders = orders.filter(o => o.status === "em_preparo");
   const completedOrders = orders.filter(o => o.status === "entregue" || o.status === "cancelado");
   const deliveredOrders = orders.filter(o => o.status === "entregue");
+  const todayOrders = orders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString());
   const todayRevenue = deliveredOrders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString()).reduce((s, o) => s + Number(o.total), 0);
+  const weekOrders = orders.filter(o => { const d = new Date(o.created_at); const now = new Date(); const diff = (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24); return diff <= 7; });
+  const weekRevenue = weekOrders.filter(o => o.status === "entregue").reduce((s, o) => s + Number(o.total), 0);
+  const lastWeekOrders = orders.filter(o => { const d = new Date(o.created_at); const now = new Date(); const diff = (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24); return diff > 7 && diff <= 14; });
+  const lastWeekRevenue = lastWeekOrders.filter(o => o.status === "entregue").reduce((s, o) => s + Number(o.total), 0);
 
-  const navItems = [
-    { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
-    { id: "pedidos", icon: Package, label: "Pedidos Ativos", badge: pendingOrders.length + preparingOrders.length },
-    { id: "cardapio", icon: UtensilsCrossed, label: "Cardápio" },
-    { id: "historico", icon: History, label: "Histórico" },
-    { id: "loja", icon: Settings, label: "Configurações" },
+  const storeAddress = [store.address_street, store.address_number].filter(Boolean).join(", ") +
+    (store.address_neighborhood ? `, ${store.address_neighborhood}` : "") +
+    (store.address_city ? `, ${store.address_city}` : "") +
+    (store.address_state ? `, ${store.address_state}` : "");
+
+  /* ─── Nav sections modeled after iFood ─── */
+  const navSections = [
+    {
+      title: null,
+      items: [{ id: "inicio", icon: LayoutDashboard, label: "Início" }],
+    },
+    {
+      title: "GERENCIAR LOJA",
+      items: [
+        { id: "pedidos", icon: Package, label: "Pedidos", badge: pendingOrders.length + preparingOrders.length },
+        { id: "avaliações", icon: Star, label: "Avaliações" },
+        { id: "performance", icon: TrendingUp, label: "Performance geral" },
+        { id: "faturas", icon: FileText, label: "Faturas" },
+        { id: "cardapio", icon: UtensilsCrossed, label: "Cardápio" },
+        { id: "tempo_entrega", icon: Timer, label: "Tempo de entrega" },
+        { id: "pagamento", icon: CreditCard, label: "Formas de pagamento" },
+        { id: "horario", icon: Clock, label: "Horário de funcionamento" },
+        { id: "descricao", icon: Pencil, label: "Descrição e logo" },
+      ],
+    },
+    {
+      title: "SERVIÇOS",
+      items: [
+        { id: "ajuda", icon: HelpCircle, label: "Ajuda" },
+        { id: "chamados", icon: MessageSquare, label: "Chamados" },
+      ],
+    },
   ];
 
   const renderContent = () => {
     switch (activeTab) {
-      case "dashboard":
-        return <DashboardTab storeId={store.id} />;
+      case "inicio":
+        return (
+          <div className="space-y-6">
+            {/* Store Header Card (iFood style) */}
+            <div className="bg-card border border-border rounded-2xl overflow-hidden">
+              <div className="p-6 flex flex-col md:flex-row items-start md:items-center gap-6">
+                <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0 border-2 border-border shadow-sm">
+                  {store.logo_url ? (
+                    <img src={store.logo_url} alt="Logo" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                      <Store size={32} className="text-primary" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-xl font-bold text-foreground">{store.name}</h2>
+                  {storeAddress && <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1"><MapPin size={13} />{storeAddress}</p>}
+                  {store.description && <p className="text-sm text-muted-foreground mt-1">{store.description}</p>}
+                </div>
+                <button onClick={() => setActiveTab("descricao")}
+                  className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 font-bold transition-colors shrink-0">
+                  <Pencil size={14} /> Editar descrição e logo
+                </button>
+              </div>
+            </div>
+
+            {/* Quick info cards row (iFood style) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Delivery config card */}
+              <div className="bg-card border border-border rounded-2xl p-5">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Configurações de entrega</p>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Tempo de retirada</p>
+                    <p className="text-lg font-bold text-foreground">0 minuto</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Tempo de entrega</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-lg font-bold text-foreground">60 minutos</p>
+                      <button onClick={() => setActiveTab("tempo_entrega")} className="text-xs text-primary font-bold hover:underline">Alterar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Informes card */}
+              <div className="bg-card border border-border rounded-2xl p-5">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Informes</p>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Dicas de Promoções</p>
+                      <button className="text-xs text-primary font-bold hover:underline">Ler mais</button>
+                    </div>
+                    <span className="text-[10px] font-bold bg-primary text-primary-foreground px-2 py-0.5 rounded">NOVO</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Atendimento Financeiro</p>
+                      <button className="text-xs text-primary font-bold hover:underline">Ler mais</button>
+                    </div>
+                    <span className="text-[10px] font-bold bg-primary text-primary-foreground px-2 py-0.5 rounded">NOVO</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent invoices card */}
+              <div className="bg-card border border-border rounded-2xl p-5">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Últimas faturas</p>
+                {deliveredOrders.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Nenhuma fatura disponível</p>
+                ) : (
+                  <div className="space-y-2">
+                    {deliveredOrders.slice(0, 3).map(o => (
+                      <div key={o.id} className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">{new Date(o.created_at).toLocaleDateString("pt-BR")}</span>
+                        <span className="font-bold text-foreground">{fmt(o.total)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Results section (iFood style) */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-foreground">Resultados</h3>
+                <button onClick={() => setActiveTab("performance")} className="text-sm text-primary font-bold hover:underline">Ver mais</button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-card border border-border rounded-2xl p-6">
+                  <p className="text-sm font-semibold text-foreground mb-3">Pedidos</p>
+                  <div className="flex items-end gap-8">
+                    <div>
+                      <p className="text-3xl font-bold text-primary">{weekOrders.length}</p>
+                      <p className="text-xs text-muted-foreground">Esta semana</p>
+                    </div>
+                    <div>
+                      <p className="text-3xl font-bold text-muted-foreground">{lastWeekOrders.length}</p>
+                      <p className="text-xs text-muted-foreground">Semana passada</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-card border border-border rounded-2xl p-6">
+                  <p className="text-sm font-semibold text-foreground mb-3">Faturamento</p>
+                  <div className="flex items-end gap-8">
+                    <div>
+                      <p className="text-3xl font-bold text-emerald-600">{fmt(weekRevenue)}</p>
+                      <p className="text-xs text-muted-foreground">Esta semana</p>
+                    </div>
+                    <div>
+                      <p className="text-3xl font-bold text-muted-foreground">{fmt(lastWeekRevenue)}</p>
+                      <p className="text-xs text-muted-foreground">Semana passada</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* KPI strip */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { label: "Pendentes", value: pendingOrders.length, icon: Clock, color: "text-amber-600", bg: "bg-amber-500/10", borderColor: "border-amber-500/10" },
+                { label: "Em Preparo", value: preparingOrders.length, icon: ChefHat, color: "text-blue-600", bg: "bg-blue-500/10", borderColor: "border-blue-500/10" },
+                { label: "Entregues hoje", value: deliveredOrders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString()).length, icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-500/10", borderColor: "border-emerald-500/10" },
+                { label: "Faturamento hoje", value: todayRevenue, icon: DollarSign, color: "text-primary", bg: "bg-primary/10", borderColor: "border-primary/10", isCurrency: true },
+              ].map(stat => (
+                <div key={stat.label} className={`${stat.bg} border ${stat.borderColor} rounded-2xl p-4 flex items-center gap-3`}>
+                  <div className={`w-10 h-10 ${stat.bg} rounded-xl flex items-center justify-center`}>
+                    <stat.icon size={18} className={stat.color} />
+                  </div>
+                  <div>
+                    <p className={`text-xl font-bold ${stat.color}`}>{'isCurrency' in stat && stat.isCurrency ? fmt(stat.value) : stat.value}</p>
+                    <p className="text-xs text-muted-foreground font-medium">{stat.label}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
       case "pedidos":
         return loading ? (
           <div className="space-y-3">{[1, 2, 3].map(i => <div key={i} className="bg-card rounded-2xl h-20 animate-pulse border border-border" />)}</div>
@@ -607,13 +816,26 @@ const PainelPage = () => {
           </div>
         ) : (
           <div className="space-y-3">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-xs font-bold bg-amber-500/10 text-amber-600 px-3 py-1.5 rounded-lg border border-amber-500/20">
+                {pendingOrders.length} pendente{pendingOrders.length !== 1 ? "s" : ""}
+              </span>
+              <span className="text-xs font-bold bg-blue-500/10 text-blue-600 px-3 py-1.5 rounded-lg border border-blue-500/20">
+                {preparingOrders.length} em preparo
+              </span>
+            </div>
             {[...pendingOrders, ...preparingOrders].map(order => (
               <OrderCard key={order.id} order={order} onStatusChange={handleStatusChange} />
             ))}
           </div>
         );
+
       case "cardapio":
         return <CardapioTab storeId={store.id} />;
+
+      case "performance":
+        return <DashboardTab storeId={store.id} />;
+
       case "historico":
         return completedOrders.length === 0 ? (
           <div className="text-center py-20">
@@ -628,12 +850,71 @@ const PainelPage = () => {
             {completedOrders.map(order => <OrderCard key={order.id} order={order} onStatusChange={handleStatusChange} />)}
           </div>
         );
-      case "loja":
+
+      case "horario":
+        return (
+          <div className="space-y-6">
+            <div className="bg-card border border-border rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="font-bold text-foreground text-xl">Horário de Funcionamento</h3>
+                  <p className="text-sm text-muted-foreground mt-0.5">Configure os dias e horários em que sua loja está disponível</p>
+                </div>
+                {!editingStore ? (
+                  <button onClick={startEditing} className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 font-bold transition-colors">
+                    <Pencil size={14} /> Editar
+                  </button>
+                ) : (
+                  <div className="flex gap-3">
+                    <button onClick={() => setEditingStore(false)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground font-medium"><X size={14} /> Cancelar</button>
+                    <button onClick={handleSaveStore} className="flex items-center gap-1.5 text-sm bg-primary text-primary-foreground px-4 py-1.5 rounded-lg font-bold hover:bg-primary/90 transition-all"><Save size={14} /> Salvar</button>
+                  </div>
+                )}
+              </div>
+              {editingStore ? (
+                <div className="space-y-2">
+                  {editHours.map((h, idx) => (
+                    <div key={h.day} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${h.closed ? "bg-muted/30 border-border" : "bg-background border-input"}`}>
+                      <span className="text-sm font-semibold text-foreground w-24 shrink-0">{h.day}</span>
+                      <button onClick={() => setEditHours(prev => prev.map((x, i) => i === idx ? { ...x, closed: !x.closed } : x))}
+                        className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition-all ${h.closed ? "bg-destructive/10 text-destructive border-destructive/20" : "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"}`}>
+                        {h.closed ? "Fechado" : "Aberto"}
+                      </button>
+                      {!h.closed && (
+                        <>
+                          <input type="time" value={h.open}
+                            onChange={e => setEditHours(prev => prev.map((x, i) => i === idx ? { ...x, open: e.target.value } : x))}
+                            className="h-9 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                          <span className="text-muted-foreground text-sm">às</span>
+                          <input type="time" value={h.close}
+                            onChange={e => setEditHours(prev => prev.map((x, i) => i === idx ? { ...x, close: e.target.value } : x))}
+                            className="h-9 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  {(store.opening_hours as StoreHours[] ?? DEFAULT_HOURS).map(h => (
+                    <div key={h.day} className="flex items-center justify-between text-sm p-2.5 rounded-lg hover:bg-muted/30 transition-colors">
+                      <span className="text-foreground font-medium">{h.day}</span>
+                      <span className={h.closed ? "text-destructive font-semibold" : "text-muted-foreground"}>
+                        {h.closed ? "Fechado" : `${h.open} — ${h.close}`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      case "descricao":
         return (
           <div className="space-y-6">
             {/* Logo & Cover Upload */}
             <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
-              {/* Cover */}
               <div className="relative h-40 bg-muted">
                 {store.cover_url ? (
                   <img src={store.cover_url} alt="Capa" className="w-full h-full object-cover" />
@@ -651,7 +932,6 @@ const PainelPage = () => {
                     onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f, "cover"); }} />
                 </label>
               </div>
-              {/* Logo */}
               <div className="px-6 pb-6 -mt-10 relative">
                 <div className="flex items-end gap-4">
                   <label className="relative cursor-pointer group">
@@ -684,8 +964,7 @@ const PainelPage = () => {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-bold text-foreground text-xl">Dados do Estabelecimento</h3>
                 {!editingStore ? (
-                  <button onClick={startEditing}
-                    className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 font-bold transition-colors">
+                  <button onClick={startEditing} className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 font-bold transition-colors">
                     <Pencil size={14} /> Editar
                   </button>
                 ) : (
@@ -719,7 +998,6 @@ const PainelPage = () => {
                         className="mt-1.5 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all resize-none" />
                     </div>
                   </div>
-
                   <div className="space-y-4">
                     <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Endereço</p>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -757,37 +1035,10 @@ const PainelPage = () => {
                       </div>
                     </div>
                   </div>
-
-                  <div className="space-y-4">
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Horário de funcionamento</p>
-                    <div className="space-y-2">
-                      {editHours.map((h, idx) => (
-                        <div key={h.day} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${h.closed ? "bg-muted/30 border-border" : "bg-background border-input"}`}>
-                          <span className="text-sm font-semibold text-foreground w-24 shrink-0">{h.day}</span>
-                          <button onClick={() => setEditHours(prev => prev.map((x, i) => i === idx ? { ...x, closed: !x.closed } : x))}
-                            className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition-all ${h.closed ? "bg-destructive/10 text-destructive border-destructive/20" : "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"}`}>
-                            {h.closed ? "Fechado" : "Aberto"}
-                          </button>
-                          {!h.closed && (
-                            <>
-                              <input type="time" value={h.open}
-                                onChange={e => setEditHours(prev => prev.map((x, i) => i === idx ? { ...x, open: e.target.value } : x))}
-                                className="h-9 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
-                              <span className="text-muted-foreground text-sm">às</span>
-                              <input type="time" value={h.close}
-                                onChange={e => setEditHours(prev => prev.map((x, i) => i === idx ? { ...x, close: e.target.value } : x))}
-                                className="h-9 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
-                            </>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                 </div>
               ) : (
                 <div className="space-y-6">
                   {store.description && <p className="text-sm text-muted-foreground leading-relaxed">{store.description}</p>}
-
                   {(store.address_street || store.address_city) && (
                     <div className="bg-muted/30 rounded-xl p-4">
                       <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">Endereço</p>
@@ -801,23 +1052,6 @@ const PainelPage = () => {
                       </p>
                     </div>
                   )}
-
-                  {store.opening_hours && (store.opening_hours as StoreHours[]).length > 0 && (
-                    <div className="bg-muted/30 rounded-xl p-4">
-                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">Horário de funcionamento</p>
-                      <div className="space-y-1.5">
-                        {(store.opening_hours as StoreHours[]).map(h => (
-                          <div key={h.day} className="flex items-center justify-between text-sm">
-                            <span className="text-foreground font-medium">{h.day}</span>
-                            <span className={h.closed ? "text-destructive font-semibold" : "text-muted-foreground"}>
-                              {h.closed ? "Fechado" : `${h.open} — ${h.close}`}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
                   <div className="bg-muted/30 rounded-xl p-4">
                     <p className="text-xs font-semibold text-muted-foreground mb-1">ID da loja</p>
                     <code className="text-xs bg-background px-3 py-1.5 rounded-lg border border-border select-all">{store.id}</code>
@@ -827,16 +1061,32 @@ const PainelPage = () => {
             </div>
           </div>
         );
+
+      case "avaliações":
+        return <PlaceholderTab icon={Star} title="Avaliações" description="Veja o que seus clientes estão dizendo sobre sua loja e responda avaliações" />;
+      case "faturas":
+        return <PlaceholderTab icon={FileText} title="Faturas" description="Acompanhe suas faturas, taxas e repasses financeiros" />;
+      case "tempo_entrega":
+        return <PlaceholderTab icon={Timer} title="Tempo de entrega" description="Configure os tempos de preparo e entrega dos seus pedidos" />;
+      case "pagamento":
+        return <PlaceholderTab icon={CreditCard} title="Formas de pagamento" description="Gerencie as formas de pagamento aceitas pelo seu estabelecimento" />;
+      case "ajuda":
+        return <PlaceholderTab icon={HelpCircle} title="Central de Ajuda" description="Encontre respostas para suas dúvidas e tutoriais de uso da plataforma" />;
+      case "chamados":
+        return <PlaceholderTab icon={MessageSquare} title="Chamados" description="Abra e acompanhe chamados de suporte técnico ou operacional" />;
+
       default:
         return null;
     }
   };
 
+  const currentNavItem = navSections.flatMap(s => s.items).find(i => i.id === activeTab);
+
   return (
     <div className="min-h-screen bg-background flex">
       {/* Desktop Sidebar */}
-      <aside className={`hidden lg:flex flex-col bg-card border-r border-border transition-all duration-300 ${sidebarOpen ? "w-[260px]" : "w-[72px]"}`}>
-        {/* Logo/Brand */}
+      <aside className={`hidden lg:flex flex-col bg-card border-r border-border transition-all duration-300 shrink-0 ${sidebarOpen ? "w-[260px]" : "w-[72px]"}`}>
+        {/* Brand header */}
         <div className="p-4 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/70 rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
@@ -845,42 +1095,38 @@ const PainelPage = () => {
             {sidebarOpen && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-w-0">
                 <p className="font-bold text-foreground text-sm truncate">{store.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{store.category}</p>
+                <p className="text-[11px] text-muted-foreground truncate">{store.category}</p>
               </motion.div>
             )}
           </div>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 p-3 space-y-1">
-          {sidebarOpen && <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-3 mb-2">Menu</p>}
-          {navItems.map(item => (
-            sidebarOpen ? (
-              <NavItem key={item.id} icon={item.icon} label={item.label} active={activeTab === item.id} badge={item.badge} onClick={() => setActiveTab(item.id)} />
-            ) : (
-              <button key={item.id} onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center justify-center p-2.5 rounded-xl transition-all relative ${
-                  activeTab === item.id ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" : "text-muted-foreground hover:bg-secondary"
-                }`} title={item.label}>
-                <item.icon size={20} />
-                {item.badge != null && item.badge > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary text-primary-foreground text-[9px] font-bold rounded-full flex items-center justify-center">{item.badge}</span>
-                )}
-              </button>
-            )
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto px-3 pb-3">
+          {navSections.map((section, sIdx) => (
+            <div key={sIdx}>
+              {sidebarOpen && section.title && <SidebarSection title={section.title} />}
+              {!sidebarOpen && section.title && <div className="border-t border-border my-2" />}
+              <div className="space-y-0.5">
+                {section.items.map(item => (
+                  <NavItem key={item.id} icon={item.icon} label={item.label} active={activeTab === item.id}
+                    badge={'badge' in item ? (item as any).badge : undefined} onClick={() => setActiveTab(item.id)} collapsed={!sidebarOpen} />
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
 
-        {/* Sidebar toggle + logout */}
-        <div className="p-3 border-t border-border space-y-1">
+        {/* Bottom actions */}
+        <div className="p-3 border-t border-border space-y-0.5">
           <button onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-all">
-            <MenuIcon size={18} />
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] text-muted-foreground hover:text-foreground hover:bg-secondary transition-all">
+            <MenuIcon size={16} />
             {sidebarOpen && <span>Recolher</span>}
           </button>
           <button onClick={() => navigate("/")}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-all">
-            <ArrowLeft size={18} />
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] text-muted-foreground hover:text-foreground hover:bg-secondary transition-all">
+            <ArrowLeft size={16} />
             {sidebarOpen && <span>Voltar ao app</span>}
           </button>
         </div>
@@ -890,71 +1136,63 @@ const PainelPage = () => {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
         <header className="sticky top-0 z-10 bg-card/80 backdrop-blur-xl border-b border-border">
-          <div className="flex items-center justify-between px-4 lg:px-8 h-16">
+          <div className="flex items-center justify-between px-4 lg:px-8 h-14">
             <div className="flex items-center gap-3">
               <button onClick={() => navigate("/")} className="lg:hidden text-muted-foreground hover:text-foreground">
                 <ArrowLeft size={20} />
               </button>
-              <div>
-                <h1 className="font-bold text-foreground text-lg lg:text-xl">
-                  {navItems.find(n => n.id === activeTab)?.label ?? "Painel"}
-                </h1>
-                <p className="text-xs text-muted-foreground hidden sm:block">Gerencie seu estabelecimento</p>
+              <div className="flex items-center gap-2">
+                {store.logo_url && <img src={store.logo_url} alt="" className="w-8 h-8 rounded-lg object-cover hidden md:block" />}
+                <div>
+                  <h1 className="font-bold text-foreground text-sm lg:text-base">{store.name}</h1>
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              {/* Quick stats in header */}
-              <div className="hidden md:flex items-center gap-4">
+              <div className="hidden md:flex items-center gap-3">
                 <div className="flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-lg">
-                  <Activity size={14} className="text-emerald-600" />
+                  <Activity size={13} className="text-emerald-600" />
                   <span className="text-xs font-bold text-emerald-600">{fmt(todayRevenue)} hoje</span>
                 </div>
-                <div className="flex items-center gap-2 bg-amber-500/10 px-3 py-1.5 rounded-lg">
-                  <Bell size={14} className="text-amber-600" />
-                  <span className="text-xs font-bold text-amber-600">{pendingOrders.length} pendente{pendingOrders.length !== 1 ? "s" : ""}</span>
-                </div>
+                {pendingOrders.length > 0 && (
+                  <div className="flex items-center gap-2 bg-amber-500/10 px-3 py-1.5 rounded-lg">
+                    <Bell size={13} className="text-amber-600" />
+                    <span className="text-xs font-bold text-amber-600">{pendingOrders.length} pendente{pendingOrders.length !== 1 ? "s" : ""}</span>
+                  </div>
+                )}
               </div>
-              <span className={`text-xs font-bold px-3 py-1.5 rounded-lg ${store.is_active ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" : "bg-red-500/10 text-red-500 border border-red-500/20"}`}>
-                {store.is_active ? "Aberto" : "Fechado"}
-              </span>
+              <button onClick={handleToggleActive}
+                className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg border transition-all ${
+                  store.is_active
+                    ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/20"
+                    : "bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20"
+                }`}>
+                <CircleDot size={10} className={store.is_active ? "text-emerald-500" : "text-destructive"} />
+                {store.is_active ? "Disponível" : "Indisponível"}
+              </button>
             </div>
           </div>
         </header>
 
         {/* Mobile nav */}
         <div className="lg:hidden flex gap-1 overflow-x-auto px-4 py-2 bg-card border-b border-border">
-          {navItems.map(item => (
+          {navSections.flatMap(s => s.items).map(item => (
             <button key={item.id} onClick={() => setActiveTab(item.id)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
                 activeTab === item.id ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-secondary"
               }`}>
-              <item.icon size={14} />
+              <item.icon size={13} />
               {item.label}
-              {item.badge != null && item.badge > 0 && (
-                <span className="bg-primary-foreground/20 text-primary-foreground text-[9px] px-1.5 py-0.5 rounded-full font-bold">{item.badge}</span>
+              {'badge' in item && (item as any).badge > 0 && (
+                <span className="bg-destructive text-destructive-foreground text-[9px] px-1.5 py-0.5 rounded-full font-bold">{(item as any).badge}</span>
               )}
             </button>
           ))}
         </div>
 
-        {/* Quick KPI strip */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-4 lg:px-8 py-4">
-          {[
-            { label: "Pendentes", value: pendingOrders.length, icon: Clock, color: "text-amber-600", bg: "bg-amber-500/10", borderColor: "border-amber-500/10" },
-            { label: "Em Preparo", value: preparingOrders.length, icon: ChefHat, color: "text-blue-600", bg: "bg-blue-500/10", borderColor: "border-blue-500/10" },
-            { label: "Entregues", value: deliveredOrders.length, icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-500/10", borderColor: "border-emerald-500/10" },
-            { label: "Total", value: orders.length, icon: Package, color: "text-primary", bg: "bg-primary/10", borderColor: "border-primary/10" },
-          ].map(stat => (
-            <div key={stat.label} className={`${stat.bg} border ${stat.borderColor} rounded-2xl p-4 flex items-center gap-3`}>
-              <div className={`w-10 h-10 ${stat.bg} rounded-xl flex items-center justify-center`}>
-                <stat.icon size={18} className={stat.color} />
-              </div>
-              <div>
-                <p className={`text-xl font-bold ${stat.color}`}>{stat.value}</p>
-                <p className="text-xs text-muted-foreground font-medium">{stat.label}</p>
-              </div>
-            </div>
-          ))}
+        {/* Page title */}
+        <div className="px-4 lg:px-8 pt-5 pb-2">
+          <h2 className="text-xl font-bold text-foreground">{currentNavItem?.label ?? "Painel"}</h2>
         </div>
 
         {/* Content */}
