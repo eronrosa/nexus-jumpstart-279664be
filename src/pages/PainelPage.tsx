@@ -7,7 +7,7 @@ import {
   Store, Package, Clock, CheckCircle, ChefHat, XCircle,
   ChevronDown, ChevronUp, ArrowLeft, Plus, Pencil, Trash2, Save, X,
   UtensilsCrossed, ImagePlus, ToggleLeft, ToggleRight,
-  LayoutDashboard, History, Settings, Bell,
+  LayoutDashboard, History, Settings, Bell, MapPin,
   Menu as MenuIcon, Activity, Zap, Search
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
