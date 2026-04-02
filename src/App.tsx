@@ -50,6 +50,7 @@ const App = () => (
               <Route path="/zuumob" element={<ZuuMob />} />
               <Route path="/motorista" element={<ProtectedRoute><MotoristaPage /></ProtectedRoute>} />
               <Route path="/zuumob/historico" element={<ProtectedRoute><RideHistoryPage /></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
