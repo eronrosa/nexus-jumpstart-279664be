@@ -45,6 +45,8 @@ const App = () => (
               <Route path="/painel" element={<ProtectedRoute><PainelPage /></ProtectedRoute>} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/perfil" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+              <Route path="/zuumob" element={<ZuuMob />} />
+              <Route path="/motorista" element={<ProtectedRoute><MotoristaPage /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
