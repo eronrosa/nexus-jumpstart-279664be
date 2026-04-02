@@ -719,8 +719,16 @@ const PainelPage = () => {
       const { count } = await supabase.from("menu_items").select("*", { count: "exact", head: true }).eq("store_id", store.id);
       if (count != null) setMenuItemsCount(count);
     };
+    const loadRating = async () => {
+      const { data: reviews } = await supabase.from("reviews").select("rating").eq("store_id", store.id);
+      if (reviews && reviews.length > 0) {
+        const avg = reviews.reduce((s: number, r: any) => s + r.rating, 0) / reviews.length;
+        setStoreRating({ avg, count: reviews.length });
+      }
+    };
     loadOrders();
     loadMenuCount();
+    loadRating();
     const channel = supabase
       .channel('merchant-orders')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `restaurant_id=eq.${store.id}` },
