@@ -45,6 +45,7 @@ const statusLabel: Record<string, string> = {
 const PedidosPage = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { add, clear, items } = useCart();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
