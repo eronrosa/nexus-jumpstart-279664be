@@ -14,6 +14,7 @@ import PedidosPage from "./pages/PedidosPage";
 import PainelPage from "./pages/PainelPage";
 import ZuuMob from "./pages/ZuuMob";
 import MotoristaPage from "./pages/MotoristaPage";
+import RideHistoryPage from "./pages/RideHistoryPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
