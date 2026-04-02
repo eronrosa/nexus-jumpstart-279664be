@@ -681,7 +681,7 @@ const PainelPage = () => {
   const [activeTab, setActiveTab] = useState("inicio");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [menuItemsCount, setMenuItemsCount] = useState(0);
-
+  const [storeRating, setStoreRating] = useState<{ avg: number; count: number }>({ avg: 0, count: 0 });
   const [editingStore, setEditingStore] = useState(false);
   const [editName, setEditName] = useState("");
   const [editCategory, setEditCategory] = useState("");
@@ -719,8 +719,16 @@ const PainelPage = () => {
       const { count } = await supabase.from("menu_items").select("*", { count: "exact", head: true }).eq("store_id", store.id);
       if (count != null) setMenuItemsCount(count);
     };
+    const loadRating = async () => {
+      const { data: reviews } = await supabase.from("reviews").select("rating").eq("store_id", store.id);
+      if (reviews && reviews.length > 0) {
+        const avg = reviews.reduce((s: number, r: any) => s + r.rating, 0) / reviews.length;
+        setStoreRating({ avg, count: reviews.length });
+      }
+    };
     loadOrders();
     loadMenuCount();
+    loadRating();
     const channel = supabase
       .channel('merchant-orders')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `restaurant_id=eq.${store.id}` },
@@ -873,6 +881,31 @@ const PainelPage = () => {
         const monthTicket = monthDelivered.length > 0 ? monthRevenue / monthDelivered.length : 0;
         const monthName = new Date().toLocaleDateString("pt-BR", { month: "long" });
 
+        // Top selling products
+        const productSales: Record<string, { name: string; qty: number; revenue: number; image: string | null }> = {};
+        deliveredOrders.forEach(o => o.order_items.forEach(item => {
+          const key = item.item_name;
+          if (!productSales[key]) productSales[key] = { name: key, qty: 0, revenue: 0, image: item.item_image };
+          productSales[key].qty += item.quantity;
+          productSales[key].revenue += item.item_price * item.quantity;
+        }));
+        const topProducts = Object.values(productSales).sort((a, b) => b.qty - a.qty).slice(0, 5);
+
+        // Orders by hour
+        const hourCounts: number[] = Array(24).fill(0);
+        orders.forEach(o => { hourCounts[new Date(o.created_at).getHours()]++; });
+        const peakHour = hourCounts.indexOf(Math.max(...hourCounts));
+
+        // Cancellation rate
+        const cancelledCount = orders.filter(o => o.status === "cancelado").length;
+        const cancelRate = orders.length > 0 ? ((cancelledCount / orders.length) * 100).toFixed(1) : "0";
+
+        // Orders by day of week
+        const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+        const dayCounts = Array(7).fill(0);
+        orders.forEach(o => { dayCounts[new Date(o.created_at).getDay()]++; });
+        const maxDayCount = Math.max(...dayCounts, 1);
+
         return (
           <div className="space-y-6">
             {/* Status banner */}
@@ -905,14 +938,13 @@ const PainelPage = () => {
               </button>
             </div>
 
-            {/* Acompanhamento tempo real (iFood clone) */}
+            {/* Acompanhamento tempo real */}
             <div className="bg-card border border-border rounded-2xl p-6">
               <div className="flex items-center gap-2 mb-5">
                 <h3 className="text-lg font-bold text-foreground">Acompanhamento</h3>
                 <span className="text-sm text-muted-foreground">tempo real</span>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-0 divide-x divide-border">
-                {/* Today stats - highlighted */}
                 <div className="pr-4 border-b-4 border-primary pb-4">
                   <p className="text-xs text-muted-foreground mb-1">Pedidos de hoje</p>
                   <p className="text-2xl font-bold text-foreground">{todayDelivered.length} <span className="text-sm font-normal text-muted-foreground">pedidos</span></p>
@@ -922,7 +954,6 @@ const PainelPage = () => {
                   <p className="text-xs text-muted-foreground mb-1">Ticket médio de hoje</p>
                   <p className="text-2xl font-bold text-foreground">{fmt(todayTicket)}</p>
                 </div>
-                {/* Month stats */}
                 <div className="px-4 pb-4">
                   <p className="text-xs text-muted-foreground mb-1">Pedidos de {monthName}</p>
                   <p className="text-sm font-semibold text-foreground">{monthDelivered.length} pedidos</p>
@@ -935,8 +966,87 @@ const PainelPage = () => {
                 <div className="pl-4 pb-4">
                   <p className="text-xs text-muted-foreground mb-1">Avaliação no App</p>
                   <p className="text-sm font-semibold text-foreground flex items-center gap-1">
-                    <Star size={14} className="text-amber-500 fill-amber-500" /> 4,9
+                    <Star size={14} className="text-amber-500 fill-amber-500" />
+                    {storeRating.count > 0 ? storeRating.avg.toFixed(1) : "—"}
+                    {storeRating.count > 0 && <span className="text-xs text-muted-foreground font-normal">({storeRating.count})</span>}
                   </p>
+                </div>
+              </div>
+            </div>
+
+            {/* ═══ TOP SELLING PRODUCTS ═══ */}
+            <div className="bg-card border border-border rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-lg font-bold text-foreground">Produtos mais vendidos</h3>
+                <button onClick={() => setActiveTab("cardapio")} className="text-sm text-primary font-bold hover:underline">Ver cardápio</button>
+              </div>
+              {topProducts.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">Nenhum produto vendido ainda. Os dados aparecerão após os primeiros pedidos entregues.</p>
+              ) : (
+                <div className="space-y-3">
+                  {topProducts.map((p, i) => {
+                    const maxQty = topProducts[0]?.qty || 1;
+                    return (
+                      <motion.div key={p.name} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
+                        className="flex items-center gap-3">
+                        <span className="text-sm font-bold text-muted-foreground w-5 text-right">{i + 1}º</span>
+                        {p.image ? (
+                          <img src={p.image} alt={p.name} className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                            <UtensilsCrossed size={14} className="text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
+                          <div className="w-full bg-secondary rounded-full h-1.5 mt-1">
+                            <div className="bg-primary rounded-full h-1.5 transition-all" style={{ width: `${(p.qty / maxQty) * 100}%` }} />
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-sm font-bold text-foreground">{p.qty} vendidos</p>
+                          <p className="text-xs text-muted-foreground">{fmt(p.revenue)}</p>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* ═══ ANALYTICS CHARTS ═══ */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Orders by day of week */}
+              <div className="bg-card border border-border rounded-2xl p-6">
+                <h3 className="text-sm font-bold text-foreground mb-4">Pedidos por dia da semana</h3>
+                <div className="flex items-end gap-2 h-32">
+                  {dayCounts.map((c, i) => (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                      <span className="text-[10px] font-bold text-muted-foreground">{c}</span>
+                      <div className="w-full rounded-t-md bg-primary/20 relative" style={{ height: `${(c / maxDayCount) * 100}%`, minHeight: c > 0 ? 4 : 1 }}>
+                        <div className="absolute bottom-0 left-0 right-0 rounded-t-md bg-primary" style={{ height: "100%" }} />
+                      </div>
+                      <span className="text-[10px] text-muted-foreground">{dayNames[i]}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Peak hour & cancellation */}
+              <div className="bg-card border border-border rounded-2xl p-6 space-y-5">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Horário de pico</p>
+                  <p className="text-2xl font-bold text-foreground">{String(peakHour).padStart(2, "0")}:00 - {String(peakHour + 1).padStart(2, "0")}:00</p>
+                  <p className="text-xs text-muted-foreground">{hourCounts[peakHour]} pedidos neste horário</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Taxa de cancelamento</p>
+                  <p className={`text-2xl font-bold ${Number(cancelRate) > 10 ? "text-destructive" : "text-emerald-600"}`}>{cancelRate}%</p>
+                  <p className="text-xs text-muted-foreground">{cancelledCount} de {orders.length} pedidos</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Itens no cardápio</p>
+                  <p className="text-2xl font-bold text-foreground">{menuItemsCount}</p>
                 </div>
               </div>
             </div>
@@ -995,20 +1105,6 @@ const PainelPage = () => {
               </div>
             </div>
 
-            {/* Conquistas / Super Restaurantes */}
-            <div className="bg-card border border-border rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6">
-              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0">
-                <Award size={32} className="text-primary" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-bold text-foreground">Conquistas ZuuFood</h3>
-                <p className="text-sm text-muted-foreground mt-0.5">Complete medalhas, ganhe pontos e troque por prêmios</p>
-              </div>
-              <button className="border border-primary text-primary font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/5 transition-all whitespace-nowrap">
-                Conhecer
-              </button>
-            </div>
-
             {/* Results section */}
             <div>
               <div className="flex items-center justify-between mb-4">
@@ -1043,6 +1139,20 @@ const PainelPage = () => {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Conquistas */}
+            <div className="bg-card border border-border rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6">
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0">
+                <Award size={32} className="text-primary" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-foreground">Conquistas ZuuFood</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">Complete medalhas, ganhe pontos e troque por prêmios</p>
+              </div>
+              <button className="border border-primary text-primary font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/5 transition-all whitespace-nowrap">
+                Conhecer
+              </button>
             </div>
           </div>
         );
