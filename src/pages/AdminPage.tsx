@@ -6,14 +6,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+  AreaChart, Area, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import {
   LayoutDashboard, Users, Store, ShoppingBag, Car, Ticket, Sparkles,
   Star, ArrowLeft, Search, ToggleLeft, ToggleRight, Shield, ChevronRight,
   DollarSign, Bike, MapPin, Megaphone, TrendingUp, Activity, Zap,
-  CheckCircle2, XCircle, Clock, Eye, ChevronDown, Globe, Cpu
+  CheckCircle2, XCircle, Clock, Globe, Cpu
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
