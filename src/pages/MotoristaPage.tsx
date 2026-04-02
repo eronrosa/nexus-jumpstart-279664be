@@ -89,6 +89,9 @@ const MotoristaPage = () => {
 
   const updateForm = (key: keyof RegForm, value: string | boolean) => setRegForm((prev) => ({ ...prev, [key]: value }));
 
+  // GPS tracking: send location every 3 seconds when online or busy
+  useDriverGPSSender(driver?.id || null, isOnline || !!currentRide);
+
   useEffect(() => {
     if (!user) { navigate("/auth"); return; }
     loadDriver();
