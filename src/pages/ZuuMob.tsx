@@ -82,7 +82,13 @@ const ZuuMob = () => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [isRequesting, setIsRequesting] = useState(false);
 
-  // Initialize map & mock drivers
+  // Real-time GPS tracking of driver on the map
+  const activeDriverId = currentRide?.driver_id || null;
+  useDriverGPSReceiver(activeDriverId, useCallback((lat: number, lng: number) => {
+    if (mockDriverMarkerRef.current) {
+      mockDriverMarkerRef.current.setLngLat([lng, lat]);
+    }
+  }, []));
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
     if (!MAPBOX_TOKEN) return;
