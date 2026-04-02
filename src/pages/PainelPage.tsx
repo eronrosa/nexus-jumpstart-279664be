@@ -684,7 +684,7 @@ const PainelPage = () => {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-bold text-foreground text-xl">Dados do Estabelecimento</h3>
                 {!editingStore ? (
-                  <button onClick={() => { setEditName(store.name); setEditCategory(store.category); setEditDescription(store.description ?? ""); setEditingStore(true); }}
+                  <button onClick={startEditing}
                     className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 font-bold transition-colors">
                     <Pencil size={14} /> Editar
                   </button>
@@ -696,28 +696,128 @@ const PainelPage = () => {
                 )}
               </div>
               {editingStore ? (
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-semibold text-foreground">Nome</label>
-                    <input value={editName} onChange={e => setEditName(e.target.value)}
-                      className="mt-1.5 w-full h-11 rounded-xl border border-input bg-background px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Informações básicas</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-semibold text-foreground">Nome</label>
+                        <input value={editName} onChange={e => setEditName(e.target.value)}
+                          className="mt-1.5 w-full h-11 rounded-xl border border-input bg-background px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold text-foreground">Categoria</label>
+                        <select value={editCategory} onChange={e => setEditCategory(e.target.value)}
+                          className="mt-1.5 w-full h-11 rounded-xl border border-input bg-background px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all">
+                          {["Restaurante", "Hamburgueria", "Pizzaria", "Japonês", "Lanchonete", "Farmácia", "Floricultura", "Mercado", "Outro"].map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold text-foreground">Descrição</label>
+                      <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)} rows={3}
+                        className="mt-1.5 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all resize-none" />
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-sm font-semibold text-foreground">Categoria</label>
-                    <select value={editCategory} onChange={e => setEditCategory(e.target.value)}
-                      className="mt-1.5 w-full h-11 rounded-xl border border-input bg-background px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all">
-                      {["Restaurante", "Hamburgueria", "Pizzaria", "Japonês", "Lanchonete", "Farmácia", "Floricultura", "Mercado", "Outro"].map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
+
+                  <div className="space-y-4">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Endereço</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="md:col-span-2">
+                        <label className="text-sm font-semibold text-foreground">Rua</label>
+                        <input value={editStreet} onChange={e => setEditStreet(e.target.value)} placeholder="Rua, Avenida..."
+                          className="mt-1.5 w-full h-11 rounded-xl border border-input bg-background px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold text-foreground">Número</label>
+                        <input value={editNumber} onChange={e => setEditNumber(e.target.value)} placeholder="123"
+                          className="mt-1.5 w-full h-11 rounded-xl border border-input bg-background px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div>
+                        <label className="text-sm font-semibold text-foreground">Bairro</label>
+                        <input value={editNeighborhood} onChange={e => setEditNeighborhood(e.target.value)} placeholder="Bairro"
+                          className="mt-1.5 w-full h-11 rounded-xl border border-input bg-background px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold text-foreground">Cidade</label>
+                        <input value={editCity} onChange={e => setEditCity(e.target.value)} placeholder="Cidade"
+                          className="mt-1.5 w-full h-11 rounded-xl border border-input bg-background px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold text-foreground">UF</label>
+                        <input value={editState} onChange={e => setEditState(e.target.value)} placeholder="SP" maxLength={2}
+                          className="mt-1.5 w-full h-11 rounded-xl border border-input bg-background px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold text-foreground">CEP</label>
+                        <input value={editZip} onChange={e => setEditZip(e.target.value)} placeholder="00000-000"
+                          className="mt-1.5 w-full h-11 rounded-xl border border-input bg-background px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-sm font-semibold text-foreground">Descrição</label>
-                    <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)} rows={3}
-                      className="mt-1.5 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all resize-none" />
+
+                  <div className="space-y-4">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Horário de funcionamento</p>
+                    <div className="space-y-2">
+                      {editHours.map((h, idx) => (
+                        <div key={h.day} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${h.closed ? "bg-muted/30 border-border" : "bg-background border-input"}`}>
+                          <span className="text-sm font-semibold text-foreground w-24 shrink-0">{h.day}</span>
+                          <button onClick={() => setEditHours(prev => prev.map((x, i) => i === idx ? { ...x, closed: !x.closed } : x))}
+                            className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition-all ${h.closed ? "bg-destructive/10 text-destructive border-destructive/20" : "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"}`}>
+                            {h.closed ? "Fechado" : "Aberto"}
+                          </button>
+                          {!h.closed && (
+                            <>
+                              <input type="time" value={h.open}
+                                onChange={e => setEditHours(prev => prev.map((x, i) => i === idx ? { ...x, open: e.target.value } : x))}
+                                className="h-9 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                              <span className="text-muted-foreground text-sm">às</span>
+                              <input type="time" value={h.close}
+                                onChange={e => setEditHours(prev => prev.map((x, i) => i === idx ? { ...x, close: e.target.value } : x))}
+                                className="h-9 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {store.description && <p className="text-sm text-muted-foreground leading-relaxed">{store.description}</p>}
+
+                  {(store.address_street || store.address_city) && (
+                    <div className="bg-muted/30 rounded-xl p-4">
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">Endereço</p>
+                      <p className="text-sm text-foreground">
+                        {[store.address_street, store.address_number].filter(Boolean).join(", ")}
+                        {store.address_neighborhood && ` — ${store.address_neighborhood}`}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {[store.address_city, store.address_state].filter(Boolean).join(" - ")}
+                        {store.address_zip && ` • CEP ${store.address_zip}`}
+                      </p>
+                    </div>
+                  )}
+
+                  {store.opening_hours && (store.opening_hours as StoreHours[]).length > 0 && (
+                    <div className="bg-muted/30 rounded-xl p-4">
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">Horário de funcionamento</p>
+                      <div className="space-y-1.5">
+                        {(store.opening_hours as StoreHours[]).map(h => (
+                          <div key={h.day} className="flex items-center justify-between text-sm">
+                            <span className="text-foreground font-medium">{h.day}</span>
+                            <span className={h.closed ? "text-destructive font-semibold" : "text-muted-foreground"}>
+                              {h.closed ? "Fechado" : `${h.open} — ${h.close}`}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="bg-muted/30 rounded-xl p-4">
                     <p className="text-xs font-semibold text-muted-foreground mb-1">ID da loja</p>
                     <code className="text-xs bg-background px-3 py-1.5 rounded-lg border border-border select-all">{store.id}</code>
