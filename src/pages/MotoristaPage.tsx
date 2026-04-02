@@ -10,7 +10,7 @@ import {
   Car, DollarSign, Star, MapPin, Power, PowerOff, CheckCircle,
   XCircle, TrendingUp, ArrowLeft, ArrowRight, User, FileText,
   CreditCard, Eye, Wallet, BarChart3, Clock, AlertCircle, Settings,
-  Phone, LogOut, MessageCircle, Bike
+  Phone, LogOut, MessageCircle, Bike, Navigation
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
