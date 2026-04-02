@@ -57,6 +57,25 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        zm: {
+          bg: {
+            primary: "hsl(var(--zm-bg-primary))",
+            secondary: "hsl(var(--zm-bg-secondary))",
+            card: "hsl(var(--zm-bg-card))",
+            elevated: "hsl(var(--zm-bg-elevated))",
+          },
+          green: {
+            DEFAULT: "hsl(var(--zm-green))",
+            dim: "hsl(var(--zm-green-dim))",
+          },
+          text: {
+            primary: "hsl(var(--zm-text-primary))",
+            secondary: "hsl(var(--zm-text-secondary))",
+            muted: "hsl(var(--zm-text-muted))",
+          },
+          danger: "hsl(var(--zm-danger))",
+          warning: "hsl(var(--zm-warning))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
