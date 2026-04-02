@@ -7,10 +7,11 @@ import {
   Store, Package, Clock, CheckCircle, ChefHat, XCircle,
   ChevronDown, ChevronUp, ArrowLeft, Plus, Pencil, Trash2, Save, X,
   UtensilsCrossed, ImagePlus, ToggleLeft, ToggleRight,
-  LayoutDashboard, History, Bell, MapPin,
+  LayoutDashboard, History, Bell,
   Menu as MenuIcon, Activity, Zap, Search,
-  Star, TrendingUp, FileText, CreditCard, HelpCircle,
-  MessageSquare, Timer, DollarSign, CircleDot
+  Star, TrendingUp, CreditCard,
+  DollarSign, CircleDot,
+  Gift, MapPinned, UserCircle, Award, Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardTab from "@/components/DashboardTab";
@@ -61,8 +62,8 @@ function SidebarSection({ title }: { title: string }) {
 }
 
 /* ─── Sidebar Nav Item ─── */
-function NavItem({ icon: Icon, label, active, badge, onClick, collapsed }: {
-  icon: React.ElementType; label: string; active: boolean; badge?: number; onClick: () => void; collapsed?: boolean;
+function NavItem({ icon: Icon, label, active, badge, badgeText, onClick, collapsed }: {
+  icon: React.ElementType; label: string; active: boolean; badge?: number; badgeText?: string; onClick: () => void; collapsed?: boolean;
 }) {
   if (collapsed) {
     return (
@@ -86,6 +87,11 @@ function NavItem({ icon: Icon, label, active, badge, onClick, collapsed }: {
       }`}>
       <Icon size={16} className={active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"} />
       <span className="flex-1 text-left">{label}</span>
+      {badgeText && (
+        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+          active ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary text-primary-foreground"
+        }`}>{badgeText}</span>
+      )}
       {badge != null && badge > 0 && (
         <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center ${
           active ? "bg-primary-foreground/20 text-primary-foreground" : "bg-destructive text-destructive-foreground"
@@ -622,7 +628,7 @@ const PainelPage = () => {
   const lastWeekOrders = orders.filter(o => { const d = new Date(o.created_at); const now = new Date(); const diff = (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24); return diff > 7 && diff <= 14; });
   const lastWeekRevenue = lastWeekOrders.filter(o => o.status === "entregue").reduce((s, o) => s + Number(o.total), 0);
 
-  const storeAddress = [store.address_street, store.address_number].filter(Boolean).join(", ") +
+  const _storeAddress = [store.address_street, store.address_number].filter(Boolean).join(", ") +
     (store.address_neighborhood ? `, ${store.address_neighborhood}` : "") +
     (store.address_city ? `, ${store.address_city}` : "") +
     (store.address_state ? `, ${store.address_state}` : "");
@@ -634,24 +640,31 @@ const PainelPage = () => {
       items: [{ id: "inicio", icon: LayoutDashboard, label: "Início" }],
     },
     {
-      title: "GERENCIAR LOJA",
+      title: null,
       items: [
-        { id: "pedidos", icon: Package, label: "Pedidos", badge: pendingOrders.length + preparingOrders.length },
         { id: "avaliações", icon: Star, label: "Avaliações" },
-        { id: "performance", icon: TrendingUp, label: "Performance geral" },
-        { id: "faturas", icon: FileText, label: "Faturas" },
-        { id: "cardapio", icon: UtensilsCrossed, label: "Cardápio" },
-        { id: "tempo_entrega", icon: Timer, label: "Tempo de entrega" },
-        { id: "pagamento", icon: CreditCard, label: "Formas de pagamento" },
-        { id: "horario", icon: Clock, label: "Horário de funcionamento" },
-        { id: "descricao", icon: Pencil, label: "Descrição e logo" },
+        { id: "pedidos", icon: Package, label: "Pedidos", badge: pendingOrders.length + preparingOrders.length },
+        { id: "financeiro", icon: DollarSign, label: "Financeiro" },
       ],
     },
     {
-      title: "SERVIÇOS",
+      title: null,
       items: [
-        { id: "ajuda", icon: HelpCircle, label: "Ajuda" },
-        { id: "chamados", icon: MessageSquare, label: "Chamados" },
+        { id: "cardapio", icon: UtensilsCrossed, label: "Cardápio" },
+        { id: "horario", icon: Clock, label: "Horários" },
+        { id: "areas_entrega", icon: MapPinned, label: "Áreas de entrega" },
+        { id: "pagamento", icon: CreditCard, label: "Formas de pagamento" },
+        { id: "promocoes", icon: Gift, label: "Promoções" },
+      ],
+    },
+    {
+      title: null,
+      items: [
+        { id: "servicos", icon: Sparkles, label: "Serviços", badgeText: "NOVO!" },
+        { id: "perfil", icon: UserCircle, label: "Perfil" },
+        { id: "performance", icon: TrendingUp, label: "Desempenho" },
+        { id: "recomendacoes", icon: Award, label: "Recomendações" },
+        { id: "descricao", icon: Pencil, label: "Descrição e logo" },
       ],
     },
   ];
@@ -659,35 +672,84 @@ const PainelPage = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "inicio":
+        const todayDelivered = deliveredOrders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString());
+        const todayTicket = todayDelivered.length > 0 ? todayRevenue / todayDelivered.length : 0;
+        const monthOrders = orders.filter(o => { const d = new Date(o.created_at); const now = new Date(); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); });
+        const monthDelivered = monthOrders.filter(o => o.status === "entregue");
+        const monthRevenue = monthDelivered.reduce((s, o) => s + Number(o.total), 0);
+        const monthTicket = monthDelivered.length > 0 ? monthRevenue / monthDelivered.length : 0;
+        const monthName = new Date().toLocaleDateString("pt-BR", { month: "long" });
+
         return (
           <div className="space-y-6">
-            {/* Store Header Card (iFood style) */}
-            <div className="bg-card border border-border rounded-2xl overflow-hidden">
-              <div className="p-6 flex flex-col md:flex-row items-start md:items-center gap-6">
-                <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0 border-2 border-border shadow-sm">
-                  {store.logo_url ? (
-                    <img src={store.logo_url} alt="Logo" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                      <Store size={32} className="text-primary" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-xl font-bold text-foreground">{store.name}</h2>
-                  {storeAddress && <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1"><MapPin size={13} />{storeAddress}</p>}
-                  {store.description && <p className="text-sm text-muted-foreground mt-1">{store.description}</p>}
-                </div>
-                <button onClick={() => setActiveTab("descricao")}
-                  className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 font-bold transition-colors shrink-0">
-                  <Pencil size={14} /> Editar descrição e logo
-                </button>
+            {/* Status banner */}
+            <div className="bg-card border border-border rounded-2xl p-5 flex items-center gap-4">
+              <div className={`w-3 h-3 rounded-full shrink-0 ${store.is_active ? "bg-emerald-500" : "bg-destructive"}`} />
+              <div>
+                <p className={`text-sm font-bold ${store.is_active ? "text-emerald-600" : "text-destructive"}`}>
+                  {store.is_active ? "Restaurante aberto" : "Restaurante fechado"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {store.is_active ? "Dentro do horário programado" : "Fora do horário programado"}
+                </p>
               </div>
             </div>
 
-            {/* Quick info cards row (iFood style) */}
+            {/* Recommendation banner */}
+            <div className="bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center gap-4">
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <Zap size={20} className="text-primary" />
+                  Abra nos horários que os clientes mais procuram você
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Estabelecimentos com seu tipo de cozinha vendem bastante nestes horários.
+                </p>
+              </div>
+              <button onClick={() => setActiveTab("horario")}
+                className="bg-primary text-primary-foreground font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-all shadow-md shadow-primary/20 whitespace-nowrap">
+                Ver recomendação
+              </button>
+            </div>
+
+            {/* Acompanhamento tempo real (iFood clone) */}
+            <div className="bg-card border border-border rounded-2xl p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <h3 className="text-lg font-bold text-foreground">Acompanhamento</h3>
+                <span className="text-sm text-muted-foreground">tempo real</span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-0 divide-x divide-border">
+                {/* Today stats - highlighted */}
+                <div className="pr-4 border-b-4 border-primary pb-4">
+                  <p className="text-xs text-muted-foreground mb-1">Pedidos de hoje</p>
+                  <p className="text-2xl font-bold text-foreground">{todayDelivered.length} <span className="text-sm font-normal text-muted-foreground">pedidos</span></p>
+                  <p className="text-xs text-muted-foreground mt-1">{fmt(todayRevenue)}</p>
+                </div>
+                <div className="px-4 border-b-4 border-primary pb-4">
+                  <p className="text-xs text-muted-foreground mb-1">Ticket médio de hoje</p>
+                  <p className="text-2xl font-bold text-foreground">{fmt(todayTicket)}</p>
+                </div>
+                {/* Month stats */}
+                <div className="px-4 pb-4">
+                  <p className="text-xs text-muted-foreground mb-1">Pedidos de {monthName}</p>
+                  <p className="text-sm font-semibold text-foreground">{monthDelivered.length} pedidos</p>
+                  <p className="text-xs text-muted-foreground mt-1">{fmt(monthRevenue)}</p>
+                </div>
+                <div className="px-4 pb-4">
+                  <p className="text-xs text-muted-foreground mb-1">Ticket médio de {monthName}</p>
+                  <p className="text-sm font-semibold text-foreground">{fmt(monthTicket)}</p>
+                </div>
+                <div className="pl-4 pb-4">
+                  <p className="text-xs text-muted-foreground mb-1">Avaliação no App</p>
+                  <p className="text-sm font-semibold text-foreground flex items-center gap-1">
+                    <Star size={14} className="text-amber-500 fill-amber-500" /> 4,9
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick info cards row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Delivery config card */}
               <div className="bg-card border border-border rounded-2xl p-5">
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Configurações de entrega</p>
                 <div className="space-y-3">
@@ -699,34 +761,30 @@ const PainelPage = () => {
                     <p className="text-sm text-muted-foreground">Tempo de entrega</p>
                     <div className="flex items-center gap-2">
                       <p className="text-lg font-bold text-foreground">60 minutos</p>
-                      <button onClick={() => setActiveTab("tempo_entrega")} className="text-xs text-primary font-bold hover:underline">Alterar</button>
+                      <button onClick={() => setActiveTab("areas_entrega")} className="text-xs text-primary font-bold hover:underline">Alterar</button>
                     </div>
                   </div>
                 </div>
               </div>
-
-              {/* Informes card */}
               <div className="bg-card border border-border rounded-2xl p-5">
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Informes</p>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-foreground">Dicas de Promoções</p>
-                      <button className="text-xs text-primary font-bold hover:underline">Ler mais</button>
+                      <button onClick={() => setActiveTab("promocoes")} className="text-xs text-primary font-bold hover:underline">Ler mais</button>
                     </div>
                     <span className="text-[10px] font-bold bg-primary text-primary-foreground px-2 py-0.5 rounded">NOVO</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-foreground">Atendimento Financeiro</p>
-                      <button className="text-xs text-primary font-bold hover:underline">Ler mais</button>
+                      <button onClick={() => setActiveTab("financeiro")} className="text-xs text-primary font-bold hover:underline">Ler mais</button>
                     </div>
                     <span className="text-[10px] font-bold bg-primary text-primary-foreground px-2 py-0.5 rounded">NOVO</span>
                   </div>
                 </div>
               </div>
-
-              {/* Recent invoices card */}
               <div className="bg-card border border-border rounded-2xl p-5">
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Últimas faturas</p>
                 {deliveredOrders.length === 0 ? (
@@ -744,7 +802,21 @@ const PainelPage = () => {
               </div>
             </div>
 
-            {/* Results section (iFood style) */}
+            {/* Conquistas / Super Restaurantes */}
+            <div className="bg-card border border-border rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6">
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0">
+                <Award size={32} className="text-primary" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-foreground">Conquistas ZuuFood</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">Complete medalhas, ganhe pontos e troque por prêmios</p>
+              </div>
+              <button className="border border-primary text-primary font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/5 transition-all whitespace-nowrap">
+                Conhecer
+              </button>
+            </div>
+
+            {/* Results section */}
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-foreground">Resultados</h3>
@@ -778,26 +850,6 @@ const PainelPage = () => {
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* KPI strip */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[
-                { label: "Pendentes", value: pendingOrders.length, icon: Clock, color: "text-amber-600", bg: "bg-amber-500/10", borderColor: "border-amber-500/10" },
-                { label: "Em Preparo", value: preparingOrders.length, icon: ChefHat, color: "text-blue-600", bg: "bg-blue-500/10", borderColor: "border-blue-500/10" },
-                { label: "Entregues hoje", value: deliveredOrders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString()).length, icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-500/10", borderColor: "border-emerald-500/10" },
-                { label: "Faturamento hoje", value: todayRevenue, icon: DollarSign, color: "text-primary", bg: "bg-primary/10", borderColor: "border-primary/10", isCurrency: true },
-              ].map(stat => (
-                <div key={stat.label} className={`${stat.bg} border ${stat.borderColor} rounded-2xl p-4 flex items-center gap-3`}>
-                  <div className={`w-10 h-10 ${stat.bg} rounded-xl flex items-center justify-center`}>
-                    <stat.icon size={18} className={stat.color} />
-                  </div>
-                  <div>
-                    <p className={`text-xl font-bold ${stat.color}`}>{'isCurrency' in stat && stat.isCurrency ? fmt(stat.value) : stat.value}</p>
-                    <p className="text-xs text-muted-foreground font-medium">{stat.label}</p>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         );
@@ -1063,16 +1115,21 @@ const PainelPage = () => {
 
       case "avaliações":
         return <PlaceholderTab icon={Star} title="Avaliações" description="Veja o que seus clientes estão dizendo sobre sua loja e responda avaliações" />;
-      case "faturas":
-        return <PlaceholderTab icon={FileText} title="Faturas" description="Acompanhe suas faturas, taxas e repasses financeiros" />;
-      case "tempo_entrega":
-        return <PlaceholderTab icon={Timer} title="Tempo de entrega" description="Configure os tempos de preparo e entrega dos seus pedidos" />;
+      case "financeiro":
+        return <PlaceholderTab icon={DollarSign} title="Financeiro" description="Acompanhe suas faturas, taxas, repasses e extrato financeiro detalhado" />;
+      case "areas_entrega":
+        return <PlaceholderTab icon={MapPinned} title="Áreas de entrega" description="Configure o raio de entrega e taxas por região do seu estabelecimento" />;
       case "pagamento":
         return <PlaceholderTab icon={CreditCard} title="Formas de pagamento" description="Gerencie as formas de pagamento aceitas pelo seu estabelecimento" />;
-      case "ajuda":
-        return <PlaceholderTab icon={HelpCircle} title="Central de Ajuda" description="Encontre respostas para suas dúvidas e tutoriais de uso da plataforma" />;
-      case "chamados":
-        return <PlaceholderTab icon={MessageSquare} title="Chamados" description="Abra e acompanhe chamados de suporte técnico ou operacional" />;
+      case "promocoes":
+        return <PlaceholderTab icon={Gift} title="Promoções" description="Crie cupons, combos e ofertas especiais para atrair mais clientes" />;
+      case "servicos":
+        return <PlaceholderTab icon={Sparkles} title="Serviços" description="Descubra ferramentas e integrações para impulsionar suas vendas" />;
+      case "perfil":
+        return <PlaceholderTab icon={UserCircle} title="Perfil" description="Gerencie seus dados pessoais, documentos e informações do responsável" />;
+
+      case "recomendacoes":
+        return <PlaceholderTab icon={Award} title="Recomendações" description="Receba dicas personalizadas para melhorar o desempenho da sua loja" />;
 
       default:
         return null;
@@ -1085,31 +1142,35 @@ const PainelPage = () => {
     <div className="min-h-screen bg-background flex">
       {/* Desktop Sidebar */}
       <aside className={`hidden lg:flex flex-col bg-card border-r border-border transition-all duration-300 shrink-0 ${sidebarOpen ? "w-[260px]" : "w-[72px]"}`}>
-        {/* Brand header */}
-        <div className="p-4 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/70 rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
-              <Store size={20} className="text-primary-foreground" />
-            </div>
-            {sidebarOpen && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-w-0">
-                <p className="font-bold text-foreground text-sm truncate">{store.name}</p>
-                <p className="text-[11px] text-muted-foreground truncate">{store.category}</p>
-              </motion.div>
-            )}
-          </div>
+        {/* Store status + brand */}
+        <div className="p-4 border-b border-border space-y-3">
+          {sidebarOpen && (
+            <button onClick={handleToggleActive} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-secondary/50 transition-all">
+              <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${store.is_active ? "bg-emerald-500" : "bg-destructive"}`} />
+              <div className="text-left">
+                <p className={`text-xs font-bold ${store.is_active ? "text-emerald-600" : "text-destructive"}`}>
+                  {store.is_active ? "Restaurante aberto" : "Restaurante fechado"}
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  {store.is_active ? "Dentro do horário programado" : "Fora do horário"}
+                </p>
+              </div>
+            </button>
+          )}
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-3 pb-3">
           {navSections.map((section, sIdx) => (
             <div key={sIdx}>
+              {sIdx > 0 && <div className="border-t border-border my-2 mx-1" />}
               {sidebarOpen && section.title && <SidebarSection title={section.title} />}
-              {!sidebarOpen && section.title && <div className="border-t border-border my-2" />}
               <div className="space-y-0.5">
                 {section.items.map(item => (
                   <NavItem key={item.id} icon={item.icon} label={item.label} active={activeTab === item.id}
-                    badge={'badge' in item ? (item as any).badge : undefined} onClick={() => setActiveTab(item.id)} collapsed={!sidebarOpen} />
+                    badge={'badge' in item ? (item as any).badge : undefined}
+                    badgeText={'badgeText' in item ? (item as any).badgeText : undefined}
+                    onClick={() => setActiveTab(item.id)} collapsed={!sidebarOpen} />
                 ))}
               </div>
             </div>
