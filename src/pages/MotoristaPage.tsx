@@ -567,6 +567,22 @@ const MotoristaPage = () => {
               </div>
               <p className="text-sm font-semibold" style={{ color: ZM.textPri }}>{isOnline ? "Aguardando corridas..." : "Você está offline"}</p>
               <p className="text-xs" style={{ color: ZM.textSec }}>{isOnline ? "Fique atento ao celular" : "Fique online para receber corridas"}</p>
+              {/* GPS Indicator */}
+              {isOnline && (
+                <div className="flex items-center gap-2 mt-2 px-3 py-1.5 rounded-lg" style={{ backgroundColor: ZM.bgElev, border: `1px solid ${ZM.border}` }}>
+                  <div className="relative flex items-center justify-center">
+                    <Navigation className="h-3.5 w-3.5" style={{ color: lastGpsUpdate ? ZM.green : ZM.textMut }} />
+                    {lastGpsUpdate && (
+                      <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full animate-ping" style={{ backgroundColor: ZM.green, opacity: 0.6 }} />
+                    )}
+                  </div>
+                  <span className="text-[11px] font-mono" style={{ color: lastGpsUpdate ? ZM.green : ZM.textMut }}>
+                    {lastGpsUpdate
+                      ? `GPS atualizado: ${lastGpsUpdate.toLocaleTimeString("pt-BR")}`
+                      : "GPS aguardando sinal..."}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         )}
