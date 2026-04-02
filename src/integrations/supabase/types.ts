@@ -754,6 +754,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_update_driver: {
+        Args: { _driver_id: string; _is_approved: boolean }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
