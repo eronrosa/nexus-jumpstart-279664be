@@ -4,6 +4,9 @@ import { motion } from "framer-motion";
 import { ArrowLeft, ShoppingBag, Clock, ChevronDown, ChevronUp, Package } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "sonner";
+import { RotateCcw } from "lucide-react";
 
 interface OrderItem {
   id: string;
