@@ -34,7 +34,7 @@ const TABS: { id: Tab; label: string; icon: any }[] = [
   { id: "services", label: "Serviços", icon: Sparkles },
 ];
 
-const GLOW = "shadow-[0_0_30px_-5px_hsl(var(--primary)/0.3)]";
+
 
 export default function AdminPage() {
   const { user, loading: authLoading } = useAuth();
