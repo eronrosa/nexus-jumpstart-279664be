@@ -694,6 +694,7 @@ const PainelPage = () => {
   const [storeLoading, setStoreLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("inicio");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [menuItemsCount, setMenuItemsCount] = useState(0);
 
   const [editingStore, setEditingStore] = useState(false);
   const [editName, setEditName] = useState("");
