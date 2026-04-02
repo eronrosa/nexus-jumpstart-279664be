@@ -505,6 +505,24 @@ const PainelPage = () => {
     toast.success("Dados atualizados!");
   };
 
+  const handleImageUpload = async (file: File, type: "logo" | "cover") => {
+    if (!store) return;
+    const setter = type === "logo" ? setUploadingLogo : setUploadingCover;
+    setter(true);
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `${store.id}/${type}_${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from("menu-images").upload(path, file, { upsert: true });
+    if (upErr) { toast.error("Erro ao enviar imagem"); setter(false); return; }
+    const { data: urlData } = supabase.storage.from("menu-images").getPublicUrl(path);
+    const url = urlData.publicUrl;
+    const updateCol = type === "logo" ? { logo_url: url } : { cover_url: url };
+    const { error: dbErr } = await supabase.from("stores").update(updateCol).eq("id", store.id);
+    if (dbErr) { toast.error("Erro ao salvar URL"); setter(false); return; }
+    setStore({ ...store, ...updateCol });
+    setter(false);
+    toast.success(`${type === "logo" ? "Logo" : "Capa"} atualizada!`);
+  };
+
   if (authLoading || storeLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
