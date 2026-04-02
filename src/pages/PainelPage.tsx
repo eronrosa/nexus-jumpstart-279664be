@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardTab from "@/components/DashboardTab";
+import PromocoesTab from "@/components/PromocoesTab";
 
 /* ─── Types ─── */
 interface OrderItem {
