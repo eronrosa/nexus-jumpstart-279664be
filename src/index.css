@@ -38,6 +38,38 @@
   }
 }
 
+/* ZuuMob Urban Dark Premium Design System */
+.zuumob-dark {
+  --zm-bg-primary: 0 0% 4%;
+  --zm-bg-secondary: 225 15% 9%;
+  --zm-bg-card: 220 14% 12%;
+  --zm-bg-elevated: 220 13% 14%;
+  --zm-green: 152 100% 45%;
+  --zm-green-dim: 152 100% 39%;
+  --zm-text-primary: 213 68% 96%;
+  --zm-text-secondary: 214 7% 57%;
+  --zm-text-muted: 215 7% 31%;
+  --zm-border: 213 68% 96% / 0.06;
+  --zm-border-active: 152 100% 45% / 0.3;
+  --zm-danger: 4 100% 64%;
+  --zm-warning: 18 100% 60%;
+  --zm-green-glow: 0 0 24px hsl(152 100% 45% / 0.15);
+}
+
+.zuumob-dark .zm-bg-primary { background-color: hsl(var(--zm-bg-primary)); }
+.zuumob-dark .zm-bg-secondary { background-color: hsl(var(--zm-bg-secondary)); }
+.zuumob-dark .zm-bg-card { background-color: hsl(var(--zm-bg-card)); }
+.zuumob-dark .zm-bg-elevated { background-color: hsl(var(--zm-bg-elevated)); }
+.zuumob-dark .zm-text-primary { color: hsl(var(--zm-text-primary)); }
+.zuumob-dark .zm-text-secondary { color: hsl(var(--zm-text-secondary)); }
+.zuumob-dark .zm-text-muted { color: hsl(var(--zm-text-muted)); }
+.zuumob-dark .zm-green { color: hsl(var(--zm-green)); }
+.zuumob-dark .zm-bg-green { background-color: hsl(var(--zm-green)); }
+
+.font-syne { font-family: 'Syne', sans-serif; }
+.font-dm { font-family: 'DM Sans', sans-serif; }
+.font-mono-jb { font-family: 'JetBrains Mono', monospace; }
+
 @layer base {
   * {
     @apply border-border;
