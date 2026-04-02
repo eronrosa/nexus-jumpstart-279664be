@@ -65,6 +65,24 @@ const PedidosPage = () => {
     };
 
     fetchOrders();
+
+    // Realtime subscription for order status updates
+    const channel = supabase
+      .channel('orders-status')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'orders' },
+        (payload) => {
+          setOrders(prev =>
+            prev.map(o => o.id === payload.new.id ? { ...o, ...payload.new } : o)
+          );
+          const label = statusLabel[(payload.new as any).status] ?? (payload.new as any).status;
+          toast.info(`Pedido atualizado: ${label}`);
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [user, authLoading, navigate]);
 
   const toggle = (id: string) => setExpanded(prev => prev === id ? null : id);
