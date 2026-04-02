@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 const services = [
   { icon: Utensils, label: "ZuuFood", color: "bg-orange-50 text-orange-500", path: "/zuufood" },
-  { icon: Car, label: "ZuuMob", color: "bg-blue-50 text-blue-500", path: "/" },
+  { icon: Car, label: "ZuuMob", color: "bg-blue-50 text-blue-500", path: "/zuumob" },
   { icon: Sparkles, label: "ZUZU", color: "bg-purple-50 text-purple-500", path: "/" },
   { icon: Briefcase, label: "ZuuPro", color: "bg-yellow-50 text-yellow-600", path: "/" },
   { icon: Wrench, label: "ZuuWork", color: "bg-gray-100 text-gray-500", path: "/" },
