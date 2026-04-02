@@ -12,6 +12,8 @@ import ProfilePage from "./pages/ProfilePage";
 import ZuuFood from "./pages/ZuuFood";
 import PedidosPage from "./pages/PedidosPage";
 import PainelPage from "./pages/PainelPage";
+import ZuuMob from "./pages/ZuuMob";
+import MotoristaPage from "./pages/MotoristaPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
