@@ -21,10 +21,23 @@ interface Order {
   id: string; restaurant_name: string; status: string; total: number; delivery_fee: number;
   created_at: string; user_id: string; restaurant_id: string; order_items: OrderItem[];
 }
+interface StoreHours { day: string; open: string; close: string; closed: boolean; }
 interface StoreData {
   id: string; owner_id: string; name: string; category: string;
   logo_url: string | null; cover_url: string | null; description: string | null; is_active: boolean;
+  address_street: string | null; address_number: string | null; address_neighborhood: string | null;
+  address_city: string | null; address_state: string | null; address_zip: string | null;
+  opening_hours: StoreHours[] | null;
 }
+const DEFAULT_HOURS: StoreHours[] = [
+  { day: "Segunda", open: "08:00", close: "18:00", closed: false },
+  { day: "Terça", open: "08:00", close: "18:00", closed: false },
+  { day: "Quarta", open: "08:00", close: "18:00", closed: false },
+  { day: "Quinta", open: "08:00", close: "18:00", closed: false },
+  { day: "Sexta", open: "08:00", close: "18:00", closed: false },
+  { day: "Sábado", open: "09:00", close: "14:00", closed: false },
+  { day: "Domingo", open: "00:00", close: "00:00", closed: true },
+];
 interface MenuItem {
   id: string; store_id: string; name: string; category: string; price: number;
   description: string | null; image_url: string | null; is_available: boolean; sort_order: number;
