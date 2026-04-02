@@ -94,7 +94,7 @@ function StoreSetupForm({ onCreated }: { onCreated: (s: StoreData) => void }) {
     setSaving(false);
     if (error) { toast.error("Erro ao criar loja"); return; }
     toast.success("Loja criada com sucesso!");
-    onCreated(data as StoreData);
+    onCreated(data as unknown as StoreData);
   };
 
   return (
