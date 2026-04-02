@@ -663,7 +663,8 @@ const PainelPage = () => {
         { id: "servicos", icon: Sparkles, label: "Serviços", badgeText: "NOVO!" },
         { id: "perfil", icon: UserCircle, label: "Perfil" },
         { id: "performance", icon: TrendingUp, label: "Desempenho" },
-        { id: "descricao", icon: Award, label: "Recomendações" },
+        { id: "recomendacoes", icon: Award, label: "Recomendações" },
+        { id: "descricao", icon: Pencil, label: "Descrição e logo" },
       ],
     },
   ];
