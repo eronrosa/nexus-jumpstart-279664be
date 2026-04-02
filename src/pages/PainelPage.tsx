@@ -615,7 +615,7 @@ const PainelPage = () => {
   const preparingOrders = orders.filter(o => o.status === "em_preparo");
   const completedOrders = orders.filter(o => o.status === "entregue" || o.status === "cancelado");
   const deliveredOrders = orders.filter(o => o.status === "entregue");
-  const todayOrders = orders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString());
+  const _todayOrders = orders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString());
   const todayRevenue = deliveredOrders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString()).reduce((s, o) => s + Number(o.total), 0);
   const weekOrders = orders.filter(o => { const d = new Date(o.created_at); const now = new Date(); const diff = (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24); return diff <= 7; });
   const weekRevenue = weekOrders.filter(o => o.status === "entregue").reduce((s, o) => s + Number(o.total), 0);
