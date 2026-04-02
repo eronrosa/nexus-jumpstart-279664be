@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import {
   Store, Package, Clock, CheckCircle, ChefHat, XCircle,
-  ChevronDown, ChevronUp, ArrowLeft, Plus, Pencil, Trash2, Save, X
+  ChevronDown, ChevronUp, ArrowLeft, Plus, Pencil, Trash2, Save, X,
+  UtensilsCrossed, ImagePlus, ToggleLeft, ToggleRight, GripVertical
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -42,6 +43,18 @@ interface StoreData {
   is_active: boolean;
 }
 
+interface MenuItem {
+  id: string;
+  store_id: string;
+  name: string;
+  category: string;
+  price: number;
+  description: string | null;
+  image_url: string | null;
+  is_available: boolean;
+  sort_order: number;
+}
+
 const fmt = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
 const STATUS_FLOW = ["pendente", "em_preparo", "entregue", "cancelado"];
@@ -52,6 +65,8 @@ const statusConfig: Record<string, { label: string; icon: React.ElementType; col
   cancelado: { label: "Cancelado", icon: XCircle, color: "bg-red-500/10 text-red-600 border-red-500/30" },
 };
 
+const MENU_CATEGORIES = ["Entradas", "Pratos", "Lanches", "Bebidas", "Sobremesas", "Combos", "Outro"];
+
 /* ─── Store Setup Form ─── */
 function StoreSetupForm({ onCreated }: { onCreated: (s: StoreData) => void }) {
   const { user } = useAuth();
@@ -59,7 +74,6 @@ function StoreSetupForm({ onCreated }: { onCreated: (s: StoreData) => void }) {
   const [category, setCategory] = useState("Restaurante");
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
-
   const categories = ["Restaurante", "Hamburgueria", "Pizzaria", "Japonês", "Lanchonete", "Farmácia", "Floricultura", "Mercado", "Outro"];
 
   const handleCreate = async () => {
@@ -174,14 +188,11 @@ function OrderCard({ order, onStatusChange }: { order: Order; onStatusChange: (i
               <span>Total</span>
               <span className="text-primary">{fmt(order.total)}</span>
             </div>
-
-            {/* Status action buttons */}
             <div className="flex gap-2 pt-2">
               {next && (
                 <button onClick={() => onStatusChange(order.id, next)}
                   className="flex-1 bg-primary text-primary-foreground font-semibold py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
-                  {statusConfig[next].icon && <span>{next === "em_preparo" ? "🔥" : "✅"}</span>}
-                  Marcar como {statusConfig[next].label}
+                  {next === "em_preparo" ? "🔥" : "✅"} Marcar como {statusConfig[next].label}
                 </button>
               )}
               {order.status !== "cancelado" && order.status !== "entregue" && (
@@ -198,6 +209,284 @@ function OrderCard({ order, onStatusChange }: { order: Order; onStatusChange: (i
   );
 }
 
+/* ─── Menu Item Form (Add/Edit) ─── */
+function MenuItemForm({ storeId, item, onSaved, onCancel }: {
+  storeId: string;
+  item?: MenuItem | null;
+  onSaved: (item: MenuItem) => void;
+  onCancel: () => void;
+}) {
+  const [name, setName] = useState(item?.name ?? "");
+  const [category, setCategory] = useState(item?.category ?? "Pratos");
+  const [price, setPrice] = useState(item?.price?.toString() ?? "");
+  const [description, setDescription] = useState(item?.description ?? "");
+  const [imageUrl, setImageUrl] = useState(item?.image_url ?? "");
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error("Imagem muito grande (máx 5MB)"); return; }
+
+    setUploading(true);
+    const ext = file.name.split('.').pop();
+    const path = `${storeId}/${Date.now()}.${ext}`;
+
+    const { error } = await supabase.storage.from("menu-images").upload(path, file, { upsert: true });
+    if (error) { toast.error("Erro ao enviar imagem"); setUploading(false); return; }
+
+    const { data: { publicUrl } } = supabase.storage.from("menu-images").getPublicUrl(path);
+    setImageUrl(publicUrl);
+    setUploading(false);
+  };
+
+  const handleSave = async () => {
+    if (!name.trim() || !price) return;
+    const priceNum = parseFloat(price.replace(",", "."));
+    if (isNaN(priceNum) || priceNum <= 0) { toast.error("Preço inválido"); return; }
+
+    setSaving(true);
+    if (item) {
+      // Update
+      const { data, error } = await supabase.from("menu_items")
+        .update({ name: name.trim(), category, price: priceNum, description: description.trim() || null, image_url: imageUrl || null })
+        .eq("id", item.id)
+        .select()
+        .single();
+      setSaving(false);
+      if (error) { toast.error("Erro ao atualizar item"); return; }
+      toast.success("Item atualizado!");
+      onSaved(data as MenuItem);
+    } else {
+      // Insert
+      const { data, error } = await supabase.from("menu_items")
+        .insert({ store_id: storeId, name: name.trim(), category, price: priceNum, description: description.trim() || null, image_url: imageUrl || null })
+        .select()
+        .single();
+      setSaving(false);
+      if (error) { toast.error("Erro ao adicionar item"); return; }
+      toast.success("Item adicionado ao cardápio!");
+      onSaved(data as MenuItem);
+    }
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+      className="bg-card border border-border rounded-2xl p-5 space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-bold text-foreground">{item ? "Editar Item" : "Novo Item"}</h3>
+        <button onClick={onCancel} className="text-muted-foreground hover:text-foreground"><X size={18} /></button>
+      </div>
+
+      {/* Image */}
+      <div className="flex items-center gap-4">
+        <div
+          onClick={() => fileRef.current?.click()}
+          className="w-20 h-20 rounded-xl border-2 border-dashed border-border bg-muted/50 flex items-center justify-center cursor-pointer hover:border-primary/50 transition-colors overflow-hidden shrink-0"
+        >
+          {uploading ? (
+            <span className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+          ) : imageUrl ? (
+            <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <ImagePlus size={24} className="text-muted-foreground/50" />
+          )}
+        </div>
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+        <p className="text-xs text-muted-foreground">Clique para adicionar foto do produto (máx 5MB)</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label className="text-sm font-medium text-foreground">Nome do item *</label>
+          <input value={name} onChange={e => setName(e.target.value)} placeholder="Ex: X-Burger Especial"
+            className="mt-1 w-full h-10 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-foreground">Preço (R$) *</label>
+          <input value={price} onChange={e => setPrice(e.target.value)} placeholder="29.90" type="text" inputMode="decimal"
+            className="mt-1 w-full h-10 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-foreground">Categoria</label>
+          <select value={category} onChange={e => setCategory(e.target.value)}
+            className="mt-1 w-full h-10 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+            {MENU_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label className="text-sm font-medium text-foreground">Descrição (opcional)</label>
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={2} placeholder="Breve descrição do item..."
+          className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
+      </div>
+
+      <div className="flex gap-2 pt-1">
+        <button onClick={onCancel} className="flex-1 border border-border text-foreground font-medium py-2.5 rounded-xl text-sm hover:bg-secondary transition-colors">
+          Cancelar
+        </button>
+        <button onClick={handleSave} disabled={!name.trim() || !price || saving}
+          className="flex-1 bg-primary text-primary-foreground font-semibold py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+          <Save size={14} /> {saving ? "Salvando..." : item ? "Atualizar" : "Adicionar"}
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── Cardápio Tab ─── */
+function CardapioTab({ storeId }: { storeId: string }) {
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+  const [filterCategory, setFilterCategory] = useState("Todos");
+
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase.from("menu_items")
+        .select("*")
+        .eq("store_id", storeId)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true });
+      if (data) setMenuItems(data as MenuItem[]);
+      setLoading(false);
+    };
+    load();
+  }, [storeId]);
+
+  const handleSaved = (item: MenuItem) => {
+    setMenuItems(prev => {
+      const idx = prev.findIndex(i => i.id === item.id);
+      if (idx >= 0) { const arr = [...prev]; arr[idx] = item; return arr; }
+      return [...prev, item];
+    });
+    setShowForm(false);
+    setEditingItem(null);
+  };
+
+  const handleToggleAvailable = async (item: MenuItem) => {
+    const { error } = await supabase.from("menu_items").update({ is_available: !item.is_available }).eq("id", item.id);
+    if (error) { toast.error("Erro ao atualizar"); return; }
+    setMenuItems(prev => prev.map(i => i.id === item.id ? { ...i, is_available: !i.is_available } : i));
+  };
+
+  const handleDelete = async (item: MenuItem) => {
+    if (!confirm(`Remover "${item.name}" do cardápio?`)) return;
+    const { error } = await supabase.from("menu_items").delete().eq("id", item.id);
+    if (error) { toast.error("Erro ao remover"); return; }
+    setMenuItems(prev => prev.filter(i => i.id !== item.id));
+    toast.success("Item removido");
+  };
+
+  const categories = ["Todos", ...new Set(menuItems.map(i => i.category))];
+  const filtered = filterCategory === "Todos" ? menuItems : menuItems.filter(i => i.category === filterCategory);
+
+  // Group by category
+  const grouped = filtered.reduce((acc, item) => {
+    if (!acc[item.category]) acc[item.category] = [];
+    acc[item.category].push(item);
+    return acc;
+  }, {} as Record<string, MenuItem[]>);
+
+  if (loading) {
+    return <div className="space-y-3">{[1, 2, 3].map(i => <div key={i} className="bg-card rounded-2xl h-20 animate-pulse border border-border" />)}</div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Header + Add */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="font-bold text-foreground text-lg">Cardápio</h3>
+          <p className="text-xs text-muted-foreground">{menuItems.length} {menuItems.length === 1 ? "item" : "itens"}</p>
+        </div>
+        {!showForm && !editingItem && (
+          <button onClick={() => setShowForm(true)}
+            className="flex items-center gap-1.5 bg-primary text-primary-foreground font-semibold px-4 py-2 rounded-xl text-sm hover:bg-primary/90 transition-colors">
+            <Plus size={16} /> Adicionar item
+          </button>
+        )}
+      </div>
+
+      {/* Form */}
+      {(showForm || editingItem) && (
+        <MenuItemForm
+          storeId={storeId}
+          item={editingItem}
+          onSaved={handleSaved}
+          onCancel={() => { setShowForm(false); setEditingItem(null); }}
+        />
+      )}
+
+      {/* Category filter */}
+      {menuItems.length > 0 && !showForm && !editingItem && (
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {categories.map(c => (
+            <button key={c} onClick={() => setFilterCategory(c)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${filterCategory === c ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground/70 hover:bg-secondary/80"}`}>
+              {c}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Items list */}
+      {!showForm && !editingItem && (
+        menuItems.length === 0 ? (
+          <div className="text-center py-16">
+            <UtensilsCrossed size={48} className="text-muted-foreground/30 mx-auto mb-3" />
+            <p className="font-semibold text-muted-foreground">Cardápio vazio</p>
+            <p className="text-xs text-muted-foreground mt-1">Adicione itens ao cardápio para seus clientes verem</p>
+          </div>
+        ) : (
+          Object.entries(grouped).map(([cat, items]) => (
+            <div key={cat}>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{cat}</p>
+              <div className="space-y-2">
+                {items.map(item => (
+                  <motion.div key={item.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    className={`bg-card border border-border rounded-xl p-3 flex items-center gap-3 ${!item.is_available ? "opacity-50" : ""}`}>
+                    {item.image_url ? (
+                      <img src={item.image_url} alt={item.name} className="w-14 h-14 rounded-lg object-cover shrink-0" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                        <UtensilsCrossed size={20} className="text-muted-foreground/40" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-foreground text-sm truncate">{item.name}</p>
+                      {item.description && <p className="text-xs text-muted-foreground truncate">{item.description}</p>}
+                      <p className="text-sm font-bold text-primary mt-0.5">{fmt(item.price)}</p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button onClick={() => handleToggleAvailable(item)} title={item.is_available ? "Desativar" : "Ativar"}
+                        className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground">
+                        {item.is_available ? <ToggleRight size={18} className="text-green-500" /> : <ToggleLeft size={18} />}
+                      </button>
+                      <button onClick={() => setEditingItem(item)}
+                        className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground">
+                        <Pencil size={14} />
+                      </button>
+                      <button onClick={() => handleDelete(item)}
+                        className="p-2 rounded-lg hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          ))
+        )
+      )}
+    </div>
+  );
+}
+
 /* ─── Main Page ─── */
 const PainelPage = () => {
   const navigate = useNavigate();
@@ -208,7 +497,6 @@ const PainelPage = () => {
   const [storeLoading, setStoreLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("pedidos");
 
-  // Store settings edit
   const [editingStore, setEditingStore] = useState(false);
   const [editName, setEditName] = useState("");
   const [editCategory, setEditCategory] = useState("");
@@ -217,7 +505,6 @@ const PainelPage = () => {
   useEffect(() => {
     if (authLoading) return;
     if (!user) { navigate("/auth"); return; }
-
     const loadStore = async () => {
       const { data } = await supabase.from("stores").select("*").eq("owner_id", user.id).limit(1).single();
       if (data) setStore(data as StoreData);
@@ -226,10 +513,8 @@ const PainelPage = () => {
     loadStore();
   }, [user, authLoading, navigate]);
 
-  // Load orders once we have store
   useEffect(() => {
     if (!store) return;
-
     const loadOrders = async () => {
       const { data } = await supabase
         .from("orders")
@@ -241,24 +526,18 @@ const PainelPage = () => {
     };
     loadOrders();
 
-    // Realtime for new/updated orders
     const channel = supabase
       .channel('merchant-orders')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `restaurant_id=eq.${store.id}` },
         async (payload) => {
           if (payload.eventType === 'INSERT') {
-            // Fetch full order with items
             const { data } = await supabase.from("orders").select("*, order_items(*)").eq("id", payload.new.id).single();
-            if (data) {
-              setOrders(prev => [data as Order, ...prev]);
-              toast.info("🔔 Novo pedido recebido!");
-            }
+            if (data) { setOrders(prev => [data as Order, ...prev]); toast.info("🔔 Novo pedido recebido!"); }
           } else if (payload.eventType === 'UPDATE') {
             setOrders(prev => prev.map(o => o.id === payload.new.id ? { ...o, ...payload.new } : o));
           }
         }
-      )
-      .subscribe();
+      ).subscribe();
 
     return () => { supabase.removeChannel(channel); };
   }, [store]);
@@ -273,9 +552,7 @@ const PainelPage = () => {
   const handleSaveStore = async () => {
     if (!store) return;
     const { error } = await supabase.from("stores").update({
-      name: editName.trim(),
-      category: editCategory,
-      description: editDescription.trim() || null,
+      name: editName.trim(), category: editCategory, description: editDescription.trim() || null,
     }).eq("id", store.id);
     if (error) { toast.error("Erro ao salvar"); return; }
     setStore({ ...store, name: editName.trim(), category: editCategory, description: editDescription.trim() || null });
@@ -311,29 +588,24 @@ const PainelPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <div className="sticky top-0 bg-card border-b border-border z-10">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={() => navigate("/")} className="text-muted-foreground hover:text-foreground"><ArrowLeft size={20} /></button>
             <div>
               <h1 className="text-lg font-bold text-foreground flex items-center gap-2">
-                <Store size={18} className="text-primary" />
-                {store.name}
+                <Store size={18} className="text-primary" /> {store.name}
               </h1>
               <p className="text-xs text-muted-foreground">{store.category} • Painel de gerenciamento</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${store.is_active ? "bg-green-500/10 text-green-600 border border-green-500/30" : "bg-red-500/10 text-red-600 border border-red-500/30"}`}>
-              {store.is_active ? "Aberto" : "Fechado"}
-            </span>
-          </div>
+          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${store.is_active ? "bg-green-500/10 text-green-600 border border-green-500/30" : "bg-red-500/10 text-red-600 border border-red-500/30"}`}>
+            {store.is_active ? "Aberto" : "Fechado"}
+          </span>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
-        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           {[
             { label: "Pendentes", value: pendingOrders.length, color: "text-yellow-600", bg: "bg-yellow-500/10" },
@@ -349,9 +621,12 @@ const PainelPage = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full grid grid-cols-3 mb-4">
+          <TabsList className="w-full grid grid-cols-4 mb-4">
             <TabsTrigger value="pedidos" className="gap-1.5">
               <Package size={14} /> Pedidos {pendingOrders.length > 0 && <span className="bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1">{pendingOrders.length}</span>}
+            </TabsTrigger>
+            <TabsTrigger value="cardapio" className="gap-1.5">
+              <UtensilsCrossed size={14} /> Cardápio
             </TabsTrigger>
             <TabsTrigger value="historico" className="gap-1.5">
               <Clock size={14} /> Histórico
@@ -361,12 +636,9 @@ const PainelPage = () => {
             </TabsTrigger>
           </TabsList>
 
-          {/* ─── Pedidos Tab ─── */}
           <TabsContent value="pedidos">
             {loading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map(i => <div key={i} className="bg-card rounded-2xl h-20 animate-pulse border border-border" />)}
-              </div>
+              <div className="space-y-3">{[1, 2, 3].map(i => <div key={i} className="bg-card rounded-2xl h-20 animate-pulse border border-border" />)}</div>
             ) : [...pendingOrders, ...preparingOrders].length === 0 ? (
               <div className="text-center py-16">
                 <Package size={48} className="text-muted-foreground/30 mx-auto mb-3" />
@@ -382,7 +654,10 @@ const PainelPage = () => {
             )}
           </TabsContent>
 
-          {/* ─── Histórico Tab ─── */}
+          <TabsContent value="cardapio">
+            <CardapioTab storeId={store.id} />
+          </TabsContent>
+
           <TabsContent value="historico">
             {completedOrders.length === 0 ? (
               <div className="text-center py-16">
@@ -398,7 +673,6 @@ const PainelPage = () => {
             )}
           </TabsContent>
 
-          {/* ─── Loja Tab ─── */}
           <TabsContent value="loja">
             <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
               <div className="flex items-center justify-between">
