@@ -671,35 +671,84 @@ const PainelPage = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "inicio":
+        const todayDelivered = deliveredOrders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString());
+        const todayTicket = todayDelivered.length > 0 ? todayRevenue / todayDelivered.length : 0;
+        const monthOrders = orders.filter(o => { const d = new Date(o.created_at); const now = new Date(); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); });
+        const monthDelivered = monthOrders.filter(o => o.status === "entregue");
+        const monthRevenue = monthDelivered.reduce((s, o) => s + Number(o.total), 0);
+        const monthTicket = monthDelivered.length > 0 ? monthRevenue / monthDelivered.length : 0;
+        const monthName = new Date().toLocaleDateString("pt-BR", { month: "long" });
+
         return (
           <div className="space-y-6">
-            {/* Store Header Card (iFood style) */}
-            <div className="bg-card border border-border rounded-2xl overflow-hidden">
-              <div className="p-6 flex flex-col md:flex-row items-start md:items-center gap-6">
-                <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0 border-2 border-border shadow-sm">
-                  {store.logo_url ? (
-                    <img src={store.logo_url} alt="Logo" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                      <Store size={32} className="text-primary" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-xl font-bold text-foreground">{store.name}</h2>
-                  {storeAddress && <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1"><MapPin size={13} />{storeAddress}</p>}
-                  {store.description && <p className="text-sm text-muted-foreground mt-1">{store.description}</p>}
-                </div>
-                <button onClick={() => setActiveTab("descricao")}
-                  className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 font-bold transition-colors shrink-0">
-                  <Pencil size={14} /> Editar descrição e logo
-                </button>
+            {/* Status banner */}
+            <div className="bg-card border border-border rounded-2xl p-5 flex items-center gap-4">
+              <div className={`w-3 h-3 rounded-full shrink-0 ${store.is_active ? "bg-emerald-500" : "bg-destructive"}`} />
+              <div>
+                <p className={`text-sm font-bold ${store.is_active ? "text-emerald-600" : "text-destructive"}`}>
+                  {store.is_active ? "Restaurante aberto" : "Restaurante fechado"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {store.is_active ? "Dentro do horário programado" : "Fora do horário programado"}
+                </p>
               </div>
             </div>
 
-            {/* Quick info cards row (iFood style) */}
+            {/* Recommendation banner */}
+            <div className="bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center gap-4">
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <Zap size={20} className="text-primary" />
+                  Abra nos horários que os clientes mais procuram você
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Estabelecimentos com seu tipo de cozinha vendem bastante nestes horários.
+                </p>
+              </div>
+              <button onClick={() => setActiveTab("horario")}
+                className="bg-primary text-primary-foreground font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-all shadow-md shadow-primary/20 whitespace-nowrap">
+                Ver recomendação
+              </button>
+            </div>
+
+            {/* Acompanhamento tempo real (iFood clone) */}
+            <div className="bg-card border border-border rounded-2xl p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <h3 className="text-lg font-bold text-foreground">Acompanhamento</h3>
+                <span className="text-sm text-muted-foreground">tempo real</span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-0 divide-x divide-border">
+                {/* Today stats - highlighted */}
+                <div className="pr-4 border-b-4 border-primary pb-4">
+                  <p className="text-xs text-muted-foreground mb-1">Pedidos de hoje</p>
+                  <p className="text-2xl font-bold text-foreground">{todayDelivered.length} <span className="text-sm font-normal text-muted-foreground">pedidos</span></p>
+                  <p className="text-xs text-muted-foreground mt-1">{fmt(todayRevenue)}</p>
+                </div>
+                <div className="px-4 border-b-4 border-primary pb-4">
+                  <p className="text-xs text-muted-foreground mb-1">Ticket médio de hoje</p>
+                  <p className="text-2xl font-bold text-foreground">{fmt(todayTicket)}</p>
+                </div>
+                {/* Month stats */}
+                <div className="px-4 pb-4">
+                  <p className="text-xs text-muted-foreground mb-1">Pedidos de {monthName}</p>
+                  <p className="text-sm font-semibold text-foreground">{monthDelivered.length} pedidos</p>
+                  <p className="text-xs text-muted-foreground mt-1">{fmt(monthRevenue)}</p>
+                </div>
+                <div className="px-4 pb-4">
+                  <p className="text-xs text-muted-foreground mb-1">Ticket médio de {monthName}</p>
+                  <p className="text-sm font-semibold text-foreground">{fmt(monthTicket)}</p>
+                </div>
+                <div className="pl-4 pb-4">
+                  <p className="text-xs text-muted-foreground mb-1">Avaliação no App</p>
+                  <p className="text-sm font-semibold text-foreground flex items-center gap-1">
+                    <Star size={14} className="text-amber-500 fill-amber-500" /> 4,9
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick info cards row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Delivery config card */}
               <div className="bg-card border border-border rounded-2xl p-5">
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Configurações de entrega</p>
                 <div className="space-y-3">
@@ -711,34 +760,30 @@ const PainelPage = () => {
                     <p className="text-sm text-muted-foreground">Tempo de entrega</p>
                     <div className="flex items-center gap-2">
                       <p className="text-lg font-bold text-foreground">60 minutos</p>
-                      <button onClick={() => setActiveTab("tempo_entrega")} className="text-xs text-primary font-bold hover:underline">Alterar</button>
+                      <button onClick={() => setActiveTab("areas_entrega")} className="text-xs text-primary font-bold hover:underline">Alterar</button>
                     </div>
                   </div>
                 </div>
               </div>
-
-              {/* Informes card */}
               <div className="bg-card border border-border rounded-2xl p-5">
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Informes</p>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-foreground">Dicas de Promoções</p>
-                      <button className="text-xs text-primary font-bold hover:underline">Ler mais</button>
+                      <button onClick={() => setActiveTab("promocoes")} className="text-xs text-primary font-bold hover:underline">Ler mais</button>
                     </div>
                     <span className="text-[10px] font-bold bg-primary text-primary-foreground px-2 py-0.5 rounded">NOVO</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-foreground">Atendimento Financeiro</p>
-                      <button className="text-xs text-primary font-bold hover:underline">Ler mais</button>
+                      <button onClick={() => setActiveTab("financeiro")} className="text-xs text-primary font-bold hover:underline">Ler mais</button>
                     </div>
                     <span className="text-[10px] font-bold bg-primary text-primary-foreground px-2 py-0.5 rounded">NOVO</span>
                   </div>
                 </div>
               </div>
-
-              {/* Recent invoices card */}
               <div className="bg-card border border-border rounded-2xl p-5">
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Últimas faturas</p>
                 {deliveredOrders.length === 0 ? (
@@ -756,7 +801,21 @@ const PainelPage = () => {
               </div>
             </div>
 
-            {/* Results section (iFood style) */}
+            {/* Conquistas / Super Restaurantes */}
+            <div className="bg-card border border-border rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6">
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0">
+                <Award size={32} className="text-primary" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-foreground">Conquistas ZuuFood</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">Complete medalhas, ganhe pontos e troque por prêmios</p>
+              </div>
+              <button className="border border-primary text-primary font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/5 transition-all whitespace-nowrap">
+                Conhecer
+              </button>
+            </div>
+
+            {/* Results section */}
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-foreground">Resultados</h3>
@@ -790,26 +849,6 @@ const PainelPage = () => {
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* KPI strip */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[
-                { label: "Pendentes", value: pendingOrders.length, icon: Clock, color: "text-amber-600", bg: "bg-amber-500/10", borderColor: "border-amber-500/10" },
-                { label: "Em Preparo", value: preparingOrders.length, icon: ChefHat, color: "text-blue-600", bg: "bg-blue-500/10", borderColor: "border-blue-500/10" },
-                { label: "Entregues hoje", value: deliveredOrders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString()).length, icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-500/10", borderColor: "border-emerald-500/10" },
-                { label: "Faturamento hoje", value: todayRevenue, icon: DollarSign, color: "text-primary", bg: "bg-primary/10", borderColor: "border-primary/10", isCurrency: true },
-              ].map(stat => (
-                <div key={stat.label} className={`${stat.bg} border ${stat.borderColor} rounded-2xl p-4 flex items-center gap-3`}>
-                  <div className={`w-10 h-10 ${stat.bg} rounded-xl flex items-center justify-center`}>
-                    <stat.icon size={18} className={stat.color} />
-                  </div>
-                  <div>
-                    <p className={`text-xl font-bold ${stat.color}`}>{'isCurrency' in stat && stat.isCurrency ? fmt(stat.value) : stat.value}</p>
-                    <p className="text-xs text-muted-foreground font-medium">{stat.label}</p>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         );
