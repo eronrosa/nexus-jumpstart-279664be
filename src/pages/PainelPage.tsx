@@ -1307,7 +1307,7 @@ const PainelPage = () => {
         );
 
       case "avaliações":
-        return <AvaliacoesTab />;
+        return <AvaliacoesTab storeId={store.id} />;
       case "financeiro":
         return <FinanceiroTab orders={orders} />;
       case "areas_entrega":

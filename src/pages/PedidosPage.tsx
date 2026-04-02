@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowLeft, ShoppingBag, Clock, ChevronDown, ChevronUp, Package } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, ShoppingBag, Clock, ChevronDown, ChevronUp, Package, Star, Send, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
-import { RotateCcw } from "lucide-react";
 
 interface OrderItem {
   id: string;
@@ -18,6 +17,7 @@ interface OrderItem {
 
 interface Order {
   id: string;
+  restaurant_id: string;
   restaurant_name: string;
   status: string;
   total: number;
@@ -50,6 +50,13 @@ const PedidosPage = () => {
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
 
+  // Review state
+  const [reviewedOrders, setReviewedOrders] = useState<Set<string>>(new Set());
+  const [reviewingOrderId, setReviewingOrderId] = useState<string | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
+
   useEffect(() => {
     if (authLoading) return;
     if (!user) { navigate("/auth"); return; }
@@ -62,11 +69,19 @@ const PedidosPage = () => {
 
       if (!error && data) setOrders(data as Order[]);
       setLoading(false);
+
+      // Load which orders already have reviews
+      const { data: reviews } = await supabase
+        .from("reviews")
+        .select("order_id")
+        .eq("user_id", user.id);
+      if (reviews) {
+        setReviewedOrders(new Set(reviews.map((r: any) => r.order_id)));
+      }
     };
 
     fetchOrders();
 
-    // Realtime subscription for order status updates
     const channel = supabase
       .channel('orders-status')
       .on(
@@ -88,9 +103,7 @@ const PedidosPage = () => {
   const toggle = (id: string) => setExpanded(prev => prev === id ? null : id);
 
   const reorder = (order: Order) => {
-    if (items.length > 0) {
-      clear();
-    }
+    if (items.length > 0) clear();
     order.order_items.forEach(item => {
       for (let i = 0; i < item.quantity; i++) {
         add({
@@ -105,6 +118,29 @@ const PedidosPage = () => {
     });
     toast.success("Itens adicionados ao carrinho!");
     navigate("/zuufood");
+  };
+
+  const submitReview = async (order: Order) => {
+    if (!user) return;
+    setSubmittingReview(true);
+    const { error } = await supabase.from("reviews").insert({
+      order_id: order.id,
+      store_id: order.restaurant_id,
+      user_id: user.id,
+      rating: reviewRating,
+      comment: reviewComment.trim() || null,
+    });
+    setSubmittingReview(false);
+    if (error) {
+      if (error.code === "23505") toast.error("Você já avaliou este pedido");
+      else toast.error("Erro ao enviar avaliação");
+      return;
+    }
+    setReviewedOrders(prev => new Set(prev).add(order.id));
+    setReviewingOrderId(null);
+    setReviewRating(5);
+    setReviewComment("");
+    toast.success("Avaliação enviada! Obrigado ⭐");
   };
 
   const formatDate = (iso: string) => {
@@ -154,79 +190,145 @@ const PedidosPage = () => {
           </motion.div>
         ) : (
           <div className="flex flex-col gap-3">
-            {orders.map((order, i) => (
-              <motion.div
-                key={order.id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.06 }}
-                className="bg-card border border-border rounded-2xl overflow-hidden"
-              >
-                {/* Order header */}
-                <button
-                  className="w-full text-left px-4 py-4 flex items-start justify-between gap-3"
-                  onClick={() => toggle(order.id)}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                      <Package size={18} className="text-primary" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-foreground truncate">{order.restaurant_name}</p>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <Clock size={11} className="text-muted-foreground shrink-0" />
-                        <span className="text-xs text-muted-foreground">{formatDate(order.created_at)}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-1.5 shrink-0">
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${statusColor[order.status] ?? statusColor.pendente}`}>
-                      {statusLabel[order.status] ?? order.status}
-                    </span>
-                    <span className="text-sm font-bold text-foreground">{fmt(order.total)}</span>
-                    {expanded === order.id ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
-                  </div>
-                </button>
+            {orders.map((order, i) => {
+              const canReview = order.status === "entregue" && !reviewedOrders.has(order.id);
+              const alreadyReviewed = reviewedOrders.has(order.id);
 
-                {/* Order items */}
-                {expanded === order.id && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="border-t border-border px-4 py-3 flex flex-col gap-2"
+              return (
+                <motion.div
+                  key={order.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.06 }}
+                  className="bg-card border border-border rounded-2xl overflow-hidden"
+                >
+                  {/* Order header */}
+                  <button
+                    className="w-full text-left px-4 py-4 flex items-start justify-between gap-3"
+                    onClick={() => toggle(order.id)}
                   >
-                    {order.order_items.map(item => (
-                      <div key={item.id} className="flex items-center gap-3">
-                        {item.item_image && (
-                          <img src={item.item_image} alt={item.item_name} className="w-10 h-10 rounded-lg object-cover shrink-0" />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-foreground font-medium truncate">{item.item_name}</p>
-                          <p className="text-xs text-muted-foreground">{fmt(item.item_price)} × {item.quantity}</p>
-                        </div>
-                        <span className="text-sm font-semibold text-foreground">{fmt(item.item_price * item.quantity)}</span>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                        <Package size={18} className="text-primary" />
                       </div>
-                    ))}
-                    <div className="mt-2 pt-2 border-t border-border flex justify-between text-sm">
-                      <span className="text-muted-foreground">Entrega</span>
-                      <span className="text-foreground">{order.delivery_fee === 0 ? "Grátis" : fmt(order.delivery_fee)}</span>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-foreground truncate">{order.restaurant_name}</p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <Clock size={11} className="text-muted-foreground shrink-0" />
+                          <span className="text-xs text-muted-foreground">{formatDate(order.created_at)}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-sm font-bold">
-                      <span className="text-foreground">Total</span>
-                      <span className="text-primary">{fmt(order.total)}</span>
+                    <div className="flex flex-col items-end gap-1.5 shrink-0">
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${statusColor[order.status] ?? statusColor.pendente}`}>
+                        {statusLabel[order.status] ?? order.status}
+                      </span>
+                      <span className="text-sm font-bold text-foreground">{fmt(order.total)}</span>
+                      {expanded === order.id ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
                     </div>
-                    <button
-                      onClick={() => reorder(order)}
-                      className="mt-3 w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-semibold py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-colors"
+                  </button>
+
+                  {/* Order details */}
+                  {expanded === order.id && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="border-t border-border px-4 py-3 flex flex-col gap-2"
                     >
-                      <RotateCcw size={16} />
-                      Pedir novamente
-                    </button>
-                  </motion.div>
-                )}
-              </motion.div>
-            ))}
+                      {order.order_items.map(item => (
+                        <div key={item.id} className="flex items-center gap-3">
+                          {item.item_image && (
+                            <img src={item.item_image} alt={item.item_name} className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-foreground font-medium truncate">{item.item_name}</p>
+                            <p className="text-xs text-muted-foreground">{fmt(item.item_price)} × {item.quantity}</p>
+                          </div>
+                          <span className="text-sm font-semibold text-foreground">{fmt(item.item_price * item.quantity)}</span>
+                        </div>
+                      ))}
+                      <div className="mt-2 pt-2 border-t border-border flex justify-between text-sm">
+                        <span className="text-muted-foreground">Entrega</span>
+                        <span className="text-foreground">{order.delivery_fee === 0 ? "Grátis" : fmt(order.delivery_fee)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm font-bold">
+                        <span className="text-foreground">Total</span>
+                        <span className="text-primary">{fmt(order.total)}</span>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex gap-2 mt-3">
+                        <button
+                          onClick={() => reorder(order)}
+                          className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground font-semibold py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-colors"
+                        >
+                          <RotateCcw size={16} /> Pedir novamente
+                        </button>
+
+                        {canReview && (
+                          <button
+                            onClick={() => { setReviewingOrderId(order.id); setReviewRating(5); setReviewComment(""); }}
+                            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold border border-amber-500/30 bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 transition-all"
+                          >
+                            <Star size={14} className="fill-amber-500" /> Avaliar
+                          </button>
+                        )}
+
+                        {alreadyReviewed && (
+                          <span className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-emerald-600 bg-emerald-500/10 border border-emerald-500/20">
+                            <Star size={12} className="fill-emerald-500" /> Avaliado
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Review form */}
+                      <AnimatePresence>
+                        {reviewingOrderId === order.id && (
+                          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+                            className="mt-3 bg-amber-500/5 border border-amber-500/20 rounded-xl p-4 space-y-3">
+                            <p className="text-sm font-bold text-foreground">Como foi seu pedido?</p>
+
+                            {/* Star rating */}
+                            <div className="flex items-center gap-1">
+                              {[1, 2, 3, 4, 5].map(n => (
+                                <button key={n} onClick={() => setReviewRating(n)} className="p-0.5">
+                                  <Star size={28}
+                                    className={n <= reviewRating
+                                      ? "text-amber-500 fill-amber-500 transition-colors"
+                                      : "text-muted-foreground/30 transition-colors hover:text-amber-300"}
+                                  />
+                                </button>
+                              ))}
+                              <span className="text-sm font-bold text-foreground ml-2">{reviewRating}/5</span>
+                            </div>
+
+                            {/* Comment */}
+                            <textarea
+                              value={reviewComment} onChange={e => setReviewComment(e.target.value)}
+                              placeholder="Deixe um comentário (opcional)..."
+                              rows={2}
+                              className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all resize-none"
+                            />
+
+                            <div className="flex gap-2">
+                              <button onClick={() => setReviewingOrderId(null)}
+                                className="flex-1 border border-border text-foreground font-semibold py-2.5 rounded-xl text-sm hover:bg-secondary transition-all">
+                                Cancelar
+                              </button>
+                              <button onClick={() => submitReview(order)} disabled={submittingReview}
+                                className="flex-1 bg-primary text-primary-foreground font-bold py-2.5 rounded-xl text-sm hover:bg-primary/90 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5">
+                                <Send size={14} /> {submittingReview ? "Enviando..." : "Enviar avaliação"}
+                              </button>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  )}
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </div>
