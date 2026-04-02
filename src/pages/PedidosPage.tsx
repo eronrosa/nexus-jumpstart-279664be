@@ -69,6 +69,26 @@ const PedidosPage = () => {
 
   const toggle = (id: string) => setExpanded(prev => prev === id ? null : id);
 
+  const reorder = (order: Order) => {
+    if (items.length > 0) {
+      clear();
+    }
+    order.order_items.forEach(item => {
+      for (let i = 0; i < item.quantity; i++) {
+        add({
+          id: item.id,
+          restaurantId: order.restaurant_name,
+          restaurantName: order.restaurant_name,
+          name: item.item_name,
+          price: item.item_price,
+          image: item.item_image || "",
+        });
+      }
+    });
+    toast.success("Itens adicionados ao carrinho!");
+    navigate("/zuufood");
+  };
+
   const formatDate = (iso: string) => {
     const d = new Date(iso);
     return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) +
