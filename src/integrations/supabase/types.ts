@@ -109,6 +109,167 @@ export type Database = {
           },
         ]
       }
+      driver_earnings: {
+        Row: {
+          created_at: string | null
+          driver_id: string
+          gross_amount: number
+          id: string
+          net_amount: number
+          platform_fee: number
+          ride_id: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          driver_id: string
+          gross_amount: number
+          id?: string
+          net_amount: number
+          platform_fee?: number
+          ride_id: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          driver_id?: string
+          gross_amount?: number
+          id?: string
+          net_amount?: number
+          platform_fee?: number
+          ride_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_earnings_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_earnings_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      driver_locations: {
+        Row: {
+          driver_id: string
+          heading: number | null
+          id: string
+          lat: number
+          lng: number
+          updated_at: string | null
+        }
+        Insert: {
+          driver_id: string
+          heading?: number | null
+          id?: string
+          lat: number
+          lng: number
+          updated_at?: string | null
+        }
+        Update: {
+          driver_id?: string
+          heading?: number | null
+          id?: string
+          lat?: number
+          lng?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_locations_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      drivers: {
+        Row: {
+          bank_account: string | null
+          cnh: string | null
+          cpf: string | null
+          created_at: string | null
+          current_lat: number | null
+          current_lng: number | null
+          full_name: string | null
+          id: string
+          is_approved: boolean | null
+          phone: string | null
+          photo_url: string | null
+          pix_key: string | null
+          rating: number | null
+          status: string | null
+          total_earnings: number | null
+          total_rides: number | null
+          user_id: string
+          vehicle_brand: string | null
+          vehicle_color: string | null
+          vehicle_model: string | null
+          vehicle_plate: string | null
+          vehicle_type: string | null
+          vehicle_year: number | null
+        }
+        Insert: {
+          bank_account?: string | null
+          cnh?: string | null
+          cpf?: string | null
+          created_at?: string | null
+          current_lat?: number | null
+          current_lng?: number | null
+          full_name?: string | null
+          id?: string
+          is_approved?: boolean | null
+          phone?: string | null
+          photo_url?: string | null
+          pix_key?: string | null
+          rating?: number | null
+          status?: string | null
+          total_earnings?: number | null
+          total_rides?: number | null
+          user_id: string
+          vehicle_brand?: string | null
+          vehicle_color?: string | null
+          vehicle_model?: string | null
+          vehicle_plate?: string | null
+          vehicle_type?: string | null
+          vehicle_year?: number | null
+        }
+        Update: {
+          bank_account?: string | null
+          cnh?: string | null
+          cpf?: string | null
+          created_at?: string | null
+          current_lat?: number | null
+          current_lng?: number | null
+          full_name?: string | null
+          id?: string
+          is_approved?: boolean | null
+          phone?: string | null
+          photo_url?: string | null
+          pix_key?: string | null
+          rating?: number | null
+          status?: string | null
+          total_earnings?: number | null
+          total_rides?: number | null
+          user_id?: string
+          vehicle_brand?: string | null
+          vehicle_color?: string | null
+          vehicle_model?: string | null
+          vehicle_plate?: string | null
+          vehicle_type?: string | null
+          vehicle_year?: number | null
+        }
+        Relationships: []
+      }
       menu_items: {
         Row: {
           category: string
@@ -343,6 +504,116 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      ride_ratings: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          from_user: string
+          id: string
+          rating: number
+          ride_id: string
+          to_user: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          from_user: string
+          id?: string
+          rating: number
+          ride_id: string
+          to_user: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          from_user?: string
+          id?: string
+          rating?: number
+          ride_id?: string
+          to_user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ride_ratings_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rides: {
+        Row: {
+          accepted_at: string | null
+          completed_at: string | null
+          created_at: string | null
+          destination_address: string | null
+          destination_lat: number | null
+          destination_lng: number | null
+          distance_km: number | null
+          driver_id: string | null
+          duration_minutes: number | null
+          estimated_price: number | null
+          final_price: number | null
+          id: string
+          origin_address: string | null
+          origin_lat: number | null
+          origin_lng: number | null
+          passenger_id: string
+          payment_method: string | null
+          rating_driver: number | null
+          rating_passenger: number | null
+          ride_type: string | null
+          status: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          destination_address?: string | null
+          destination_lat?: number | null
+          destination_lng?: number | null
+          distance_km?: number | null
+          driver_id?: string | null
+          duration_minutes?: number | null
+          estimated_price?: number | null
+          final_price?: number | null
+          id?: string
+          origin_address?: string | null
+          origin_lat?: number | null
+          origin_lng?: number | null
+          passenger_id: string
+          payment_method?: string | null
+          rating_driver?: number | null
+          rating_passenger?: number | null
+          ride_type?: string | null
+          status?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          destination_address?: string | null
+          destination_lat?: number | null
+          destination_lng?: number | null
+          distance_km?: number | null
+          driver_id?: string | null
+          duration_minutes?: number | null
+          estimated_price?: number | null
+          final_price?: number | null
+          id?: string
+          origin_address?: string | null
+          origin_lat?: number | null
+          origin_lng?: number | null
+          passenger_id?: string
+          payment_method?: string | null
+          rating_driver?: number | null
+          rating_passenger?: number | null
+          ride_type?: string | null
+          status?: string | null
+        }
+        Relationships: []
       }
       store_promotions: {
         Row: {
