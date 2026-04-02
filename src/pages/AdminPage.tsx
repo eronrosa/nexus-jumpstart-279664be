@@ -90,13 +90,85 @@ function PulseDot({ color = "bg-primary" }: { color?: string }) {
   );
 }
 
+/* ═══════════════════════ NOTIFICATION ITEM TYPE ═══════════════════════ */
+interface AdminNotification {
+  id: string;
+  type: "order" | "ride" | "driver";
+  title: string;
+  message: string;
+  timestamp: Date;
+  read: boolean;
+}
+
 /* ═══════════════════════ MAIN PAGE ═══════════════════════ */
 export default function AdminPage() {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdminCheck();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [tab, setTab] = useState<Tab>("dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [notifications, setNotifications] = useState<AdminNotification[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const addNotification = useCallback((n: Omit<AdminNotification, "id" | "timestamp" | "read">) => {
+    const newNotif: AdminNotification = {
+      ...n,
+      id: crypto.randomUUID(),
+      timestamp: new Date(),
+      read: false,
+    };
+    setNotifications(prev => [newNotif, ...prev].slice(0, 50));
+    toast({ title: n.title, description: n.message });
+    // Play sound
+    try {
+      if (!audioRef.current) {
+        audioRef.current = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH2Tqauwm4Fwa2R1hpm0wbWjh3Fla3KFnbO/t6SDZ11ncYShucS0nmxMQ1Bnf6C9y8ClgF5RWW2KqMHFs5RuV01Xa4mjvce4oIBkVVVpgp60wbypl3pjVlhog5+1wLell3djU1Znh6O5wr2snHxkUlZkfpm0v72snX5mWFpjfJaturiomHhfUlhkfpiwu7qqnX5lV1dhepKqtbShjnViVFhie5WuubiokHViUlZfdo+otLOij3RhUVVedY2lsLClkHZiUFNcc4ujrq+jkHhkUlVddIymr6+ikHhkUldddIylr6+ikHhkUldddIylr6+ikHhlU1hedY2mr6+ikHhlU1he");
+      }
+      audioRef.current.volume = 0.3;
+      audioRef.current.play().catch(() => {});
+    } catch {}
+  }, [toast]);
+
+  // Realtime: new orders
+  useEffect(() => {
+    if (!user || !isAdmin) return;
+    const channel = supabase
+      .channel("admin-new-orders")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (payload) => {
+        const order = payload.new as any;
+        addNotification({
+          type: "order",
+          title: "🛒 Novo Pedido!",
+          message: `${order.restaurant_name} — ${Number(order.total).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`,
+        });
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "rides" }, (payload) => {
+        addNotification({
+          type: "ride",
+          title: "🚗 Nova Corrida!",
+          message: `Corrida solicitada — buscando motorista...`,
+        });
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "drivers" }, (payload) => {
+        const driver = payload.new as any;
+        addNotification({
+          type: "driver",
+          title: "👤 Novo Motorista!",
+          message: `${driver.full_name || "Motorista"} se cadastrou na plataforma`,
+        });
+      })
+      .subscribe();
+
+    return () => { channel.unsubscribe(); };
+  }, [user, isAdmin, addNotification]);
+
+  const markAllRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
 
   if (authLoading || adminLoading) {
     return (
