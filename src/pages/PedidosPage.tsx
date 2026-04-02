@@ -198,6 +198,13 @@ const PedidosPage = () => {
                       <span className="text-foreground">Total</span>
                       <span className="text-primary">{fmt(order.total)}</span>
                     </div>
+                    <button
+                      onClick={() => reorder(order)}
+                      className="mt-3 w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-semibold py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-colors"
+                    >
+                      <RotateCcw size={16} />
+                      Pedir novamente
+                    </button>
                   </motion.div>
                 )}
               </motion.div>
