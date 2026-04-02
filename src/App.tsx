@@ -16,6 +16,7 @@ import ZuuMob from "./pages/ZuuMob";
 import MotoristaPage from "./pages/MotoristaPage";
 import RideHistoryPage from "./pages/RideHistoryPage";
 import NotFound from "./pages/NotFound";
+import AdminPage from "./pages/AdminPage";
 
 const queryClient = new QueryClient();
 
