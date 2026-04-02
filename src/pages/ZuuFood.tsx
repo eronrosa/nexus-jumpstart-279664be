@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Search, Star, Clock, ShoppingCart, Plus, Minus,
-  Trash2, ChevronRight, X, MapPin, Bike, CheckCircle, Store as StoreIcon
+  Trash2, ChevronRight, X, MapPin, Bike, CheckCircle, Store as StoreIcon,
+  CreditCard, Banknote, Smartphone, Tag, AlertCircle, Home, Building
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,27 +13,21 @@ import { toast } from "sonner";
 
 /* ─── Types ─── */
 interface MenuItemData {
-  id: string;
-  category: string;
-  name: string;
-  price: number;
-  image: string;
-  description: string;
+  id: string; category: string; name: string; price: number; image: string; description: string;
 }
-
 interface RestaurantData {
-  id: string;
-  name: string;
-  category: string;
-  rating: number;
-  deliveryTime: string;
-  minOrder: number;
-  deliveryFee: number;
-  promo: string;
-  image: string;
-  logo: string;
-  menu: MenuItemData[];
-  isDynamic?: boolean;
+  id: string; name: string; category: string; rating: number; reviewCount: number;
+  deliveryTime: string; minOrder: number; deliveryFee: number; promo: string;
+  image: string; logo: string; menu: MenuItemData[]; isDynamic?: boolean;
+  openingHours?: any[]; isOpen?: boolean; promotions?: PromotionData[];
+}
+interface PromotionData {
+  id: string; title: string; description: string | null; discount_type: string;
+  discount_value: number; min_order: number; coupon_code: string | null;
+}
+interface AddressData {
+  id: string; label: string; street: string; number: string; neighborhood: string;
+  city: string; state: string; complement: string | null; zip_code: string; is_default: boolean;
 }
 
 /* ─── Static fallback data ─── */
@@ -40,7 +35,7 @@ const CATEGORIES = ["Todos", "Japonês", "Hambúrguer", "Pizza", "Lanches", "Sau
 
 const STATIC_RESTAURANTS: RestaurantData[] = [
   {
-    id: "r1", name: "Restaurante Mitsuba", category: "Japonês", rating: 4.8,
+    id: "r1", name: "Restaurante Mitsuba", category: "Japonês", rating: 4.8, reviewCount: 0,
     deliveryTime: "30-45 min", minOrder: 25, deliveryFee: 0, promo: "Frete grátis",
     image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&q=80&fit=crop",
     logo: "https://img.icons8.com/color/96/sushi.png",
@@ -53,7 +48,7 @@ const STATIC_RESTAURANTS: RestaurantData[] = [
     ],
   },
   {
-    id: "r2", name: "Le Max Hamburgueria", category: "Hambúrguer", rating: 4.7,
+    id: "r2", name: "Le Max Hamburgueria", category: "Hambúrguer", rating: 4.7, reviewCount: 0,
     deliveryTime: "25-40 min", minOrder: 30, deliveryFee: 5.90, promo: "",
     image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80&fit=crop",
     logo: "https://img.icons8.com/color/96/hamburger.png",
@@ -66,7 +61,7 @@ const STATIC_RESTAURANTS: RestaurantData[] = [
     ],
   },
   {
-    id: "r3", name: "Pizza Palace", category: "Pizza", rating: 4.6,
+    id: "r3", name: "Pizza Palace", category: "Pizza", rating: 4.6, reviewCount: 0,
     deliveryTime: "35-50 min", minOrder: 40, deliveryFee: 0, promo: "2 por 1 às terças",
     image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80&fit=crop",
     logo: "https://img.icons8.com/color/96/pizza.png",
@@ -79,7 +74,7 @@ const STATIC_RESTAURANTS: RestaurantData[] = [
     ],
   },
   {
-    id: "r4", name: "Bondinho Carioca", category: "Lanches", rating: 4.5,
+    id: "r4", name: "Bondinho Carioca", category: "Lanches", rating: 4.5, reviewCount: 0,
     deliveryTime: "20-35 min", minOrder: 20, deliveryFee: 3.90, promo: "",
     image: "https://images.unsplash.com/photo-1550547660-d9450f859349?w=800&q=80&fit=crop",
     logo: "https://img.icons8.com/color/96/hot-dog.png",
@@ -114,34 +109,83 @@ const CATEGORY_LOGOS: Record<string, string> = {
   "Mercado": "https://img.icons8.com/color/96/shopping-cart.png",
 };
 
+const PAYMENT_METHODS = [
+  { id: "pix", label: "PIX", icon: Smartphone },
+  { id: "credit", label: "Cartão de Crédito", icon: CreditCard },
+  { id: "debit", label: "Cartão de Débito", icon: CreditCard },
+  { id: "cash", label: "Dinheiro", icon: Banknote },
+];
+
+const DAY_NAMES = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+
 /* ─── Helpers ─── */
 const fmt = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
-/* ─── Cart Drawer ─── */
+function isStoreOpen(openingHours: any[] | null | undefined): boolean {
+  if (!openingHours || openingHours.length === 0) return true; // assume open if no hours set
+  const now = new Date();
+  const dayName = DAY_NAMES[now.getDay()];
+  const todayHours = openingHours.find((h: any) => h.day === dayName);
+  if (!todayHours || !todayHours.enabled) return false;
+  const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  return currentTime >= todayHours.open && currentTime <= todayHours.close;
+}
+
+/* ─── Cart Drawer with Checkout ─── */
 function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { items, increment, decrement, remove, total, count, clear } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [ordered, setOrdered] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [step, setStep] = useState<"cart" | "checkout">("cart");
+  const [addresses, setAddresses] = useState<AddressData[]>([]);
+  const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState("pix");
+  const [deliveryFee, setDeliveryFee] = useState(0);
+
+  // Load addresses when checkout
+  useEffect(() => {
+    if (step === "checkout" && user) {
+      supabase.from("addresses").select("*").eq("user_id", user.id).then(({ data }) => {
+        if (data && data.length > 0) {
+          setAddresses(data as AddressData[]);
+          const def = data.find((a: any) => a.is_default);
+          setSelectedAddress(def?.id || data[0].id);
+        }
+      });
+      // Load delivery fee for this restaurant
+      if (items.length > 0) {
+        supabase.from("delivery_zones").select("*")
+          .eq("store_id", items[0].restaurantId).eq("is_active", true)
+          .order("radius_km", { ascending: true }).limit(1)
+          .then(({ data }) => {
+            if (data && data.length > 0) setDeliveryFee(Number(data[0].delivery_fee));
+            else setDeliveryFee(0);
+          });
+      }
+    }
+  }, [step, user, items]);
+
+  const grandTotal = total + deliveryFee;
 
   const handleOrder = async () => {
     if (items.length === 0) return;
     if (!user) { onClose(); navigate("/auth"); return; }
+    if (step === "cart") { setStep("checkout"); return; }
+    if (!selectedAddress && addresses.length > 0) {
+      toast.error("Selecione um endereço de entrega");
+      return;
+    }
     setSaving(true);
     try {
       const restaurant = items[0];
       const { data: orderData, error: orderError } = await supabase
-        .from("orders")
-        .insert({
-          user_id: user.id,
-          restaurant_id: restaurant.restaurantId,
-          restaurant_name: restaurant.restaurantName,
-          status: "pendente",
-          total: total,
-          delivery_fee: 0,
-        })
-        .select().single();
+        .from("orders").insert({
+          user_id: user.id, restaurant_id: restaurant.restaurantId,
+          restaurant_name: restaurant.restaurantName, status: "pendente",
+          total: grandTotal, delivery_fee: deliveryFee,
+        }).select().single();
       if (orderError) throw orderError;
       if (orderData) {
         const orderItems = items.map(item => ({
@@ -153,7 +197,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
       }
       setSaving(false);
       setOrdered(true);
-      setTimeout(() => { setOrdered(false); clear(); onClose(); }, 2800);
+      setTimeout(() => { setOrdered(false); setStep("cart"); clear(); onClose(); }, 2800);
     } catch (err) {
       console.error("Erro ao salvar pedido:", err);
       toast.error("Erro ao salvar pedido. Tente novamente.");
@@ -161,22 +205,28 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
     }
   };
 
+  const handleClose = () => { setStep("cart"); onClose(); };
+
   return (
     <AnimatePresence>
       {open && (
         <>
           <motion.div key="backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
+            className="fixed inset-0 bg-black/40 z-40" onClick={handleClose} />
           <motion.div key="drawer" initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 320, damping: 32 }}
             className="fixed right-0 top-0 h-full w-full max-w-sm bg-card shadow-2xl z-50 flex flex-col">
             <div className="flex items-center justify-between px-4 py-4 border-b border-border">
               <div className="flex items-center gap-2">
-                <ShoppingCart size={18} className="text-primary" />
-                <span className="font-bold text-foreground">Carrinho</span>
-                {count > 0 && <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full">{count}</span>}
+                {step === "checkout" ? (
+                  <button onClick={() => setStep("cart")} className="p-1 text-muted-foreground hover:text-foreground"><ArrowLeft size={18} /></button>
+                ) : (
+                  <ShoppingCart size={18} className="text-primary" />
+                )}
+                <span className="font-bold text-foreground">{step === "checkout" ? "Finalizar Pedido" : "Carrinho"}</span>
+                {count > 0 && step === "cart" && <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full">{count}</span>}
               </div>
-              <button onClick={onClose} className="p-1 text-muted-foreground hover:text-foreground"><X size={18} /></button>
+              <button onClick={handleClose} className="p-1 text-muted-foreground hover:text-foreground"><X size={18} /></button>
             </div>
             <div className="flex-1 overflow-y-auto">
               <AnimatePresence mode="wait">
@@ -195,7 +245,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                     <p className="font-semibold text-muted-foreground">Carrinho vazio</p>
                     <p className="text-xs text-muted-foreground">Adicione itens de um restaurante para começar</p>
                   </motion.div>
-                ) : (
+                ) : step === "cart" ? (
                   <motion.div key="items" className="p-4 space-y-3">
                     <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide flex items-center gap-1.5">
                       <MapPin size={12} /> {items[0]?.restaurantName}
@@ -223,6 +273,59 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                       </motion.div>
                     ))}
                   </motion.div>
+                ) : (
+                  /* ── Checkout step ── */
+                  <motion.div key="checkout" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="p-4 space-y-5">
+                    {/* Address */}
+                    <div>
+                      <p className="text-xs font-bold text-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5"><MapPin size={13} /> Endereço de entrega</p>
+                      {addresses.length === 0 ? (
+                        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-center">
+                          <p className="text-xs text-amber-700 mb-2">Nenhum endereço cadastrado</p>
+                          <button onClick={() => { handleClose(); navigate("/perfil"); }} className="text-xs font-bold text-primary">Cadastrar endereço</button>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {addresses.map(addr => (
+                            <button key={addr.id} onClick={() => setSelectedAddress(addr.id)}
+                              className={`w-full text-left p-3 rounded-xl border transition-all ${selectedAddress === addr.id ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "border-border bg-card hover:border-primary/30"}`}>
+                              <div className="flex items-center gap-2">
+                                {addr.label === "Casa" ? <Home size={14} className="text-primary shrink-0" /> : <Building size={14} className="text-primary shrink-0" />}
+                                <span className="text-sm font-bold text-foreground">{addr.label}</span>
+                                {addr.is_default && <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-bold">Padrão</span>}
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1">{addr.street}, {addr.number} - {addr.neighborhood}</p>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Payment */}
+                    <div>
+                      <p className="text-xs font-bold text-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5"><CreditCard size={13} /> Forma de pagamento</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {PAYMENT_METHODS.map(pm => (
+                          <button key={pm.id} onClick={() => setSelectedPayment(pm.id)}
+                            className={`flex items-center gap-2 p-3 rounded-xl border text-sm font-semibold transition-all ${selectedPayment === pm.id ? "border-primary bg-primary/5 text-primary ring-1 ring-primary/30" : "border-border text-muted-foreground hover:border-primary/30"}`}>
+                            <pm.icon size={16} />
+                            {pm.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Order summary */}
+                    <div className="bg-secondary/50 rounded-xl p-3 space-y-2">
+                      <p className="text-xs font-bold text-foreground uppercase tracking-wide">Resumo</p>
+                      {items.map(item => (
+                        <div key={item.id} className="flex justify-between text-xs text-muted-foreground">
+                          <span>{item.qty}× {item.name}</span>
+                          <span>{fmt(item.price * item.qty)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
                 )}
               </AnimatePresence>
             </div>
@@ -234,15 +337,19 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground flex items-center gap-1"><Bike size={13} /> Entrega</span>
-                  <span className="font-semibold text-emerald-600">Grátis</span>
+                  <span className={`font-semibold ${deliveryFee === 0 && step === "checkout" ? "text-emerald-600" : "text-foreground"}`}>
+                    {step === "checkout" ? (deliveryFee === 0 ? "Grátis" : fmt(deliveryFee)) : "Calculado no checkout"}
+                  </span>
                 </div>
-                <div className="flex items-center justify-between font-bold text-base border-t border-border pt-2">
-                  <span>Total</span>
-                  <span className="text-primary">{fmt(total)}</span>
-                </div>
+                {step === "checkout" && (
+                  <div className="flex items-center justify-between font-bold text-base border-t border-border pt-2">
+                    <span>Total</span>
+                    <span className="text-primary">{fmt(grandTotal)}</span>
+                  </div>
+                )}
                 <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={handleOrder} disabled={saving}
                   className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-70">
-                  {saving ? "Salvando pedido..." : `Fazer pedido · ${fmt(total)}`}
+                  {saving ? "Finalizando..." : step === "cart" ? `Continuar · ${fmt(total)}` : `Confirmar pedido · ${fmt(grandTotal)}`}
                 </motion.button>
               </div>
             )}
@@ -265,58 +372,95 @@ const ZuuFood = () => {
   const [allRestaurants, setAllRestaurants] = useState<RestaurantData[]>(STATIC_RESTAURANTS);
   const [loadingMenu, setLoadingMenu] = useState(false);
 
-  // Load dynamic stores from DB
+  // Load dynamic stores + real ratings + delivery zones + promotions
   useEffect(() => {
     const loadStores = async () => {
       const { data: stores } = await supabase
         .from("stores")
-        .select("id, name, category, logo_url, cover_url, description, is_active")
+        .select("id, name, category, logo_url, cover_url, description, is_active, opening_hours")
         .eq("is_active", true);
 
       if (!stores || stores.length === 0) return;
 
-      const dynamicRestaurants: RestaurantData[] = stores.map(store => ({
-        id: store.id,
-        name: store.name,
-        category: store.category,
-        rating: 4.5 + Math.random() * 0.5,
-        deliveryTime: "25-45 min",
-        minOrder: 20,
-        deliveryFee: 0,
-        promo: "",
-        image: store.cover_url || CATEGORY_COVERS[store.category] || CATEGORY_COVERS["Restaurante"],
-        logo: store.logo_url || CATEGORY_LOGOS[store.category] || CATEGORY_LOGOS["Restaurante"],
-        menu: [], // loaded on demand
-        isDynamic: true,
-      }));
+      // Fetch real ratings
+      const storeIds = stores.map(s => s.id);
+      const { data: reviewsData } = await supabase
+        .from("reviews").select("store_id, rating").in("store_id", storeIds);
 
-      // Merge: dynamic first, then static
+      const ratingMap: Record<string, { sum: number; count: number }> = {};
+      reviewsData?.forEach((r: any) => {
+        if (!ratingMap[r.store_id]) ratingMap[r.store_id] = { sum: 0, count: 0 };
+        ratingMap[r.store_id].sum += r.rating;
+        ratingMap[r.store_id].count += 1;
+      });
+
+      // Fetch delivery zones
+      const { data: zonesData } = await supabase
+        .from("delivery_zones").select("store_id, delivery_fee, estimated_time")
+        .in("store_id", storeIds).eq("is_active", true)
+        .order("radius_km", { ascending: true });
+
+      const zoneMap: Record<string, { fee: number; time: string }> = {};
+      zonesData?.forEach((z: any) => {
+        if (!zoneMap[z.store_id]) zoneMap[z.store_id] = { fee: Number(z.delivery_fee), time: z.estimated_time };
+      });
+
+      // Fetch active promotions
+      const { data: promosData } = await supabase
+        .from("store_promotions").select("id, store_id, title, description, discount_type, discount_value, min_order, coupon_code")
+        .in("store_id", storeIds).eq("is_active", true);
+
+      const promoMap: Record<string, PromotionData[]> = {};
+      promosData?.forEach((p: any) => {
+        if (!promoMap[p.store_id]) promoMap[p.store_id] = [];
+        promoMap[p.store_id].push(p);
+      });
+
+      const dynamicRestaurants: RestaurantData[] = stores.map(store => {
+        const r = ratingMap[store.id];
+        const z = zoneMap[store.id];
+        const openHours = store.opening_hours as any[] | null;
+        return {
+          id: store.id,
+          name: store.name,
+          category: store.category,
+          rating: r ? r.sum / r.count : 0,
+          reviewCount: r?.count ?? 0,
+          deliveryTime: z?.time || "30-50 min",
+          minOrder: 20,
+          deliveryFee: z?.fee ?? 0,
+          promo: promoMap[store.id]?.[0]?.title || "",
+          image: store.cover_url || CATEGORY_COVERS[store.category] || CATEGORY_COVERS["Restaurante"],
+          logo: store.logo_url || CATEGORY_LOGOS[store.category] || CATEGORY_LOGOS["Restaurante"],
+          menu: [],
+          isDynamic: true,
+          openingHours: openHours || [],
+          isOpen: isStoreOpen(openHours),
+          promotions: promoMap[store.id] || [],
+        };
+      });
+
       setAllRestaurants([...dynamicRestaurants, ...STATIC_RESTAURANTS]);
     };
     loadStores();
   }, []);
 
-  // Load menu items when selecting a dynamic restaurant
   const handleSelectRestaurant = async (r: RestaurantData) => {
+    if (r.isDynamic && r.isOpen === false) {
+      toast.error("Este estabelecimento está fechado no momento");
+      return;
+    }
     if (r.isDynamic && r.menu.length === 0) {
       setLoadingMenu(true);
       setSelectedRestaurant(r);
       const { data: menuItems } = await supabase
-        .from("menu_items")
-        .select("*")
-        .eq("store_id", r.id)
-        .eq("is_available", true)
-        .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: true });
+        .from("menu_items").select("*").eq("store_id", r.id).eq("is_available", true)
+        .order("sort_order", { ascending: true }).order("created_at", { ascending: true });
 
       if (menuItems && menuItems.length > 0) {
         const mappedMenu: MenuItemData[] = menuItems.map(mi => ({
-          id: mi.id,
-          category: mi.category,
-          name: mi.name,
-          price: Number(mi.price),
-          image: mi.image_url || "",
-          description: mi.description || "",
+          id: mi.id, category: mi.category, name: mi.name,
+          price: Number(mi.price), image: mi.image_url || "", description: mi.description || "",
         }));
         const updated = { ...r, menu: mappedMenu };
         setSelectedRestaurant(updated);
@@ -339,13 +483,10 @@ const ZuuFood = () => {
       toast.error("Você só pode pedir de um restaurante por vez. Limpe o carrinho antes.");
       return;
     }
+    // Min order is validated at checkout, just add
     add({
-      id: item.id,
-      restaurantId: restaurant.id,
-      restaurantName: restaurant.name,
-      name: item.name,
-      price: item.price,
-      image: item.image,
+      id: item.id, restaurantId: restaurant.id, restaurantName: restaurant.name,
+      name: item.name, price: item.price, image: item.image,
     });
     setAddedId(item.id);
     setTimeout(() => setAddedId(null), 800);
@@ -359,7 +500,6 @@ const ZuuFood = () => {
       }, {} as Record<string, MenuItemData[]>)
     : {};
 
-  // Collect unique categories from all restaurants
   const dynamicCategories = [...new Set(allRestaurants.map(r => r.category))];
   const allCategories = ["Todos", ...new Set([...CATEGORIES.slice(1), ...dynamicCategories])];
 
@@ -378,7 +518,9 @@ const ZuuFood = () => {
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <Clock size={11} /> {selectedRestaurant.deliveryTime}
               <span className="mx-1">·</span>
-              <Star size={11} className="text-yellow-500" fill="currentColor" /> {selectedRestaurant.rating.toFixed(1)}
+              <Star size={11} className="text-yellow-500" fill="currentColor" />
+              {selectedRestaurant.rating > 0 ? selectedRestaurant.rating.toFixed(1) : "Novo"}
+              {selectedRestaurant.reviewCount > 0 && <span className="text-muted-foreground/60">({selectedRestaurant.reviewCount})</span>}
             </p>
           )}
         </div>
@@ -424,13 +566,16 @@ const ZuuFood = () => {
                 <motion.div key={r.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.06 }} whileHover={{ scale: 1.01 }}
                   onClick={() => handleSelectRestaurant(r)}
-                  className="bg-card rounded-2xl border border-border overflow-hidden cursor-pointer hover:shadow-md transition-shadow">
+                  className={`bg-card rounded-2xl border border-border overflow-hidden cursor-pointer hover:shadow-md transition-shadow ${r.isOpen === false ? "opacity-60" : ""}`}>
                   <div className="relative h-36">
                     <img src={r.image} alt={r.name} className="w-full h-full object-cover" />
                     {r.promo && (
-                      <span className="absolute top-2 left-2 bg-primary text-primary-foreground text-[11px] font-bold px-2 py-0.5 rounded-full">{r.promo}</span>
+                      <span className="absolute top-2 left-2 bg-primary text-primary-foreground text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><Tag size={10} />{r.promo}</span>
                     )}
-                    {r.isDynamic && (
+                    {r.isOpen === false && (
+                      <span className="absolute top-2 right-2 bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">Fechado</span>
+                    )}
+                    {r.isDynamic && r.isOpen !== false && (
                       <span className="absolute top-2 right-2 bg-card/90 backdrop-blur text-foreground text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                         <StoreIcon size={10} /> Parceiro
                       </span>
@@ -445,7 +590,8 @@ const ZuuFood = () => {
                     <div className="text-right shrink-0 space-y-0.5">
                       <div className="flex items-center gap-1 justify-end">
                         <Star size={12} className="text-yellow-500" fill="currentColor" />
-                        <span className="text-xs font-bold text-foreground">{r.rating.toFixed(1)}</span>
+                        <span className="text-xs font-bold text-foreground">{r.rating > 0 ? r.rating.toFixed(1) : "Novo"}</span>
+                        {r.reviewCount > 0 && <span className="text-[10px] text-muted-foreground">({r.reviewCount})</span>}
                       </div>
                       <div className="flex items-center gap-1 text-muted-foreground">
                         <Clock size={11} />
@@ -478,7 +624,7 @@ const ZuuFood = () => {
 
             <div className="flex gap-2 flex-wrap">
               {[
-                { icon: Star, text: `${selectedRestaurant.rating.toFixed(1)} estrelas`, color: "text-yellow-600 bg-yellow-500/10" },
+                { icon: Star, text: selectedRestaurant.rating > 0 ? `${selectedRestaurant.rating.toFixed(1)} (${selectedRestaurant.reviewCount})` : "Novo", color: "text-yellow-600 bg-yellow-500/10" },
                 { icon: Clock, text: selectedRestaurant.deliveryTime, color: "text-blue-600 bg-blue-500/10" },
                 { icon: Bike, text: selectedRestaurant.deliveryFee === 0 ? "Frete grátis" : fmt(selectedRestaurant.deliveryFee), color: "text-emerald-600 bg-emerald-500/10" },
               ].map(({ icon: Icon, text, color }) => (
@@ -488,6 +634,32 @@ const ZuuFood = () => {
                 </span>
               ))}
             </div>
+
+            {/* Active promotions */}
+            {selectedRestaurant.promotions && selectedRestaurant.promotions.length > 0 && (
+              <div className="space-y-2">
+                {selectedRestaurant.promotions.map(promo => (
+                  <div key={promo.id} className="bg-primary/5 border border-primary/20 rounded-xl p-3 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <Tag size={14} className="text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-foreground">{promo.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {promo.discount_type === "percentage" ? `${promo.discount_value}% de desconto` : `${fmt(promo.discount_value)} de desconto`}
+                        {promo.min_order > 0 && ` · Pedido mín. ${fmt(promo.min_order)}`}
+                      </p>
+                    </div>
+                    {promo.coupon_code && (
+                      <button onClick={() => { navigator.clipboard.writeText(promo.coupon_code!); toast.success("Código copiado!"); }}
+                        className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-lg hover:bg-primary/20 transition-colors">
+                        {promo.coupon_code}
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {loadingMenu ? (
               <div className="space-y-3">
