@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 
 const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-type Tab = "dashboard" | "users" | "stores" | "orders" | "rides" | "coupons" | "featured" | "services";
+type Tab = "dashboard" | "users" | "stores" | "orders" | "rides" | "drivers" | "coupons" | "featured" | "services";
 
 const TABS: { id: Tab; label: string; icon: any }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -22,6 +22,7 @@ const TABS: { id: Tab; label: string; icon: any }[] = [
   { id: "stores", label: "Estabelecimentos", icon: Store },
   { id: "orders", label: "Pedidos", icon: ShoppingBag },
   { id: "rides", label: "Corridas", icon: Car },
+  { id: "drivers", label: "Motoristas", icon: Bike },
   { id: "coupons", label: "Cupons", icon: Ticket },
   { id: "featured", label: "Destaques", icon: Star },
   { id: "services", label: "Serviços", icon: Sparkles },
