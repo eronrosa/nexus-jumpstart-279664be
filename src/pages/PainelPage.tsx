@@ -469,6 +469,200 @@ function CardapioTab({ storeId }: { storeId: string }) {
   );
 }
 
+/* ─── Delivery Zones Tab ─── */
+interface DeliveryZone {
+  id: string; store_id: string; zone_name: string; radius_km: number;
+  delivery_fee: number; min_order: number; estimated_time: string; is_active: boolean;
+}
+
+function DeliveryZonesTab({ storeId }: { storeId: string }) {
+  const [zones, setZones] = useState<DeliveryZone[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editingZone, setEditingZone] = useState<DeliveryZone | null>(null);
+
+  // Form state
+  const [zoneName, setZoneName] = useState("");
+  const [radiusKm, setRadiusKm] = useState("5");
+  const [deliveryFee, setDeliveryFee] = useState("0");
+  const [minOrder, setMinOrder] = useState("0");
+  const [estimatedTime, setEstimatedTime] = useState("60 min");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase.from("delivery_zones").select("*").eq("store_id", storeId).order("radius_km", { ascending: true });
+      if (data) setZones(data as DeliveryZone[]);
+      setLoading(false);
+    };
+    load();
+  }, [storeId]);
+
+  const resetForm = () => {
+    setZoneName(""); setRadiusKm("5"); setDeliveryFee("0"); setMinOrder("0"); setEstimatedTime("60 min");
+    setShowForm(false); setEditingZone(null);
+  };
+
+  const startEdit = (z: DeliveryZone) => {
+    setZoneName(z.zone_name); setRadiusKm(z.radius_km.toString()); setDeliveryFee(z.delivery_fee.toString());
+    setMinOrder(z.min_order.toString()); setEstimatedTime(z.estimated_time);
+    setEditingZone(z); setShowForm(true);
+  };
+
+  const handleSave = async () => {
+    if (!zoneName.trim()) return;
+    setSaving(true);
+    const payload = {
+      zone_name: zoneName.trim(),
+      radius_km: parseFloat(radiusKm) || 5,
+      delivery_fee: parseFloat(deliveryFee) || 0,
+      min_order: parseFloat(minOrder) || 0,
+      estimated_time: estimatedTime.trim() || "60 min",
+    };
+    if (editingZone) {
+      const { data, error } = await supabase.from("delivery_zones").update(payload).eq("id", editingZone.id).select().single();
+      if (error) { toast.error("Erro ao atualizar zona"); setSaving(false); return; }
+      setZones(prev => prev.map(z => z.id === editingZone.id ? data as DeliveryZone : z));
+      toast.success("Zona atualizada!");
+    } else {
+      const { data, error } = await supabase.from("delivery_zones").insert({ store_id: storeId, ...payload }).select().single();
+      if (error) { toast.error("Erro ao criar zona"); setSaving(false); return; }
+      setZones(prev => [...prev, data as DeliveryZone]);
+      toast.success("Zona de entrega criada!");
+    }
+    setSaving(false);
+    resetForm();
+  };
+
+  const handleToggle = async (z: DeliveryZone) => {
+    const { error } = await supabase.from("delivery_zones").update({ is_active: !z.is_active }).eq("id", z.id);
+    if (error) { toast.error("Erro ao atualizar"); return; }
+    setZones(prev => prev.map(x => x.id === z.id ? { ...x, is_active: !x.is_active } : x));
+  };
+
+  const handleDelete = async (z: DeliveryZone) => {
+    if (!confirm(`Remover a zona "${z.zone_name}"?`)) return;
+    const { error } = await supabase.from("delivery_zones").delete().eq("id", z.id);
+    if (error) { toast.error("Erro ao remover"); return; }
+    setZones(prev => prev.filter(x => x.id !== z.id));
+    toast.success("Zona removida");
+  };
+
+  if (loading) return <div className="space-y-3">{[1, 2, 3].map(i => <div key={i} className="bg-card rounded-2xl h-20 animate-pulse border border-border" />)}</div>;
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h3 className="font-bold text-foreground text-xl">Áreas de Entrega</h3>
+          <p className="text-sm text-muted-foreground">Configure as zonas de entrega, taxas e tempos estimados</p>
+        </div>
+        {!showForm && (
+          <button onClick={() => { resetForm(); setShowForm(true); }}
+            className="flex items-center gap-2 bg-primary text-primary-foreground font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-all shadow-md shadow-primary/20">
+            <Plus size={16} /> Nova zona
+          </button>
+        )}
+      </div>
+
+      {/* Form */}
+      {showForm && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          className="bg-card border border-border rounded-2xl p-6 space-y-5 shadow-lg shadow-black/5">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-foreground text-lg">{editingZone ? "Editar Zona" : "Nova Zona de Entrega"}</h3>
+            <button onClick={resetForm} className="w-8 h-8 rounded-lg hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"><X size={18} /></button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-semibold text-foreground">Nome da zona *</label>
+              <input value={zoneName} onChange={e => setZoneName(e.target.value)} placeholder="Ex: Centro, Zona Sul, Até 3km"
+                className="mt-1.5 w-full h-11 rounded-xl border border-input bg-background px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all" />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-foreground">Raio (km)</label>
+              <input value={radiusKm} onChange={e => setRadiusKm(e.target.value)} placeholder="5" type="text" inputMode="decimal"
+                className="mt-1.5 w-full h-11 rounded-xl border border-input bg-background px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all" />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-foreground">Taxa de entrega (R$)</label>
+              <input value={deliveryFee} onChange={e => setDeliveryFee(e.target.value)} placeholder="5.00" type="text" inputMode="decimal"
+                className="mt-1.5 w-full h-11 rounded-xl border border-input bg-background px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all" />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-foreground">Pedido mínimo (R$)</label>
+              <input value={minOrder} onChange={e => setMinOrder(e.target.value)} placeholder="15.00" type="text" inputMode="decimal"
+                className="mt-1.5 w-full h-11 rounded-xl border border-input bg-background px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all" />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-foreground">Tempo estimado</label>
+              <input value={estimatedTime} onChange={e => setEstimatedTime(e.target.value)} placeholder="30-45 min"
+                className="mt-1.5 w-full h-11 rounded-xl border border-input bg-background px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all" />
+            </div>
+          </div>
+          <div className="flex gap-3 pt-1">
+            <button onClick={resetForm} className="flex-1 border border-border text-foreground font-semibold py-3 rounded-xl text-sm hover:bg-secondary transition-all">Cancelar</button>
+            <button onClick={handleSave} disabled={!zoneName.trim() || saving}
+              className="flex-1 bg-primary text-primary-foreground font-bold py-3 rounded-xl text-sm hover:bg-primary/90 transition-all disabled:opacity-50 shadow-md shadow-primary/20 flex items-center justify-center gap-2">
+              <Save size={14} /> {saving ? "Salvando..." : editingZone ? "Atualizar" : "Criar zona"}
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Zone list */}
+      {zones.length === 0 && !showForm ? (
+        <div className="text-center py-20">
+          <div className="w-20 h-20 bg-muted/50 rounded-3xl flex items-center justify-center mx-auto mb-4">
+            <MapPinned size={32} className="text-muted-foreground/40" />
+          </div>
+          <p className="font-bold text-foreground text-lg">Nenhuma zona configurada</p>
+          <p className="text-sm text-muted-foreground mt-1">Adicione zonas para definir taxas e tempos de entrega por região</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {zones.map(z => (
+            <motion.div key={z.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              className={`bg-card border border-border rounded-xl p-5 flex flex-col md:flex-row md:items-center gap-4 hover:shadow-md hover:shadow-black/5 transition-all duration-200 ${!z.is_active ? "opacity-40" : ""}`}>
+              <div className="flex items-center gap-4 flex-1 min-w-0">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <MapPinned size={20} className="text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-semibold text-foreground">{z.zone_name}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Raio: {z.radius_km} km • Tempo: {z.estimated_time}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-6 shrink-0">
+                <div className="text-right">
+                  <p className="text-sm font-bold text-foreground">{fmt(z.delivery_fee)}</p>
+                  <p className="text-[10px] text-muted-foreground">taxa de entrega</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-foreground">{fmt(z.min_order)}</p>
+                  <p className="text-[10px] text-muted-foreground">pedido mínimo</p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button onClick={() => handleToggle(z)} title={z.is_active ? "Desativar" : "Ativar"}
+                    className="p-2 rounded-lg hover:bg-secondary transition-colors">
+                    {z.is_active ? <ToggleRight size={20} className="text-emerald-500" /> : <ToggleLeft size={20} className="text-muted-foreground" />}
+                  </button>
+                  <button onClick={() => startEdit(z)} className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground">
+                    <Pencil size={15} />
+                  </button>
+                  <button onClick={() => handleDelete(z)} className="p-2 rounded-lg hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive">
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Placeholder Tab (for features not yet built) ─── */
 function PlaceholderTab({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) {
   return (
@@ -1118,7 +1312,7 @@ const PainelPage = () => {
       case "financeiro":
         return <PlaceholderTab icon={DollarSign} title="Financeiro" description="Acompanhe suas faturas, taxas, repasses e extrato financeiro detalhado" />;
       case "areas_entrega":
-        return <PlaceholderTab icon={MapPinned} title="Áreas de entrega" description="Configure o raio de entrega e taxas por região do seu estabelecimento" />;
+        return <DeliveryZonesTab storeId={store.id} />;
       case "pagamento":
         return <PlaceholderTab icon={CreditCard} title="Formas de pagamento" description="Gerencie as formas de pagamento aceitas pelo seu estabelecimento" />;
       case "promocoes":
