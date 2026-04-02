@@ -497,7 +497,7 @@ const PainelPage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [storeLoading, setStoreLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("pedidos");
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   const [editingStore, setEditingStore] = useState(false);
   const [editName, setEditName] = useState("");
