@@ -7,11 +7,10 @@ import {
   Store, Package, Clock, CheckCircle, ChefHat, XCircle,
   ChevronDown, ChevronUp, ArrowLeft, Plus, Pencil, Trash2, Save, X,
   UtensilsCrossed, ImagePlus, ToggleLeft, ToggleRight,
-  LayoutDashboard, History, Settings, Bell, MapPin,
+  LayoutDashboard, History, Bell, MapPin,
   Menu as MenuIcon, Activity, Zap, Search,
-  Star, TrendingUp, FileText, Truck, CreditCard, HelpCircle,
-  MessageSquare, Timer, Eye, DollarSign, ShoppingBag, Users,
-  ChevronRight, BarChart3, Wallet, CircleDot, Power
+  Star, TrendingUp, FileText, CreditCard, HelpCircle,
+  MessageSquare, Timer, DollarSign, CircleDot
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardTab from "@/components/DashboardTab";
