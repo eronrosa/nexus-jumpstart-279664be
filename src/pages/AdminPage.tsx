@@ -354,7 +354,100 @@ function RidesPanel() {
   );
 }
 
-// ─── COUPONS ──────────────────────────────────────────────────────────────────
+// ─── DRIVERS ──────────────────────────────────────────────────────────────────
+function DriversPanel() {
+  const [drivers, setDrivers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<"all" | "pending" | "approved">("all");
+  const { toast } = useToast();
+
+  const loadDrivers = async () => {
+    const { data } = await supabase.from("drivers").select("*");
+    setDrivers(data ?? []);
+    setLoading(false);
+  };
+  useEffect(() => { loadDrivers(); }, []);
+
+  const handleApproval = async (driverId: string, approve: boolean) => {
+    const { error } = await supabase.rpc("admin_update_driver", {
+      _driver_id: driverId,
+      _is_approved: approve,
+    });
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: approve ? "Motorista aprovado ✅" : "Motorista rejeitado" });
+      loadDrivers();
+    }
+  };
+
+  const filtered = drivers.filter(d => {
+    if (filter === "pending") return !d.is_approved;
+    if (filter === "approved") return d.is_approved;
+    return true;
+  });
+
+  const pills: { id: "all" | "pending" | "approved"; label: string }[] = [
+    { id: "all", label: "Todos" },
+    { id: "pending", label: "Pendentes" },
+    { id: "approved", label: "Aprovados" },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-bold text-foreground">Motoristas ({drivers.length})</h2>
+      <div className="flex gap-2">
+        {pills.map(p => (
+          <button key={p.id} onClick={() => setFilter(p.id)}
+            className={cn("px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
+              filter === p.id ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground/70 hover:bg-secondary/80"
+            )}>
+            {p.label}
+          </button>
+        ))}
+      </div>
+      {loading ? (
+        <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-20 bg-muted animate-pulse rounded-xl" />)}</div>
+      ) : (
+        <div className="space-y-2">
+          {filtered.map(d => (
+            <div key={d.id} className="bg-card border border-border rounded-xl p-4 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary shrink-0">
+                {(d.full_name ?? "?").charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-foreground text-sm truncate">{d.full_name ?? "Sem nome"}</p>
+                <p className="text-xs text-muted-foreground">
+                  {d.vehicle_brand} {d.vehicle_model} • {d.vehicle_plate ?? "—"} • {d.vehicle_type}
+                </p>
+                <p className="text-xs text-muted-foreground">{d.phone ?? ""} • ⭐ {d.rating} • {d.total_rides} corridas</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {d.is_approved ? (
+                  <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600">APROVADO</span>
+                ) : (
+                  <>
+                    <button onClick={() => handleApproval(d.id, true)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 transition-colors">
+                      Aprovar
+                    </button>
+                    <button onClick={() => handleApproval(d.id, false)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">
+                      Rejeitar
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          ))}
+          {filtered.length === 0 && <p className="text-center text-sm text-muted-foreground py-8">Nenhum motorista encontrado</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 function CouponsPanel() {
   const [promos, setPromos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
