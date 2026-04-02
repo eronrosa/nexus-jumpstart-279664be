@@ -1317,7 +1317,7 @@ const PainelPage = () => {
       case "pagamento":
         return <PlaceholderTab icon={CreditCard} title="Formas de pagamento" description="Gerencie as formas de pagamento aceitas pelo seu estabelecimento" />;
       case "promocoes":
-        return <PlaceholderTab icon={Gift} title="Promoções" description="Crie cupons, combos e ofertas especiais para atrair mais clientes" />;
+        return <PromocoesTab storeId={store.id} />;
       case "servicos":
         return <PlaceholderTab icon={Sparkles} title="Serviços" description="Descubra ferramentas e integrações para impulsionar suas vendas" />;
       case "perfil":
