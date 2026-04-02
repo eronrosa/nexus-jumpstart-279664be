@@ -11,7 +11,7 @@ import {
   Menu as MenuIcon, Activity, Zap, Search,
   Star, TrendingUp, FileText, CreditCard, HelpCircle,
   MessageSquare, Timer, DollarSign, CircleDot,
-  Gift, MapPinned, UserCircle, Award, Megaphone, Sparkles
+  Gift, MapPinned, UserCircle, Award, Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardTab from "@/components/DashboardTab";
