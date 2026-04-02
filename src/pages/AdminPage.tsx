@@ -503,7 +503,8 @@ function LiveDriversMap() {
   );
 }
 
-
+/* ═══════════════════════════════════════════════════════════════════════════════
+   DASHBOARD — Real-time Command Center
    ═══════════════════════════════════════════════════════════════════════════════ */
 function DashboardPanel() {
   const [stats, setStats] = useState({ users: 0, stores: 0, orders: 0, rides: 0, revenue: 0, drivers: 0, activeRides: 0, onlineDrivers: 0, newStores: 0 });
