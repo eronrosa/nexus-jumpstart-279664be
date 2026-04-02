@@ -1118,7 +1118,7 @@ const PainelPage = () => {
       case "financeiro":
         return <PlaceholderTab icon={DollarSign} title="Financeiro" description="Acompanhe suas faturas, taxas, repasses e extrato financeiro detalhado" />;
       case "areas_entrega":
-        return <PlaceholderTab icon={MapPinned} title="Áreas de entrega" description="Configure o raio de entrega e taxas por região do seu estabelecimento" />;
+        return <DeliveryZonesTab storeId={store.id} />;
       case "pagamento":
         return <PlaceholderTab icon={CreditCard} title="Formas de pagamento" description="Gerencie as formas de pagamento aceitas pelo seu estabelecimento" />;
       case "promocoes":
