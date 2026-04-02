@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import {
   Store, Package, Clock, CheckCircle, ChefHat, XCircle,
   ChevronDown, ChevronUp, ArrowLeft, Plus, Pencil, Trash2, Save, X,
-  UtensilsCrossed, ImagePlus, ToggleLeft, ToggleRight, GripVertical
+  UtensilsCrossed, ImagePlus, ToggleLeft, ToggleRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
