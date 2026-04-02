@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import DashboardTab from "@/components/DashboardTab";
+import { TrendingUp } from "lucide-react";
 
 /* ─── Types ─── */
 interface OrderItem {
@@ -495,7 +497,7 @@ const PainelPage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [storeLoading, setStoreLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("pedidos");
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   const [editingStore, setEditingStore] = useState(false);
   const [editName, setEditName] = useState("");
@@ -621,7 +623,10 @@ const PainelPage = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full grid grid-cols-4 mb-4">
+          <TabsList className="w-full grid grid-cols-5 mb-4">
+            <TabsTrigger value="dashboard" className="gap-1.5">
+              <TrendingUp size={14} /> Dashboard
+            </TabsTrigger>
             <TabsTrigger value="pedidos" className="gap-1.5">
               <Package size={14} /> Pedidos {pendingOrders.length > 0 && <span className="bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1">{pendingOrders.length}</span>}
             </TabsTrigger>
@@ -635,6 +640,10 @@ const PainelPage = () => {
               <Store size={14} /> Loja
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="dashboard">
+            <DashboardTab storeId={store.id} />
+          </TabsContent>
 
           <TabsContent value="pedidos">
             {loading ? (
