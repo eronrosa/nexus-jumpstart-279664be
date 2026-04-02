@@ -473,7 +473,7 @@ const PainelPage = () => {
     if (!user) { navigate("/auth"); return; }
     const loadStore = async () => {
       const { data } = await supabase.from("stores").select("*").eq("owner_id", user.id).limit(1).single();
-      if (data) setStore(data as StoreData);
+      if (data) setStore(data as unknown as StoreData);
       setStoreLoading(false);
     };
     loadStore();
