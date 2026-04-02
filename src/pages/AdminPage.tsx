@@ -8,8 +8,7 @@ import { motion } from "framer-motion";
 import {
   LayoutDashboard, Users, Store, ShoppingBag, Car, Ticket, Sparkles,
   Star, ArrowLeft, Search, ToggleLeft, ToggleRight, Shield, ChevronRight,
-  TrendingUp, DollarSign, Package, Eye, Ban, CheckCircle, XCircle,
-  UserCheck, UserX, Bike, MapPin, Clock, BarChart3, Megaphone
+  DollarSign, Bike, MapPin, Megaphone
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
