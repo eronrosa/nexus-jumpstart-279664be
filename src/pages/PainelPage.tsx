@@ -16,6 +16,12 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardTab from "@/components/DashboardTab";
 import PromocoesTab from "@/components/PromocoesTab";
+import AvaliacoesTab from "@/components/painel/AvaliacoesTab";
+import FinanceiroTab from "@/components/painel/FinanceiroTab";
+import PagamentoTab from "@/components/painel/PagamentoTab";
+import ServicosTab from "@/components/painel/ServicosTab";
+import PerfilTab from "@/components/painel/PerfilTab";
+import RecomendacoesTab from "@/components/painel/RecomendacoesTab";
 
 /* ─── Types ─── */
 interface OrderItem {
@@ -664,19 +670,6 @@ function DeliveryZonesTab({ storeId }: { storeId: string }) {
   );
 }
 
-/* ─── Placeholder Tab (for features not yet built) ─── */
-function PlaceholderTab({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) {
-  return (
-    <div className="text-center py-20">
-      <div className="w-20 h-20 bg-muted/50 rounded-3xl flex items-center justify-center mx-auto mb-4">
-        <Icon size={32} className="text-muted-foreground/40" />
-      </div>
-      <p className="font-bold text-foreground text-lg">{title}</p>
-      <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">{description}</p>
-      <span className="inline-block mt-4 text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full">Em breve</span>
-    </div>
-  );
-}
 
 /* ═══════════════════ Main Page ═══════════════════ */
 const PainelPage = () => {
@@ -688,6 +681,7 @@ const PainelPage = () => {
   const [storeLoading, setStoreLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("inicio");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [menuItemsCount, setMenuItemsCount] = useState(0);
 
   const [editingStore, setEditingStore] = useState(false);
   const [editName, setEditName] = useState("");
@@ -722,7 +716,12 @@ const PainelPage = () => {
       if (data) setOrders(data as Order[]);
       setLoading(false);
     };
+    const loadMenuCount = async () => {
+      const { count } = await supabase.from("menu_items").select("*", { count: "exact", head: true }).eq("store_id", store.id);
+      if (count != null) setMenuItemsCount(count);
+    };
     loadOrders();
+    loadMenuCount();
     const channel = supabase
       .channel('merchant-orders')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `restaurant_id=eq.${store.id}` },
@@ -1309,22 +1308,21 @@ const PainelPage = () => {
         );
 
       case "avaliações":
-        return <PlaceholderTab icon={Star} title="Avaliações" description="Veja o que seus clientes estão dizendo sobre sua loja e responda avaliações" />;
+        return <AvaliacoesTab />;
       case "financeiro":
-        return <PlaceholderTab icon={DollarSign} title="Financeiro" description="Acompanhe suas faturas, taxas, repasses e extrato financeiro detalhado" />;
+        return <FinanceiroTab orders={orders} />;
       case "areas_entrega":
         return <DeliveryZonesTab storeId={store.id} />;
       case "pagamento":
-        return <PlaceholderTab icon={CreditCard} title="Formas de pagamento" description="Gerencie as formas de pagamento aceitas pelo seu estabelecimento" />;
+        return <PagamentoTab />;
       case "promocoes":
         return <PromocoesTab storeId={store.id} />;
       case "servicos":
-        return <PlaceholderTab icon={Sparkles} title="Serviços" description="Descubra ferramentas e integrações para impulsionar suas vendas" />;
+        return <ServicosTab />;
       case "perfil":
-        return <PlaceholderTab icon={UserCircle} title="Perfil" description="Gerencie seus dados pessoais, documentos e informações do responsável" />;
-
+        return <PerfilTab />;
       case "recomendacoes":
-        return <PlaceholderTab icon={Award} title="Recomendações" description="Receba dicas personalizadas para melhorar o desempenho da sua loja" />;
+        return <RecomendacoesTab store={store} menuItemsCount={menuItemsCount} ordersCount={orders.length} />;
 
       default:
         return null;
