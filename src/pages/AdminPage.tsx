@@ -465,6 +465,9 @@ function DashboardPanel() {
         </Card>
       </div>
 
+      {/* ── ROW 3.5: Live Drivers Map ── */}
+      <LiveDriversMap />
+
       {/* ── ROW 4: Real-time indicators ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="flex items-center gap-4">
