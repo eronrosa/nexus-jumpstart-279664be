@@ -12,6 +12,7 @@ const Sidebar = () => {
     { icon: List, label: "Pedidos", path: "/pedidos" },
     { icon: Sparkles, label: "ZUZU", path: "/" },
     { icon: Wallet, label: "Zuupay", path: "/" },
+    { icon: Store, label: "Painel", path: "/painel" },
   ];
 
   return (
