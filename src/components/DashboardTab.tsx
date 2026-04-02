@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
-import { TrendingUp, DollarSign, ShoppingBag, CalendarDays, ArrowUpRight, ArrowDownRight, Target } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
+import { TrendingUp, DollarSign, ShoppingBag, CalendarDays, Target } from "lucide-react";
 
 interface Order {
   id: string; total: number; delivery_fee: number; status: string; created_at: string;

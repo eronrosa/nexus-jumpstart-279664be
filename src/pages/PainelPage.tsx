@@ -7,8 +7,8 @@ import {
   Store, Package, Clock, CheckCircle, ChefHat, XCircle,
   ChevronDown, ChevronUp, ArrowLeft, Plus, Pencil, Trash2, Save, X,
   UtensilsCrossed, ImagePlus, ToggleLeft, ToggleRight,
-  TrendingUp, LayoutDashboard, History, Settings, Bell,
-  Menu as MenuIcon, LogOut, Activity, Users, Zap, Search
+  LayoutDashboard, History, Settings, Bell,
+  Menu as MenuIcon, Activity, Zap, Search
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardTab from "@/components/DashboardTab";
