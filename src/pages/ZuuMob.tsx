@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useDriverGPSReceiver } from "@/hooks/useDriverGPS";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -80,6 +81,18 @@ const ZuuMob = () => {
   const [chatMessages, setChatMessages] = useState<{ from: string; text: string }[]>([]);
   const [showConfetti, setShowConfetti] = useState(false);
   const [isRequesting, setIsRequesting] = useState(false);
+
+  // Real-time GPS tracking of driver
+  const activeDriverId = currentRide?.driver_id || null;
+  useDriverGPSReceiver(activeDriverId, useCallback((lat: number, lng: number, _heading: number | null) => {
+    if (mockDriverMarkerRef.current) {
+      mockDriverMarkerRef.current.setLngLat([lng, lat]);
+    }
+    if (mapRef.current) {
+      // Optionally pan map to follow driver
+      // mapRef.current.panTo([lng, lat]);
+    }
+  }, []));
 
   // Initialize map & mock drivers
   useEffect(() => {
