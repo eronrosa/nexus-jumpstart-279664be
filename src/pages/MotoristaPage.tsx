@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useDriverGPSSender } from "@/hooks/useDriverGPS";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
