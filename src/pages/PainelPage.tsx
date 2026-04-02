@@ -16,6 +16,12 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardTab from "@/components/DashboardTab";
 import PromocoesTab from "@/components/PromocoesTab";
+import AvaliacoesTab from "@/components/painel/AvaliacoesTab";
+import FinanceiroTab from "@/components/painel/FinanceiroTab";
+import PagamentoTab from "@/components/painel/PagamentoTab";
+import ServicosTab from "@/components/painel/ServicosTab";
+import PerfilTab from "@/components/painel/PerfilTab";
+import RecomendacoesTab from "@/components/painel/RecomendacoesTab";
 
 /* ─── Types ─── */
 interface OrderItem {
