@@ -732,6 +732,9 @@ const PainelPage = () => {
     const loadMenuCount = async () => {
       const { count } = await supabase.from("menu_items").select("*", { count: "exact", head: true }).eq("store_id", store.id);
       if (count != null) setMenuItemsCount(count);
+    };
+    loadOrders();
+    loadMenuCount();
     const channel = supabase
       .channel('merchant-orders')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `restaurant_id=eq.${store.id}` },
