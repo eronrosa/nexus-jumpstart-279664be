@@ -270,6 +270,89 @@ export default function AdminPage() {
         </div>
       </div>
 
+      {/* Notification Bell — fixed top-right */}
+      <div className="fixed top-4 right-4 z-[60] flex items-center gap-2">
+        <div className="relative">
+          <button
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="relative w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center shadow-sm hover:shadow-md transition-all"
+          >
+            <Bell size={18} className="text-muted-foreground" />
+            {unreadCount > 0 && (
+              <motion.span
+                initial={{ scale: 0 }} animate={{ scale: 1 }}
+                className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center"
+              >
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </motion.span>
+            )}
+          </button>
+
+          <AnimatePresence>
+            {showNotifications && (
+              <motion.div
+                initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                className="absolute top-12 right-0 w-80 max-h-[420px] bg-card border border-border rounded-2xl shadow-xl overflow-hidden"
+              >
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                  <h3 className="text-sm font-bold text-foreground">Notificações</h3>
+                  <div className="flex items-center gap-2">
+                    {unreadCount > 0 && (
+                      <button onClick={markAllRead} className="text-[11px] text-primary font-semibold hover:underline">
+                        Marcar todas como lidas
+                      </button>
+                    )}
+                    <button onClick={() => setShowNotifications(false)} className="text-muted-foreground hover:text-foreground">
+                      <X size={14} />
+                    </button>
+                  </div>
+                </div>
+                <div className="overflow-y-auto max-h-[360px]">
+                  {notifications.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
+                      <Bell size={28} className="mb-2 opacity-30" />
+                      <p className="text-xs">Nenhuma notificação ainda</p>
+                    </div>
+                  ) : (
+                    notifications.map(n => (
+                      <div
+                        key={n.id}
+                        className={cn(
+                          "px-4 py-3 border-b border-border/50 transition-colors",
+                          !n.read && "bg-primary/5"
+                        )}
+                      >
+                        <div className="flex items-start gap-2.5">
+                          <div className={cn(
+                            "mt-0.5 w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
+                            n.type === "order" ? "bg-primary/10" : n.type === "ride" ? "bg-blue-50" : "bg-amber-50"
+                          )}>
+                            {n.type === "order" ? <ShoppingBag size={14} className="text-primary" /> :
+                             n.type === "ride" ? <Car size={14} className="text-blue-600" /> :
+                             <Users size={14} className="text-amber-600" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[12px] font-semibold text-foreground">{n.title}</p>
+                            <p className="text-[11px] text-muted-foreground truncate">{n.message}</p>
+                            <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+                              {n.timestamp.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                            </p>
+                          </div>
+                          {!n.read && <span className="mt-2 w-2 h-2 rounded-full bg-primary shrink-0" />}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
       {/* Content */}
       <main className="flex-1 overflow-y-auto pb-20 md:pb-0 pt-14 md:pt-0">
         <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-6 md:py-8">
