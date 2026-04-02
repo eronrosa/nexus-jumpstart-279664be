@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import mapboxgl from "mapbox-gl";
@@ -15,7 +15,7 @@ import {
   LayoutDashboard, Users, Store, ShoppingBag, Car, Ticket, Sparkles,
   Star, ArrowLeft, Search, ToggleLeft, ToggleRight, Shield, ChevronRight,
   DollarSign, Bike, MapPin, Megaphone, TrendingUp, Activity, Zap,
-  CheckCircle2, XCircle, Clock, Cpu, Navigation, ArrowUpRight
+  CheckCircle2, XCircle, Clock, Cpu, Navigation, ArrowUpRight, Bell, X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -90,13 +90,85 @@ function PulseDot({ color = "bg-primary" }: { color?: string }) {
   );
 }
 
+/* ═══════════════════════ NOTIFICATION ITEM TYPE ═══════════════════════ */
+interface AdminNotification {
+  id: string;
+  type: "order" | "ride" | "driver";
+  title: string;
+  message: string;
+  timestamp: Date;
+  read: boolean;
+}
+
 /* ═══════════════════════ MAIN PAGE ═══════════════════════ */
 export default function AdminPage() {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdminCheck();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [tab, setTab] = useState<Tab>("dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [notifications, setNotifications] = useState<AdminNotification[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const addNotification = useCallback((n: Omit<AdminNotification, "id" | "timestamp" | "read">) => {
+    const newNotif: AdminNotification = {
+      ...n,
+      id: crypto.randomUUID(),
+      timestamp: new Date(),
+      read: false,
+    };
+    setNotifications(prev => [newNotif, ...prev].slice(0, 50));
+    toast({ title: n.title, description: n.message });
+    // Play sound
+    try {
+      if (!audioRef.current) {
+        audioRef.current = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH2Tqauwm4Fwa2R1hpm0wbWjh3Fla3KFnbO/t6SDZ11ncYShucS0nmxMQ1Bnf6C9y8ClgF5RWW2KqMHFs5RuV01Xa4mjvce4oIBkVVVpgp60wbypl3pjVlhog5+1wLell3djU1Znh6O5wr2snHxkUlZkfpm0v72snX5mWFpjfJaturiomHhfUlhkfpiwu7qqnX5lV1dhepKqtbShjnViVFhie5WuubiokHViUlZfdo+otLOij3RhUVVedY2lsLClkHZiUFNcc4ujrq+jkHhkUlVddIymr6+ikHhkUldddIylr6+ikHhkUldddIylr6+ikHhlU1hedY2mr6+ikHhlU1he");
+      }
+      audioRef.current.volume = 0.3;
+      audioRef.current.play().catch(() => {});
+    } catch {}
+  }, [toast]);
+
+  // Realtime: new orders
+  useEffect(() => {
+    if (!user || !isAdmin) return;
+    const channel = supabase
+      .channel("admin-new-orders")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (payload) => {
+        const order = payload.new as any;
+        addNotification({
+          type: "order",
+          title: "🛒 Novo Pedido!",
+          message: `${order.restaurant_name} — ${Number(order.total).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`,
+        });
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "rides" }, (payload) => {
+        addNotification({
+          type: "ride",
+          title: "🚗 Nova Corrida!",
+          message: `Corrida solicitada — buscando motorista...`,
+        });
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "drivers" }, (payload) => {
+        const driver = payload.new as any;
+        addNotification({
+          type: "driver",
+          title: "👤 Novo Motorista!",
+          message: `${driver.full_name || "Motorista"} se cadastrou na plataforma`,
+        });
+      })
+      .subscribe();
+
+    return () => { channel.unsubscribe(); };
+  }, [user, isAdmin, addNotification]);
+
+  const markAllRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
 
   if (authLoading || adminLoading) {
     return (
@@ -195,6 +267,89 @@ export default function AdminPage() {
               <Icon size={12} />{label}
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Notification Bell — fixed top-right */}
+      <div className="fixed top-4 right-4 z-[60] flex items-center gap-2">
+        <div className="relative">
+          <button
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="relative w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center shadow-sm hover:shadow-md transition-all"
+          >
+            <Bell size={18} className="text-muted-foreground" />
+            {unreadCount > 0 && (
+              <motion.span
+                initial={{ scale: 0 }} animate={{ scale: 1 }}
+                className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center"
+              >
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </motion.span>
+            )}
+          </button>
+
+          <AnimatePresence>
+            {showNotifications && (
+              <motion.div
+                initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                className="absolute top-12 right-0 w-80 max-h-[420px] bg-card border border-border rounded-2xl shadow-xl overflow-hidden"
+              >
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                  <h3 className="text-sm font-bold text-foreground">Notificações</h3>
+                  <div className="flex items-center gap-2">
+                    {unreadCount > 0 && (
+                      <button onClick={markAllRead} className="text-[11px] text-primary font-semibold hover:underline">
+                        Marcar todas como lidas
+                      </button>
+                    )}
+                    <button onClick={() => setShowNotifications(false)} className="text-muted-foreground hover:text-foreground">
+                      <X size={14} />
+                    </button>
+                  </div>
+                </div>
+                <div className="overflow-y-auto max-h-[360px]">
+                  {notifications.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
+                      <Bell size={28} className="mb-2 opacity-30" />
+                      <p className="text-xs">Nenhuma notificação ainda</p>
+                    </div>
+                  ) : (
+                    notifications.map(n => (
+                      <div
+                        key={n.id}
+                        className={cn(
+                          "px-4 py-3 border-b border-border/50 transition-colors",
+                          !n.read && "bg-primary/5"
+                        )}
+                      >
+                        <div className="flex items-start gap-2.5">
+                          <div className={cn(
+                            "mt-0.5 w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
+                            n.type === "order" ? "bg-primary/10" : n.type === "ride" ? "bg-blue-50" : "bg-amber-50"
+                          )}>
+                            {n.type === "order" ? <ShoppingBag size={14} className="text-primary" /> :
+                             n.type === "ride" ? <Car size={14} className="text-blue-600" /> :
+                             <Users size={14} className="text-amber-600" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[12px] font-semibold text-foreground">{n.title}</p>
+                            <p className="text-[11px] text-muted-foreground truncate">{n.message}</p>
+                            <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+                              {n.timestamp.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                            </p>
+                          </div>
+                          {!n.read && <span className="mt-2 w-2 h-2 rounded-full bg-primary shrink-0" />}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
