@@ -1,19 +1,44 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Search, Star, Clock, ShoppingCart, Plus, Minus,
-  Trash2, ChevronRight, X, MapPin, Bike, CheckCircle
+  Trash2, ChevronRight, X, MapPin, Bike, CheckCircle, Store as StoreIcon
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
-/* ─── Data ─── */
+/* ─── Types ─── */
+interface MenuItemData {
+  id: string;
+  category: string;
+  name: string;
+  price: number;
+  image: string;
+  description: string;
+}
+
+interface RestaurantData {
+  id: string;
+  name: string;
+  category: string;
+  rating: number;
+  deliveryTime: string;
+  minOrder: number;
+  deliveryFee: number;
+  promo: string;
+  image: string;
+  logo: string;
+  menu: MenuItemData[];
+  isDynamic?: boolean;
+}
+
+/* ─── Static fallback data ─── */
 const CATEGORIES = ["Todos", "Japonês", "Hambúrguer", "Pizza", "Lanches", "Saudável", "Sobremesas", "Árabe"];
 
-const RESTAURANTS = [
+const STATIC_RESTAURANTS: RestaurantData[] = [
   {
     id: "r1", name: "Restaurante Mitsuba", category: "Japonês", rating: 4.8,
     deliveryTime: "30-45 min", minOrder: 25, deliveryFee: 0, promo: "Frete grátis",
@@ -67,9 +92,32 @@ const RESTAURANTS = [
   },
 ];
 
-/* ─── Sub-components ─── */
+const CATEGORY_COVERS: Record<string, string> = {
+  "Restaurante": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80&fit=crop",
+  "Hamburgueria": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80&fit=crop",
+  "Pizzaria": "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80&fit=crop",
+  "Japonês": "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&q=80&fit=crop",
+  "Lanchonete": "https://images.unsplash.com/photo-1550547660-d9450f859349?w=800&q=80&fit=crop",
+  "Farmácia": "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=800&q=80&fit=crop",
+  "Floricultura": "https://images.unsplash.com/photo-1487530811176-3780de880c2d?w=800&q=80&fit=crop",
+  "Mercado": "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=800&q=80&fit=crop",
+};
+
+const CATEGORY_LOGOS: Record<string, string> = {
+  "Restaurante": "https://img.icons8.com/color/96/restaurant.png",
+  "Hamburgueria": "https://img.icons8.com/color/96/hamburger.png",
+  "Pizzaria": "https://img.icons8.com/color/96/pizza.png",
+  "Japonês": "https://img.icons8.com/color/96/sushi.png",
+  "Lanchonete": "https://img.icons8.com/color/96/hot-dog.png",
+  "Farmácia": "https://img.icons8.com/color/96/pill.png",
+  "Floricultura": "https://img.icons8.com/color/96/flower.png",
+  "Mercado": "https://img.icons8.com/color/96/shopping-cart.png",
+};
+
+/* ─── Helpers ─── */
 const fmt = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
+/* ─── Cart Drawer ─── */
 function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { items, increment, decrement, remove, total, count, clear } = useCart();
   const { user } = useAuth();
@@ -79,19 +127,10 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
 
   const handleOrder = async () => {
     if (items.length === 0) return;
-
-    if (!user) {
-      onClose();
-      navigate("/auth");
-      return;
-    }
-
+    if (!user) { onClose(); navigate("/auth"); return; }
     setSaving(true);
     try {
       const restaurant = items[0];
-      // Pull delivery fee from restaurant data (default 0 = free)
-      const deliveryFee = 0;
-
       const { data: orderData, error: orderError } = await supabase
         .from("orders")
         .insert({
@@ -100,26 +139,18 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
           restaurant_name: restaurant.restaurantName,
           status: "pendente",
           total: total,
-          delivery_fee: deliveryFee,
+          delivery_fee: 0,
         })
-        .select()
-        .single();
-
+        .select().single();
       if (orderError) throw orderError;
-
       if (orderData) {
         const orderItems = items.map(item => ({
-          order_id: orderData.id,
-          item_id: item.id,
-          item_name: item.name,
-          item_price: item.price,
-          quantity: item.qty,
-          item_image: item.image,
+          order_id: orderData.id, item_id: item.id, item_name: item.name,
+          item_price: item.price, quantity: item.qty, item_image: item.image,
         }));
         const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
         if (itemsError) throw itemsError;
       }
-
       setSaving(false);
       setOrdered(true);
       setTimeout(() => { setOrdered(false); clear(); onClose(); }, 2800);
@@ -130,24 +161,15 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
     }
   };
 
-
   return (
     <AnimatePresence>
       {open && (
         <>
-          <motion.div
-            key="backdrop"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 z-40"
-            onClick={onClose}
-          />
-          <motion.div
-            key="drawer"
-            initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+          <motion.div key="backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
+          <motion.div key="drawer" initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 320, damping: 32 }}
-            className="fixed right-0 top-0 h-full w-full max-w-sm bg-card shadow-2xl z-50 flex flex-col"
-          >
-            {/* Header */}
+            className="fixed right-0 top-0 h-full w-full max-w-sm bg-card shadow-2xl z-50 flex flex-col">
             <div className="flex items-center justify-between px-4 py-4 border-b border-border">
               <div className="flex items-center gap-2">
                 <ShoppingCart size={18} className="text-primary" />
@@ -156,21 +178,16 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
               </div>
               <button onClick={onClose} className="p-1 text-muted-foreground hover:text-foreground"><X size={18} /></button>
             </div>
-
             <div className="flex-1 overflow-y-auto">
               <AnimatePresence mode="wait">
                 {ordered ? (
-                  <motion.div
-                    key="success"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="flex flex-col items-center justify-center h-full gap-4 p-8"
-                  >
+                  <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+                    className="flex flex-col items-center justify-center h-full gap-4 p-8">
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 400, damping: 15, delay: 0.1 }}>
-                      <CheckCircle size={64} className="text-green-500" />
+                      <CheckCircle size={64} className="text-emerald-500" />
                     </motion.div>
                     <p className="font-bold text-xl text-foreground text-center">Pedido realizado!</p>
-                    <p className="text-sm text-muted-foreground text-center">Seu pedido foi enviado ao restaurante e chegará em breve 🛵</p>
+                    <p className="text-sm text-muted-foreground text-center">Seu pedido foi enviado e chegará em breve</p>
                   </motion.div>
                 ) : items.length === 0 ? (
                   <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center h-full gap-3 p-8 text-center">
@@ -180,35 +197,28 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                   </motion.div>
                 ) : (
                   <motion.div key="items" className="p-4 space-y-3">
-                    {/* Restaurant name */}
                     <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide flex items-center gap-1.5">
                       <MapPin size={12} /> {items[0]?.restaurantName}
                     </p>
                     {items.map(item => (
-                      <motion.div
-                        key={item.id}
-                        layout
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, x: 40 }}
-                        className="flex items-center gap-3 bg-secondary/50 rounded-xl p-2.5"
-                      >
-                        <img src={item.image} alt={item.name} className="w-12 h-12 rounded-lg object-cover shrink-0" />
+                      <motion.div key={item.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: 40 }}
+                        className="flex items-center gap-3 bg-secondary/50 rounded-xl p-2.5">
+                        {item.image ? (
+                          <img src={item.image} alt={item.name} className="w-12 h-12 rounded-lg object-cover shrink-0" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                            <StoreIcon size={16} className="text-muted-foreground" />
+                          </div>
+                        )}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-foreground leading-tight truncate">{item.name}</p>
                           <p className="text-xs text-primary font-bold mt-0.5">{fmt(item.price)}</p>
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0">
-                          <button onClick={() => decrement(item.id)} className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center hover:bg-border transition-colors">
-                            <Minus size={12} />
-                          </button>
+                          <button onClick={() => decrement(item.id)} className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center hover:bg-border transition-colors"><Minus size={12} /></button>
                           <span className="text-sm font-bold w-4 text-center">{item.qty}</span>
-                          <button onClick={() => increment(item.id)} className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:opacity-90 transition-opacity">
-                            <Plus size={12} />
-                          </button>
-                          <button onClick={() => remove(item.id)} className="w-6 h-6 rounded-full bg-destructive/10 text-destructive flex items-center justify-center ml-1 hover:bg-destructive/20 transition-colors">
-                            <Trash2 size={12} />
-                          </button>
+                          <button onClick={() => increment(item.id)} className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:opacity-90 transition-opacity"><Plus size={12} /></button>
+                          <button onClick={() => remove(item.id)} className="w-6 h-6 rounded-full bg-destructive/10 text-destructive flex items-center justify-center ml-1 hover:bg-destructive/20 transition-colors"><Trash2 size={12} /></button>
                         </div>
                       </motion.div>
                     ))}
@@ -216,8 +226,6 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                 )}
               </AnimatePresence>
             </div>
-
-            {/* Footer */}
             {items.length > 0 && !ordered && (
               <div className="p-4 border-t border-border space-y-3">
                 <div className="flex items-center justify-between text-sm">
@@ -226,18 +234,14 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground flex items-center gap-1"><Bike size={13} /> Entrega</span>
-                  <span className="font-semibold text-green-600">Grátis</span>
+                  <span className="font-semibold text-emerald-600">Grátis</span>
                 </div>
                 <div className="flex items-center justify-between font-bold text-base border-t border-border pt-2">
                   <span>Total</span>
                   <span className="text-primary">{fmt(total)}</span>
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                  onClick={handleOrder}
-                  disabled={saving}
-                  className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-70"
-                >
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={handleOrder} disabled={saving}
+                  className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-70">
                   {saving ? "Salvando pedido..." : `Fazer pedido · ${fmt(total)}`}
                 </motion.button>
               </div>
@@ -255,19 +259,86 @@ const ZuuFood = () => {
   const { add, count, items } = useCart();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("Todos");
-  const [selectedRestaurant, setSelectedRestaurant] = useState<typeof RESTAURANTS[0] | null>(null);
+  const [selectedRestaurant, setSelectedRestaurant] = useState<RestaurantData | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [addedId, setAddedId] = useState<string | null>(null);
+  const [allRestaurants, setAllRestaurants] = useState<RestaurantData[]>(STATIC_RESTAURANTS);
+  const [loadingMenu, setLoadingMenu] = useState(false);
 
-  const filtered = RESTAURANTS.filter(r => {
+  // Load dynamic stores from DB
+  useEffect(() => {
+    const loadStores = async () => {
+      const { data: stores } = await supabase
+        .from("stores")
+        .select("id, name, category, logo_url, cover_url, description, is_active")
+        .eq("is_active", true);
+
+      if (!stores || stores.length === 0) return;
+
+      const dynamicRestaurants: RestaurantData[] = stores.map(store => ({
+        id: store.id,
+        name: store.name,
+        category: store.category,
+        rating: 4.5 + Math.random() * 0.5,
+        deliveryTime: "25-45 min",
+        minOrder: 20,
+        deliveryFee: 0,
+        promo: "",
+        image: store.cover_url || CATEGORY_COVERS[store.category] || CATEGORY_COVERS["Restaurante"],
+        logo: store.logo_url || CATEGORY_LOGOS[store.category] || CATEGORY_LOGOS["Restaurante"],
+        menu: [], // loaded on demand
+        isDynamic: true,
+      }));
+
+      // Merge: dynamic first, then static
+      setAllRestaurants([...dynamicRestaurants, ...STATIC_RESTAURANTS]);
+    };
+    loadStores();
+  }, []);
+
+  // Load menu items when selecting a dynamic restaurant
+  const handleSelectRestaurant = async (r: RestaurantData) => {
+    if (r.isDynamic && r.menu.length === 0) {
+      setLoadingMenu(true);
+      setSelectedRestaurant(r);
+      const { data: menuItems } = await supabase
+        .from("menu_items")
+        .select("*")
+        .eq("store_id", r.id)
+        .eq("is_available", true)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true });
+
+      if (menuItems && menuItems.length > 0) {
+        const mappedMenu: MenuItemData[] = menuItems.map(mi => ({
+          id: mi.id,
+          category: mi.category,
+          name: mi.name,
+          price: Number(mi.price),
+          image: mi.image_url || "",
+          description: mi.description || "",
+        }));
+        const updated = { ...r, menu: mappedMenu };
+        setSelectedRestaurant(updated);
+        setAllRestaurants(prev => prev.map(rest => rest.id === r.id ? updated : rest));
+      }
+      setLoadingMenu(false);
+    } else {
+      setSelectedRestaurant(r);
+    }
+  };
+
+  const filtered = allRestaurants.filter(r => {
     const matchCat = activeCategory === "Todos" || r.category === activeCategory;
     const matchSearch = r.name.toLowerCase().includes(search.toLowerCase()) || r.category.toLowerCase().includes(search.toLowerCase());
     return matchCat && matchSearch;
   });
 
-  const handleAdd = (item: typeof RESTAURANTS[0]["menu"][0], restaurant: typeof RESTAURANTS[0]) => {
-    // Block mixing restaurants
-    if (items.length > 0 && items[0].restaurantId !== restaurant.id) return;
+  const handleAdd = (item: MenuItemData, restaurant: RestaurantData) => {
+    if (items.length > 0 && items[0].restaurantId !== restaurant.id) {
+      toast.error("Você só pode pedir de um restaurante por vez. Limpe o carrinho antes.");
+      return;
+    }
     add({
       id: item.id,
       restaurantId: restaurant.id,
@@ -280,14 +351,17 @@ const ZuuFood = () => {
     setTimeout(() => setAddedId(null), 800);
   };
 
-  // Group menu items by category
   const menuGroups = selectedRestaurant
     ? selectedRestaurant.menu.reduce((acc, item) => {
         if (!acc[item.category]) acc[item.category] = [];
         acc[item.category].push(item);
         return acc;
-      }, {} as Record<string, typeof RESTAURANTS[0]["menu"]>)
+      }, {} as Record<string, MenuItemData[]>)
     : {};
+
+  // Collect unique categories from all restaurants
+  const dynamicCategories = [...new Set(allRestaurants.map(r => r.category))];
+  const allCategories = ["Todos", ...new Set([...CATEGORIES.slice(1), ...dynamicCategories])];
 
   return (
     <div className="min-h-screen bg-background">
@@ -304,21 +378,16 @@ const ZuuFood = () => {
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <Clock size={11} /> {selectedRestaurant.deliveryTime}
               <span className="mx-1">·</span>
-              <Star size={11} className="text-yellow-500" fill="currentColor" /> {selectedRestaurant.rating}
+              <Star size={11} className="text-yellow-500" fill="currentColor" /> {selectedRestaurant.rating.toFixed(1)}
             </p>
           )}
         </div>
-        <motion.button
-          whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-          onClick={() => setCartOpen(true)}
-          className="relative p-2 bg-primary/10 text-primary rounded-full"
-        >
+        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+          onClick={() => setCartOpen(true)} className="relative p-2 bg-primary/10 text-primary rounded-full">
           <ShoppingCart size={20} />
           {count > 0 && (
-            <motion.span
-              initial={{ scale: 0 }} animate={{ scale: 1 }}
-              className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center"
-            >
+            <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
+              className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center">
               {count}
             </motion.span>
           )}
@@ -329,60 +398,46 @@ const ZuuFood = () => {
         {!selectedRestaurant ? (
           /* ── LISTING VIEW ── */
           <div className="px-4 py-4 space-y-4">
-            {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={15} />
-              <input
-                value={search}
-                onChange={e => setSearch(e.target.value)}
+              <input value={search} onChange={e => setSearch(e.target.value)}
                 placeholder="Buscar restaurante ou categoria..."
-                className="w-full bg-card border border-border rounded-full pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-              />
+                className="w-full bg-card border border-border rounded-full pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
             </div>
 
-            {/* Categories */}
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              {CATEGORIES.map(cat => (
-                <motion.button
-                  key={cat}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setActiveCategory(cat)}
+              {allCategories.map(cat => (
+                <motion.button key={cat} whileTap={{ scale: 0.95 }} onClick={() => setActiveCategory(cat)}
                   className={`px-4 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap transition-colors shrink-0 ${
-                    activeCategory === cat
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-card border border-border text-muted-foreground hover:text-foreground"
-                  }`}
-                >
+                    activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground hover:text-foreground"
+                  }`}>
                   {cat}
                 </motion.button>
               ))}
             </div>
 
-            {/* Restaurant grid */}
             <div className="space-y-3">
               {filtered.length === 0 && (
-                <p className="text-center text-muted-foreground text-sm py-12">Nenhum restaurante encontrado 🍽️</p>
+                <p className="text-center text-muted-foreground text-sm py-12">Nenhum restaurante encontrado</p>
               )}
               {filtered.map((r, i) => (
-                <motion.div
-                  key={r.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.06 }}
-                  whileHover={{ scale: 1.01 }}
-                  onClick={() => setSelectedRestaurant(r)}
-                  className="bg-card rounded-2xl border border-border overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-                >
+                <motion.div key={r.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.06 }} whileHover={{ scale: 1.01 }}
+                  onClick={() => handleSelectRestaurant(r)}
+                  className="bg-card rounded-2xl border border-border overflow-hidden cursor-pointer hover:shadow-md transition-shadow">
                   <div className="relative h-36">
                     <img src={r.image} alt={r.name} className="w-full h-full object-cover" />
                     {r.promo && (
-                      <span className="absolute top-2 left-2 bg-primary text-primary-foreground text-[11px] font-bold px-2 py-0.5 rounded-full">
-                        {r.promo}
+                      <span className="absolute top-2 left-2 bg-primary text-primary-foreground text-[11px] font-bold px-2 py-0.5 rounded-full">{r.promo}</span>
+                    )}
+                    {r.isDynamic && (
+                      <span className="absolute top-2 right-2 bg-card/90 backdrop-blur text-foreground text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <StoreIcon size={10} /> Parceiro
                       </span>
                     )}
                   </div>
                   <div className="p-3 flex items-center gap-3">
-                    <img src={r.logo} alt={r.name} className="w-10 h-10 rounded-xl border border-border bg-white shrink-0" />
+                    <img src={r.logo} alt={r.name} className="w-10 h-10 rounded-xl border border-border bg-card shrink-0 object-cover" />
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-foreground text-sm">{r.name}</p>
                       <p className="text-xs text-muted-foreground">{r.category}</p>
@@ -390,14 +445,14 @@ const ZuuFood = () => {
                     <div className="text-right shrink-0 space-y-0.5">
                       <div className="flex items-center gap-1 justify-end">
                         <Star size={12} className="text-yellow-500" fill="currentColor" />
-                        <span className="text-xs font-bold text-foreground">{r.rating}</span>
+                        <span className="text-xs font-bold text-foreground">{r.rating.toFixed(1)}</span>
                       </div>
                       <div className="flex items-center gap-1 text-muted-foreground">
                         <Clock size={11} />
                         <span className="text-xs">{r.deliveryTime}</span>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {r.deliveryFee === 0 ? <span className="text-green-600 font-semibold">Frete grátis</span> : `Frete: ${fmt(r.deliveryFee)}`}
+                        {r.deliveryFee === 0 ? <span className="text-emerald-600 font-semibold">Frete grátis</span> : `Frete: ${fmt(r.deliveryFee)}`}
                       </p>
                     </div>
                     <ChevronRight size={16} className="text-muted-foreground shrink-0" />
@@ -409,12 +464,11 @@ const ZuuFood = () => {
         ) : (
           /* ── RESTAURANT MENU VIEW ── */
           <div className="px-4 py-4 pb-32 space-y-6">
-            {/* Restaurant hero */}
             <div className="relative rounded-2xl overflow-hidden h-40">
               <img src={selectedRestaurant.image} alt={selectedRestaurant.name} className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
               <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                <img src={selectedRestaurant.logo} alt={selectedRestaurant.name} className="w-10 h-10 rounded-xl border-2 border-white bg-white" />
+                <img src={selectedRestaurant.logo} alt={selectedRestaurant.name} className="w-10 h-10 rounded-xl border-2 border-card bg-card object-cover" />
                 <div>
                   <p className="font-bold text-white text-sm">{selectedRestaurant.name}</p>
                   <p className="text-xs text-white/80">Pedido mínimo: {fmt(selectedRestaurant.minOrder)}</p>
@@ -422,12 +476,11 @@ const ZuuFood = () => {
               </div>
             </div>
 
-            {/* Info chips */}
             <div className="flex gap-2 flex-wrap">
               {[
-                { icon: Star, text: `${selectedRestaurant.rating} estrelas`, color: "text-yellow-600 bg-yellow-50" },
-                { icon: Clock, text: selectedRestaurant.deliveryTime, color: "text-blue-600 bg-blue-50" },
-                { icon: Bike, text: selectedRestaurant.deliveryFee === 0 ? "Frete grátis" : fmt(selectedRestaurant.deliveryFee), color: "text-green-600 bg-green-50" },
+                { icon: Star, text: `${selectedRestaurant.rating.toFixed(1)} estrelas`, color: "text-yellow-600 bg-yellow-500/10" },
+                { icon: Clock, text: selectedRestaurant.deliveryTime, color: "text-blue-600 bg-blue-500/10" },
+                { icon: Bike, text: selectedRestaurant.deliveryFee === 0 ? "Frete grátis" : fmt(selectedRestaurant.deliveryFee), color: "text-emerald-600 bg-emerald-500/10" },
               ].map(({ icon: Icon, text, color }) => (
                 <span key={text} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${color}`}>
                   <Icon size={12} fill={color.includes("yellow") ? "currentColor" : "none"} />
@@ -436,55 +489,60 @@ const ZuuFood = () => {
               ))}
             </div>
 
-            {/* Menu sections */}
-            {Object.entries(menuGroups).map(([category, menuItems]) => (
-              <section key={category}>
-                <h2 className="text-sm font-extrabold text-foreground mb-3 uppercase tracking-wide">{category}</h2>
-                <div className="space-y-2">
-                  {menuItems.map(item => (
-                    <motion.div
-                      key={item.id}
-                      layout
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="bg-card rounded-2xl border border-border p-3 flex gap-3 items-center"
-                    >
-                      <img src={item.image} alt={item.name} className="w-16 h-16 rounded-xl object-cover shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm text-foreground leading-tight">{item.name}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.description}</p>
-                        <p className="text-sm font-bold text-primary mt-1">{fmt(item.price)}</p>
-                      </div>
-                      <motion.button
-                        whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                        onClick={() => handleAdd(item, selectedRestaurant)}
-                        animate={addedId === item.id ? { scale: [1, 1.3, 1] } : {}}
-                        className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-colors ${
-                          addedId === item.id
-                            ? "bg-green-500 text-white"
-                            : "bg-primary text-primary-foreground hover:opacity-90"
-                        }`}
-                      >
-                        {addedId === item.id ? <CheckCircle size={18} /> : <Plus size={18} />}
-                      </motion.button>
-                    </motion.div>
-                  ))}
-                </div>
-              </section>
-            ))}
+            {loadingMenu ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map(i => <div key={i} className="bg-card rounded-2xl h-20 animate-pulse border border-border" />)}
+              </div>
+            ) : selectedRestaurant.menu.length === 0 ? (
+              <div className="text-center py-16">
+                <StoreIcon size={48} className="text-muted-foreground/30 mx-auto mb-3" />
+                <p className="font-semibold text-muted-foreground">Cardápio ainda não disponível</p>
+                <p className="text-xs text-muted-foreground mt-1">Este estabelecimento ainda está configurando seus produtos</p>
+              </div>
+            ) : (
+              Object.entries(menuGroups).map(([category, menuItems]) => (
+                <section key={category}>
+                  <h2 className="text-sm font-extrabold text-foreground mb-3 uppercase tracking-wide">{category}</h2>
+                  <div className="space-y-2">
+                    {menuItems.map(item => (
+                      <motion.div key={item.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                        className="bg-card rounded-2xl border border-border p-3 flex gap-3 items-center">
+                        {item.image ? (
+                          <img src={item.image} alt={item.name} className="w-16 h-16 rounded-xl object-cover shrink-0" />
+                        ) : (
+                          <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                            <StoreIcon size={20} className="text-muted-foreground/30" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm text-foreground leading-tight">{item.name}</p>
+                          {item.description && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.description}</p>}
+                          <p className="text-sm font-bold text-primary mt-1">{fmt(item.price)}</p>
+                        </div>
+                        <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                          onClick={() => handleAdd(item, selectedRestaurant)}
+                          animate={addedId === item.id ? { scale: [1, 1.3, 1] } : {}}
+                          className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                            addedId === item.id ? "bg-emerald-500 text-white" : "bg-primary text-primary-foreground hover:opacity-90"
+                          }`}>
+                          {addedId === item.id ? <CheckCircle size={18} /> : <Plus size={18} />}
+                        </motion.button>
+                      </motion.div>
+                    ))}
+                  </div>
+                </section>
+              ))
+            )}
           </div>
         )}
       </div>
 
-      {/* Floating cart button (when items exist and drawer is closed) */}
       <AnimatePresence>
         {count > 0 && !cartOpen && (
-          <motion.button
-            initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 80, opacity: 0 }}
+          <motion.button initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 80, opacity: 0 }}
             whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
             onClick={() => setCartOpen(true)}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl font-bold text-sm z-30"
-          >
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl font-bold text-sm z-30">
             <span className="bg-primary-foreground/20 text-primary-foreground text-xs font-extrabold w-5 h-5 rounded-full flex items-center justify-center">{count}</span>
             Ver carrinho
             <ShoppingCart size={16} />
