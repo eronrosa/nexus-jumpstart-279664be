@@ -186,7 +186,7 @@ export type Database = {
           {
             foreignKeyName: "driver_locations_driver_id_fkey"
             columns: ["driver_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "drivers"
             referencedColumns: ["id"]
           },
