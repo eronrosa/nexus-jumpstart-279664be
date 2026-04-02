@@ -628,7 +628,7 @@ const PainelPage = () => {
   const lastWeekOrders = orders.filter(o => { const d = new Date(o.created_at); const now = new Date(); const diff = (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24); return diff > 7 && diff <= 14; });
   const lastWeekRevenue = lastWeekOrders.filter(o => o.status === "entregue").reduce((s, o) => s + Number(o.total), 0);
 
-  const storeAddress = [store.address_street, store.address_number].filter(Boolean).join(", ") +
+  const _storeAddress = [store.address_street, store.address_number].filter(Boolean).join(", ") +
     (store.address_neighborhood ? `, ${store.address_neighborhood}` : "") +
     (store.address_city ? `, ${store.address_city}` : "") +
     (store.address_state ? `, ${store.address_state}` : "");
