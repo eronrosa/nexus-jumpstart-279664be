@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
@@ -6,20 +6,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, LineChart, Line,
+  AreaChart, Area, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import {
   LayoutDashboard, Users, Store, ShoppingBag, Car, Ticket, Sparkles,
   Star, ArrowLeft, Search, ToggleLeft, ToggleRight, Shield, ChevronRight,
   DollarSign, Bike, MapPin, Megaphone, TrendingUp, Activity, Zap,
-  CheckCircle2, XCircle, Clock, Globe, Cpu, Radio, Navigation, Package,
-  Gauge, Eye, ArrowUpRight, RefreshCw, Circle
+  CheckCircle2, XCircle, Clock, Cpu, Navigation, ArrowUpRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-const fmtK = (v: number) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v.toString();
 
 type Tab = "dashboard" | "users" | "stores" | "orders" | "rides" | "drivers" | "coupons" | "featured" | "services";
 
