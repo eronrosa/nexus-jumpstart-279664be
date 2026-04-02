@@ -1,4 +1,4 @@
-import { Home, List, Sparkles, Wallet, User, LogIn } from "lucide-react";
+import { Home, List, Sparkles, Wallet, User, LogIn, Store } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +12,7 @@ const Sidebar = () => {
     { icon: List, label: "Pedidos", path: "/pedidos" },
     { icon: Sparkles, label: "ZUZU", path: "/" },
     { icon: Wallet, label: "Zuupay", path: "/" },
+    { icon: Store, label: "Painel", path: "/painel" },
   ];
 
   return (
