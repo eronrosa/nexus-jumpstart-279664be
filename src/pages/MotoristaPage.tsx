@@ -10,7 +10,7 @@ import {
   Car, DollarSign, Star, MapPin, Power, PowerOff, CheckCircle,
   XCircle, TrendingUp, ArrowLeft, ArrowRight, User, FileText,
   CreditCard, Eye, Wallet, BarChart3, Clock, AlertCircle, Settings,
-  Phone, LogOut, MessageCircle, Bike
+  Phone, LogOut, MessageCircle, Bike, Navigation
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
@@ -86,11 +86,24 @@ const MotoristaPage = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [regForm, setRegForm] = useState<RegForm>(defaultRegForm);
   const [regStep, setRegStep] = useState(0);
+  const [lastGpsUpdate, setLastGpsUpdate] = useState<Date | null>(null);
 
   const updateForm = (key: keyof RegForm, value: string | boolean) => setRegForm((prev) => ({ ...prev, [key]: value }));
 
   // GPS tracking: send location every 3 seconds when online or busy
   useDriverGPSSender(driver?.id || null, isOnline || !!currentRide);
+
+  // Listen for own GPS updates to show timestamp
+  useEffect(() => {
+    if (!driver?.id || (!isOnline && !currentRide)) return;
+    const channel = supabase
+      .channel(`gps-indicator-${driver.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "driver_locations", filter: `driver_id=eq.${driver.id}` }, () => {
+        setLastGpsUpdate(new Date());
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [driver?.id, isOnline, currentRide]);
 
   useEffect(() => {
     if (!user) { navigate("/auth"); return; }
@@ -554,6 +567,22 @@ const MotoristaPage = () => {
               </div>
               <p className="text-sm font-semibold" style={{ color: ZM.textPri }}>{isOnline ? "Aguardando corridas..." : "Você está offline"}</p>
               <p className="text-xs" style={{ color: ZM.textSec }}>{isOnline ? "Fique atento ao celular" : "Fique online para receber corridas"}</p>
+              {/* GPS Indicator */}
+              {isOnline && (
+                <div className="flex items-center gap-2 mt-2 px-3 py-1.5 rounded-lg" style={{ backgroundColor: ZM.bgElev, border: `1px solid ${ZM.border}` }}>
+                  <div className="relative flex items-center justify-center">
+                    <Navigation className="h-3.5 w-3.5" style={{ color: lastGpsUpdate ? ZM.green : ZM.textMut }} />
+                    {lastGpsUpdate && (
+                      <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full animate-ping" style={{ backgroundColor: ZM.green, opacity: 0.6 }} />
+                    )}
+                  </div>
+                  <span className="text-[11px] font-mono" style={{ color: lastGpsUpdate ? ZM.green : ZM.textMut }}>
+                    {lastGpsUpdate
+                      ? `GPS atualizado: ${lastGpsUpdate.toLocaleTimeString("pt-BR")}`
+                      : "GPS aguardando sinal..."}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         )}
