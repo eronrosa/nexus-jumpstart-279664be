@@ -14,6 +14,7 @@ import PedidosPage from "./pages/PedidosPage";
 import PainelPage from "./pages/PainelPage";
 import ZuuMob from "./pages/ZuuMob";
 import MotoristaPage from "./pages/MotoristaPage";
+import RideHistoryPage from "./pages/RideHistoryPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
               <Route path="/perfil" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
               <Route path="/zuumob" element={<ZuuMob />} />
               <Route path="/motorista" element={<ProtectedRoute><MotoristaPage /></ProtectedRoute>} />
+              <Route path="/zuumob/historico" element={<ProtectedRoute><RideHistoryPage /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
