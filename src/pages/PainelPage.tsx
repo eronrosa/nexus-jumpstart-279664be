@@ -519,11 +519,28 @@ const PainelPage = () => {
 
   const handleSaveStore = async () => {
     if (!store) return;
-    const { error } = await supabase.from("stores").update({ name: editName.trim(), category: editCategory, description: editDescription.trim() || null }).eq("id", store.id);
+    const payload = {
+      name: editName.trim(), category: editCategory, description: editDescription.trim() || null,
+      address_street: editStreet.trim() || null, address_number: editNumber.trim() || null,
+      address_neighborhood: editNeighborhood.trim() || null, address_city: editCity.trim() || null,
+      address_state: editState.trim() || null, address_zip: editZip.trim() || null,
+      opening_hours: editHours as unknown as Record<string, unknown>[],
+    };
+    const { error } = await supabase.from("stores").update(payload).eq("id", store.id);
     if (error) { toast.error("Erro ao salvar"); return; }
-    setStore({ ...store, name: editName.trim(), category: editCategory, description: editDescription.trim() || null });
+    setStore({ ...store, ...payload, opening_hours: editHours });
     setEditingStore(false);
     toast.success("Dados atualizados!");
+  };
+
+  const startEditing = () => {
+    if (!store) return;
+    setEditName(store.name); setEditCategory(store.category); setEditDescription(store.description ?? "");
+    setEditStreet(store.address_street ?? ""); setEditNumber(store.address_number ?? "");
+    setEditNeighborhood(store.address_neighborhood ?? ""); setEditCity(store.address_city ?? "");
+    setEditState(store.address_state ?? ""); setEditZip(store.address_zip ?? "");
+    setEditHours((store.opening_hours as StoreHours[] | null) ?? DEFAULT_HOURS);
+    setEditingStore(true);
   };
 
   const handleImageUpload = async (file: File, type: "logo" | "cover") => {
