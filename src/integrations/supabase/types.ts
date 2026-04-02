@@ -248,6 +248,12 @@ export type Database = {
       }
       stores: {
         Row: {
+          address_city: string | null
+          address_neighborhood: string | null
+          address_number: string | null
+          address_state: string | null
+          address_street: string | null
+          address_zip: string | null
           category: string
           cover_url: string | null
           created_at: string
@@ -256,10 +262,17 @@ export type Database = {
           is_active: boolean
           logo_url: string | null
           name: string
+          opening_hours: Json | null
           owner_id: string
           updated_at: string
         }
         Insert: {
+          address_city?: string | null
+          address_neighborhood?: string | null
+          address_number?: string | null
+          address_state?: string | null
+          address_street?: string | null
+          address_zip?: string | null
           category?: string
           cover_url?: string | null
           created_at?: string
@@ -268,10 +281,17 @@ export type Database = {
           is_active?: boolean
           logo_url?: string | null
           name: string
+          opening_hours?: Json | null
           owner_id: string
           updated_at?: string
         }
         Update: {
+          address_city?: string | null
+          address_neighborhood?: string | null
+          address_number?: string | null
+          address_state?: string | null
+          address_street?: string | null
+          address_zip?: string | null
           category?: string
           cover_url?: string | null
           created_at?: string
@@ -280,6 +300,7 @@ export type Database = {
           is_active?: boolean
           logo_url?: string | null
           name?: string
+          opening_hours?: Json | null
           owner_id?: string
           updated_at?: string
         }
