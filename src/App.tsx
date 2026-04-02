@@ -12,6 +12,8 @@ import ProfilePage from "./pages/ProfilePage";
 import ZuuFood from "./pages/ZuuFood";
 import PedidosPage from "./pages/PedidosPage";
 import PainelPage from "./pages/PainelPage";
+import ZuuMob from "./pages/ZuuMob";
+import MotoristaPage from "./pages/MotoristaPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +45,8 @@ const App = () => (
               <Route path="/painel" element={<ProtectedRoute><PainelPage /></ProtectedRoute>} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/perfil" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+              <Route path="/zuumob" element={<ZuuMob />} />
+              <Route path="/motorista" element={<ProtectedRoute><MotoristaPage /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
