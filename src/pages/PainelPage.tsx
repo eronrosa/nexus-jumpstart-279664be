@@ -635,24 +635,30 @@ const PainelPage = () => {
       items: [{ id: "inicio", icon: LayoutDashboard, label: "Início" }],
     },
     {
-      title: "GERENCIAR LOJA",
+      title: null,
       items: [
-        { id: "pedidos", icon: Package, label: "Pedidos", badge: pendingOrders.length + preparingOrders.length },
         { id: "avaliações", icon: Star, label: "Avaliações" },
-        { id: "performance", icon: TrendingUp, label: "Performance geral" },
-        { id: "faturas", icon: FileText, label: "Faturas" },
-        { id: "cardapio", icon: UtensilsCrossed, label: "Cardápio" },
-        { id: "tempo_entrega", icon: Timer, label: "Tempo de entrega" },
-        { id: "pagamento", icon: CreditCard, label: "Formas de pagamento" },
-        { id: "horario", icon: Clock, label: "Horário de funcionamento" },
-        { id: "descricao", icon: Pencil, label: "Descrição e logo" },
+        { id: "pedidos", icon: Package, label: "Pedidos", badge: pendingOrders.length + preparingOrders.length },
+        { id: "financeiro", icon: DollarSign, label: "Financeiro" },
       ],
     },
     {
-      title: "SERVIÇOS",
+      title: null,
       items: [
-        { id: "ajuda", icon: HelpCircle, label: "Ajuda" },
-        { id: "chamados", icon: MessageSquare, label: "Chamados" },
+        { id: "cardapio", icon: UtensilsCrossed, label: "Cardápio" },
+        { id: "horario", icon: Clock, label: "Horários" },
+        { id: "areas_entrega", icon: MapPinned, label: "Áreas de entrega" },
+        { id: "pagamento", icon: CreditCard, label: "Formas de pagamento" },
+        { id: "promocoes", icon: Gift, label: "Promoções" },
+      ],
+    },
+    {
+      title: null,
+      items: [
+        { id: "servicos", icon: Sparkles, label: "Serviços", badgeText: "NOVO!" },
+        { id: "perfil", icon: UserCircle, label: "Perfil" },
+        { id: "performance", icon: TrendingUp, label: "Desempenho" },
+        { id: "descricao", icon: Award, label: "Recomendações" },
       ],
     },
   ];
