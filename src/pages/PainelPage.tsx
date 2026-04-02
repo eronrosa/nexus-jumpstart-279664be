@@ -62,8 +62,8 @@ function SidebarSection({ title }: { title: string }) {
 }
 
 /* ─── Sidebar Nav Item ─── */
-function NavItem({ icon: Icon, label, active, badge, onClick, collapsed }: {
-  icon: React.ElementType; label: string; active: boolean; badge?: number; onClick: () => void; collapsed?: boolean;
+function NavItem({ icon: Icon, label, active, badge, badgeText, onClick, collapsed }: {
+  icon: React.ElementType; label: string; active: boolean; badge?: number; badgeText?: string; onClick: () => void; collapsed?: boolean;
 }) {
   if (collapsed) {
     return (
@@ -87,6 +87,11 @@ function NavItem({ icon: Icon, label, active, badge, onClick, collapsed }: {
       }`}>
       <Icon size={16} className={active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"} />
       <span className="flex-1 text-left">{label}</span>
+      {badgeText && (
+        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+          active ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary text-primary-foreground"
+        }`}>{badgeText}</span>
+      )}
       {badge != null && badge > 0 && (
         <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center ${
           active ? "bg-primary-foreground/20 text-primary-foreground" : "bg-destructive text-destructive-foreground"
