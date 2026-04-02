@@ -524,9 +524,9 @@ const PainelPage = () => {
       address_street: editStreet.trim() || null, address_number: editNumber.trim() || null,
       address_neighborhood: editNeighborhood.trim() || null, address_city: editCity.trim() || null,
       address_state: editState.trim() || null, address_zip: editZip.trim() || null,
-      opening_hours: editHours as unknown as Record<string, unknown>[],
+      opening_hours: JSON.parse(JSON.stringify(editHours)),
     };
-    const { error } = await supabase.from("stores").update(payload).eq("id", store.id);
+    const { error } = await supabase.from("stores").update(payload as any).eq("id", store.id);
     if (error) { toast.error("Erro ao salvar"); return; }
     setStore({ ...store, ...payload, opening_hours: editHours });
     setEditingStore(false);
