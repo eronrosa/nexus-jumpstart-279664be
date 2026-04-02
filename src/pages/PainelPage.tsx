@@ -1157,12 +1157,14 @@ const PainelPage = () => {
         <nav className="flex-1 overflow-y-auto px-3 pb-3">
           {navSections.map((section, sIdx) => (
             <div key={sIdx}>
+              {sIdx > 0 && <div className="border-t border-border my-2 mx-1" />}
               {sidebarOpen && section.title && <SidebarSection title={section.title} />}
-              {!sidebarOpen && section.title && <div className="border-t border-border my-2" />}
               <div className="space-y-0.5">
                 {section.items.map(item => (
                   <NavItem key={item.id} icon={item.icon} label={item.label} active={activeTab === item.id}
-                    badge={'badge' in item ? (item as any).badge : undefined} onClick={() => setActiveTab(item.id)} collapsed={!sidebarOpen} />
+                    badge={'badge' in item ? (item as any).badge : undefined}
+                    badgeText={'badgeText' in item ? (item as any).badgeText : undefined}
+                    onClick={() => setActiveTab(item.id)} collapsed={!sidebarOpen} />
                 ))}
               </div>
             </div>
