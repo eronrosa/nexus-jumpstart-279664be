@@ -7,10 +7,10 @@ import {
   Store, Package, Clock, CheckCircle, ChefHat, XCircle,
   ChevronDown, ChevronUp, ArrowLeft, Plus, Pencil, Trash2, Save, X,
   UtensilsCrossed, ImagePlus, ToggleLeft, ToggleRight,
-  LayoutDashboard, History, Bell, MapPin,
+  LayoutDashboard, History, Bell,
   Menu as MenuIcon, Activity, Zap, Search,
-  Star, TrendingUp, FileText, CreditCard, HelpCircle,
-  MessageSquare, Timer, DollarSign, CircleDot,
+  Star, TrendingUp, CreditCard,
+  DollarSign, CircleDot,
   Gift, MapPinned, UserCircle, Award, Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
