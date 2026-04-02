@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   MapPin, Navigation, Search, Star, Clock, Car, Bike, Crown,
   CreditCard, Wallet, QrCode, X, Locate, ArrowLeft, Phone,
-  MessageCircle, AlertTriangle, History, Shield, Gauge
+  MessageCircle, History, Shield, Gauge
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import mapboxgl from "mapbox-gl";
