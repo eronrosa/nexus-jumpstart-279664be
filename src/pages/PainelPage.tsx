@@ -1142,19 +1142,21 @@ const PainelPage = () => {
     <div className="min-h-screen bg-background flex">
       {/* Desktop Sidebar */}
       <aside className={`hidden lg:flex flex-col bg-card border-r border-border transition-all duration-300 shrink-0 ${sidebarOpen ? "w-[260px]" : "w-[72px]"}`}>
-        {/* Brand header */}
-        <div className="p-4 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/70 rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
-              <Store size={20} className="text-primary-foreground" />
-            </div>
-            {sidebarOpen && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-w-0">
-                <p className="font-bold text-foreground text-sm truncate">{store.name}</p>
-                <p className="text-[11px] text-muted-foreground truncate">{store.category}</p>
-              </motion.div>
-            )}
-          </div>
+        {/* Store status + brand */}
+        <div className="p-4 border-b border-border space-y-3">
+          {sidebarOpen && (
+            <button onClick={handleToggleActive} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-secondary/50 transition-all">
+              <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${store.is_active ? "bg-emerald-500" : "bg-destructive"}`} />
+              <div className="text-left">
+                <p className={`text-xs font-bold ${store.is_active ? "text-emerald-600" : "text-destructive"}`}>
+                  {store.is_active ? "Restaurante aberto" : "Restaurante fechado"}
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  {store.is_active ? "Dentro do horário programado" : "Fora do horário"}
+                </p>
+              </div>
+            </button>
+          )}
         </div>
 
         {/* Navigation */}
