@@ -62,6 +62,53 @@ export type Database = {
         }
         Relationships: []
       }
+      delivery_zones: {
+        Row: {
+          created_at: string
+          delivery_fee: number
+          estimated_time: string
+          id: string
+          is_active: boolean
+          min_order: number
+          radius_km: number
+          store_id: string
+          updated_at: string
+          zone_name: string
+        }
+        Insert: {
+          created_at?: string
+          delivery_fee?: number
+          estimated_time?: string
+          id?: string
+          is_active?: boolean
+          min_order?: number
+          radius_km?: number
+          store_id: string
+          updated_at?: string
+          zone_name: string
+        }
+        Update: {
+          created_at?: string
+          delivery_fee?: number
+          estimated_time?: string
+          id?: string
+          is_active?: boolean
+          min_order?: number
+          radius_km?: number
+          store_id?: string
+          updated_at?: string
+          zone_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_zones_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_items: {
         Row: {
           category: string
