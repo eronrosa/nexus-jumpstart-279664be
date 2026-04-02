@@ -82,17 +82,39 @@ const PedidosPage = () => {
 
     fetchOrders();
 
+    // Request notification permission
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+
     const channel = supabase
       .channel('orders-status')
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'orders' },
         (payload) => {
+          const newStatus = (payload.new as any).status;
+          const restaurantName = (payload.new as any).restaurant_name;
           setOrders(prev =>
             prev.map(o => o.id === payload.new.id ? { ...o, ...payload.new } : o)
           );
-          const label = statusLabel[(payload.new as any).status] ?? (payload.new as any).status;
+          const label = statusLabel[newStatus] ?? newStatus;
           toast.info(`Pedido atualizado: ${label}`);
+
+          // Browser push notification
+          if ("Notification" in window && Notification.permission === "granted") {
+            const statusMessages: Record<string, string> = {
+              em_preparo: "🍳 Seu pedido está sendo preparado!",
+              entregue: "✅ Seu pedido foi entregue!",
+              cancelado: "❌ Seu pedido foi cancelado.",
+            };
+            const body = statusMessages[newStatus] ?? `Status: ${label}`;
+            new Notification(`${restaurantName}`, {
+              body,
+              icon: "/placeholder.svg",
+              tag: payload.new.id as string,
+            });
+          }
         }
       )
       .subscribe();
