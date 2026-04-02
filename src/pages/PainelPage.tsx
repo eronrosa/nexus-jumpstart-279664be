@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import DashboardTab from "@/components/DashboardTab";
+import { TrendingUp } from "lucide-react";
 
 /* ─── Types ─── */
 interface OrderItem {
