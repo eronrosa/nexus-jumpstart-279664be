@@ -1114,16 +1114,18 @@ const PainelPage = () => {
 
       case "avaliações":
         return <PlaceholderTab icon={Star} title="Avaliações" description="Veja o que seus clientes estão dizendo sobre sua loja e responda avaliações" />;
-      case "faturas":
-        return <PlaceholderTab icon={FileText} title="Faturas" description="Acompanhe suas faturas, taxas e repasses financeiros" />;
-      case "tempo_entrega":
-        return <PlaceholderTab icon={Timer} title="Tempo de entrega" description="Configure os tempos de preparo e entrega dos seus pedidos" />;
+      case "financeiro":
+        return <PlaceholderTab icon={DollarSign} title="Financeiro" description="Acompanhe suas faturas, taxas, repasses e extrato financeiro detalhado" />;
+      case "areas_entrega":
+        return <PlaceholderTab icon={MapPinned} title="Áreas de entrega" description="Configure o raio de entrega e taxas por região do seu estabelecimento" />;
       case "pagamento":
         return <PlaceholderTab icon={CreditCard} title="Formas de pagamento" description="Gerencie as formas de pagamento aceitas pelo seu estabelecimento" />;
-      case "ajuda":
-        return <PlaceholderTab icon={HelpCircle} title="Central de Ajuda" description="Encontre respostas para suas dúvidas e tutoriais de uso da plataforma" />;
-      case "chamados":
-        return <PlaceholderTab icon={MessageSquare} title="Chamados" description="Abra e acompanhe chamados de suporte técnico ou operacional" />;
+      case "promocoes":
+        return <PlaceholderTab icon={Gift} title="Promoções" description="Crie cupons, combos e ofertas especiais para atrair mais clientes" />;
+      case "servicos":
+        return <PlaceholderTab icon={Sparkles} title="Serviços" description="Descubra ferramentas e integrações para impulsionar suas vendas" />;
+      case "perfil":
+        return <PlaceholderTab icon={UserCircle} title="Perfil" description="Gerencie seus dados pessoais, documentos e informações do responsável" />;
 
       default:
         return null;
