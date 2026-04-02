@@ -394,7 +394,6 @@ function CardapioTab({ storeId }: { storeId: string }) {
     <div className="space-y-5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h3 className="font-bold text-foreground text-xl">Cardápio</h3>
           <p className="text-sm text-muted-foreground">{menuItems.length} {menuItems.length === 1 ? "item" : "itens"} cadastrados</p>
         </div>
         {!showForm && !editingItem && (
