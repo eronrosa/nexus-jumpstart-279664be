@@ -113,6 +113,7 @@ export default function AdminPage() {
           {tab === "stores" && <StoresPanel />}
           {tab === "orders" && <OrdersPanel />}
           {tab === "rides" && <RidesPanel />}
+          {tab === "drivers" && <DriversPanel />}
           {tab === "coupons" && <CouponsPanel />}
           {tab === "featured" && <FeaturedPanel />}
           {tab === "services" && <ServicesPanel />}
