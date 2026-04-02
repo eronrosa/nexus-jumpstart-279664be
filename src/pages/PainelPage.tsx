@@ -1321,22 +1321,21 @@ const PainelPage = () => {
         );
 
       case "avaliações":
-        return <PlaceholderTab icon={Star} title="Avaliações" description="Veja o que seus clientes estão dizendo sobre sua loja e responda avaliações" />;
+        return <AvaliacoesTab />;
       case "financeiro":
-        return <PlaceholderTab icon={DollarSign} title="Financeiro" description="Acompanhe suas faturas, taxas, repasses e extrato financeiro detalhado" />;
+        return <FinanceiroTab orders={orders} />;
       case "areas_entrega":
         return <DeliveryZonesTab storeId={store.id} />;
       case "pagamento":
-        return <PlaceholderTab icon={CreditCard} title="Formas de pagamento" description="Gerencie as formas de pagamento aceitas pelo seu estabelecimento" />;
+        return <PagamentoTab />;
       case "promocoes":
         return <PromocoesTab storeId={store.id} />;
       case "servicos":
-        return <PlaceholderTab icon={Sparkles} title="Serviços" description="Descubra ferramentas e integrações para impulsionar suas vendas" />;
+        return <ServicosTab />;
       case "perfil":
-        return <PlaceholderTab icon={UserCircle} title="Perfil" description="Gerencie seus dados pessoais, documentos e informações do responsável" />;
-
+        return <PerfilTab />;
       case "recomendacoes":
-        return <PlaceholderTab icon={Award} title="Recomendações" description="Receba dicas personalizadas para melhorar o desempenho da sua loja" />;
+        return <RecomendacoesTab store={store} menuItemsCount={menuItemsCount} ordersCount={orders.length} />;
 
       default:
         return null;
