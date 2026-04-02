@@ -86,8 +86,24 @@ const MotoristaPage = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [regForm, setRegForm] = useState<RegForm>(defaultRegForm);
   const [regStep, setRegStep] = useState(0);
+  const [lastGpsUpdate, setLastGpsUpdate] = useState<Date | null>(null);
 
   const updateForm = (key: keyof RegForm, value: string | boolean) => setRegForm((prev) => ({ ...prev, [key]: value }));
+
+  // GPS tracking: send location every 3 seconds when online or busy
+  useDriverGPSSender(driver?.id || null, isOnline || !!currentRide);
+
+  // Listen for own GPS updates to show timestamp
+  useEffect(() => {
+    if (!driver?.id || (!isOnline && !currentRide)) return;
+    const channel = supabase
+      .channel(`gps-indicator-${driver.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "driver_locations", filter: `driver_id=eq.${driver.id}` }, () => {
+        setLastGpsUpdate(new Date());
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [driver?.id, isOnline, currentRide]);
 
   useEffect(() => {
     if (!user) { navigate("/auth"); return; }
