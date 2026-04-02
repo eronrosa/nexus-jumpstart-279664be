@@ -670,19 +670,6 @@ function DeliveryZonesTab({ storeId }: { storeId: string }) {
   );
 }
 
-/* ─── Placeholder Tab (for features not yet built) ─── */
-function PlaceholderTab({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) {
-  return (
-    <div className="text-center py-20">
-      <div className="w-20 h-20 bg-muted/50 rounded-3xl flex items-center justify-center mx-auto mb-4">
-        <Icon size={32} className="text-muted-foreground/40" />
-      </div>
-      <p className="font-bold text-foreground text-lg">{title}</p>
-      <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">{description}</p>
-      <span className="inline-block mt-4 text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full">Em breve</span>
-    </div>
-  );
-}
 
 /* ═══════════════════ Main Page ═══════════════════ */
 const PainelPage = () => {
