@@ -1128,6 +1128,9 @@ const PainelPage = () => {
       case "perfil":
         return <PlaceholderTab icon={UserCircle} title="Perfil" description="Gerencie seus dados pessoais, documentos e informações do responsável" />;
 
+      case "recomendacoes":
+        return <PlaceholderTab icon={Award} title="Recomendações" description="Receba dicas personalizadas para melhorar o desempenho da sua loja" />;
+
       default:
         return null;
     }
