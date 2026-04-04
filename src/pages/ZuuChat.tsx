@@ -104,6 +104,10 @@ export default function ZuuChat() {
   const [showMobileChat, setShowMobileChat] = useState(false);
   const [profilesCache, setProfilesCache] = useState<Record<string, UserProfile>>({});
   const [presenceMap, setPresenceMap] = useState<Record<string, { status: string; last_seen: string; typing_in: string | null }>>({});
+  const [replyTo, setReplyTo] = useState<Message | null>(null);
+  const [reactionsMap, setReactionsMap] = useState<Record<string, { emoji: string; user_id: string }[]>>({});
+  const [showEmojiPicker, setShowEmojiPicker] = useState<string | null>(null);
+  const QUICK_EMOJIS = ["❤️", "😂", "👍", "😮", "😢", "🔥", "🎉", "👏"];
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
