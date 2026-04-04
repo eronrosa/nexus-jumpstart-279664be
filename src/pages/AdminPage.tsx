@@ -378,9 +378,9 @@ export default function AdminPage() {
 /* ═══════════════════════════════════════════════════════════════════════════════
    CARD — clean white card
    ═══════════════════════════════════════════════════════════════════════════════ */
-function Card({ children, className }: { children: React.ReactNode; className?: string }) {
+function Card({ children, className, onClick }: { children: React.ReactNode; className?: string; onClick?: () => void }) {
   return (
-    <div className={cn("rounded-2xl border border-border bg-card p-5 shadow-sm", className)}>
+    <div onClick={onClick} className={cn("rounded-2xl border border-border bg-card p-5 shadow-sm", className)}>
       {children}
     </div>
   );
