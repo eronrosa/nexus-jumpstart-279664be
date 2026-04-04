@@ -1,4 +1,4 @@
-import { Search, Mic, User, LogIn, Home, ClipboardList, Sparkles, CreditCard } from "lucide-react";
+import { Search, Mic, User, LogIn, Home, ClipboardList, Sparkles, CreditCard, MessageCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BannerCarousel from "@/components/BannerCarousel";
 import ServicesGrid from "@/components/ServicesGrid";
@@ -90,8 +90,8 @@ const Index = () => {
         {[
           { icon: Home, label: "Início", path: "/" },
           { icon: ClipboardList, label: "Pedidos", path: "/pedidos" },
+          { icon: MessageCircle, label: "ZuuChat", path: "/zuuchat" },
           { icon: Sparkles, label: "ZUZU", path: "/" },
-          { icon: CreditCard, label: "Zuupay", path: "/" },
           { icon: User, label: "Perfil", path: user ? "/perfil" : "/auth" },
         ].map(({ icon: Icon, label, path }) => (
           <button
