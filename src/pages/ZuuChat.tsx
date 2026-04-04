@@ -381,18 +381,22 @@ export default function ZuuChat() {
     if (type === "text" && !msgText.trim()) return;
 
     setSending(true);
-    const { error } = await supabase.from("messages").insert({
+    const insertData: any = {
       conversation_id: activeConv.id,
       sender_id: user.id,
       content: type === "text" ? msgText.trim() : null,
       message_type: type,
       media_url: mediaUrl || null,
-    });
+    };
+    if (replyTo) insertData.reply_to_id = replyTo.id;
+
+    const { error } = await supabase.from("messages").insert(insertData);
 
     if (error) {
       toast({ title: "Erro ao enviar mensagem", variant: "destructive" });
     } else {
       setMsgText("");
+      setReplyTo(null);
       setTyping(null);
       // Update conversation timestamp
       await supabase.from("conversations")
