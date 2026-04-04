@@ -718,13 +718,15 @@ export default function ZuuChat() {
               const showAvatar = activeConv.type === "group" && !isMe &&
                 (i === 0 || messages[i - 1].sender_id !== msg.sender_id);
               const senderProfile = msg.sender_profile || profilesCache[msg.sender_id];
+              const grouped = getGroupedReactions(msg.reactions || []);
+              const repliedMsg = msg.reply_to_id ? messages.find(m => m.id === msg.reply_to_id) : null;
 
               return (
                 <motion.div
                   key={msg.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={cn("flex gap-2", isMe ? "justify-end" : "justify-start")}
+                  className={cn("flex gap-2 group relative", isMe ? "justify-end" : "justify-start")}
                 >
                   {!isMe && activeConv.type === "group" && (
                     <div className="w-8 shrink-0">
@@ -738,40 +740,121 @@ export default function ZuuChat() {
                       )}
                     </div>
                   )}
-                  <div className={cn(
-                    "max-w-[75%] rounded-2xl px-3 py-2 shadow-sm",
-                    isMe
-                      ? "bg-primary text-primary-foreground rounded-br-md"
-                      : "bg-card border border-border rounded-bl-md"
-                  )}>
-                    {!isMe && activeConv.type === "group" && showAvatar && (
-                      <p className="text-xs font-semibold text-primary mb-1">
-                        {senderProfile?.display_name || "Usuário"}
-                      </p>
-                    )}
-                    {msg.message_type === "image" && msg.media_url && (
-                      <img src={msg.media_url} className="rounded-lg max-w-full max-h-60 object-cover mb-1" alt="imagem" />
-                    )}
-                    {msg.message_type === "audio" && msg.media_url && (
-                      <audio controls src={msg.media_url} className="max-w-full mb-1" />
-                    )}
-                    {msg.message_type === "file" && msg.media_url && (
-                      <a href={msg.media_url} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-2 underline text-sm">
-                        <Paperclip size={14} /> Arquivo
-                      </a>
-                    )}
-                    {msg.content && (
-                      <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
-                    )}
-                    <div className={cn("flex items-center gap-1 mt-0.5", isMe ? "justify-end" : "justify-start")}>
-                      <span className={cn("text-[10px]", isMe ? "text-primary-foreground/60" : "text-muted-foreground")}>
-                        {formatMessageTime(msg.created_at)}
-                      </span>
-                      {isMe && (
-                        <CheckCheck size={12} className="text-primary-foreground/60" />
-                      )}
+                  <div className="max-w-[75%] relative">
+                    {/* Action buttons on hover */}
+                    <div className={cn(
+                      "absolute top-0 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10",
+                      isMe ? "left-0 -translate-x-full pr-1" : "right-0 translate-x-full pl-1"
+                    )}>
+                      <button
+                        onClick={() => setShowEmojiPicker(showEmojiPicker === msg.id ? null : msg.id)}
+                        className="p-1 rounded-full hover:bg-muted bg-card border border-border shadow-sm"
+                        title="Reagir"
+                      >
+                        <Smile size={14} className="text-muted-foreground" />
+                      </button>
+                      <button
+                        onClick={() => setReplyTo(msg)}
+                        className="p-1 rounded-full hover:bg-muted bg-card border border-border shadow-sm"
+                        title="Responder"
+                      >
+                        <Reply size={14} className="text-muted-foreground" />
+                      </button>
                     </div>
+
+                    {/* Emoji picker dropdown */}
+                    {showEmojiPicker === msg.id && (
+                      <div className={cn(
+                        "absolute z-20 bg-card border border-border rounded-xl shadow-lg p-2 flex gap-1 flex-wrap max-w-[200px]",
+                        isMe ? "right-0 -top-10" : "left-0 -top-10"
+                      )}>
+                        {QUICK_EMOJIS.map(emoji => (
+                          <button
+                            key={emoji}
+                            onClick={() => toggleReaction(msg.id, emoji)}
+                            className="text-lg hover:scale-125 transition-transform p-0.5"
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className={cn(
+                      "rounded-2xl px-3 py-2 shadow-sm",
+                      isMe
+                        ? "bg-primary text-primary-foreground rounded-br-md"
+                        : "bg-card border border-border rounded-bl-md"
+                    )}>
+                      {/* Reply preview */}
+                      {repliedMsg && (
+                        <div className={cn(
+                          "text-xs rounded-lg px-2 py-1 mb-1.5 border-l-2",
+                          isMe
+                            ? "bg-primary-foreground/10 border-primary-foreground/40"
+                            : "bg-muted/50 border-primary/40"
+                        )}>
+                          <p className={cn("font-semibold", isMe ? "text-primary-foreground/80" : "text-primary")}>
+                            {repliedMsg.sender_id === user.id
+                              ? "Você"
+                              : profilesCache[repliedMsg.sender_id]?.display_name || "Usuário"}
+                          </p>
+                          <p className={cn("truncate", isMe ? "text-primary-foreground/60" : "text-muted-foreground")}>
+                            {repliedMsg.content || (repliedMsg.message_type !== "text" ? "📎 Mídia" : "")}
+                          </p>
+                        </div>
+                      )}
+
+                      {!isMe && activeConv.type === "group" && showAvatar && (
+                        <p className="text-xs font-semibold text-primary mb-1">
+                          {senderProfile?.display_name || "Usuário"}
+                        </p>
+                      )}
+                      {msg.message_type === "image" && msg.media_url && (
+                        <img src={msg.media_url} className="rounded-lg max-w-full max-h-60 object-cover mb-1" alt="imagem" />
+                      )}
+                      {msg.message_type === "audio" && msg.media_url && (
+                        <audio controls src={msg.media_url} className="max-w-full mb-1" />
+                      )}
+                      {msg.message_type === "file" && msg.media_url && (
+                        <a href={msg.media_url} target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-2 underline text-sm">
+                          <Paperclip size={14} /> Arquivo
+                        </a>
+                      )}
+                      {msg.content && (
+                        <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
+                      )}
+                      <div className={cn("flex items-center gap-1 mt-0.5", isMe ? "justify-end" : "justify-start")}>
+                        <span className={cn("text-[10px]", isMe ? "text-primary-foreground/60" : "text-muted-foreground")}>
+                          {formatMessageTime(msg.created_at)}
+                        </span>
+                        {isMe && (
+                          <CheckCheck size={12} className="text-primary-foreground/60" />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Reactions display */}
+                    {grouped.length > 0 && (
+                      <div className={cn("flex flex-wrap gap-1 mt-1", isMe ? "justify-end" : "justify-start")}>
+                        {grouped.map(r => (
+                          <button
+                            key={r.emoji}
+                            onClick={() => toggleReaction(msg.id, r.emoji)}
+                            className={cn(
+                              "inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-full border transition-colors",
+                              r.reacted
+                                ? "bg-primary/10 border-primary/30 text-primary"
+                                : "bg-card border-border text-muted-foreground hover:bg-muted"
+                            )}
+                          >
+                            <span>{r.emoji}</span>
+                            {r.count > 1 && <span className="text-[10px]">{r.count}</span>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               );
