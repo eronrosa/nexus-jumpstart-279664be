@@ -369,6 +369,7 @@ export default function AdminPage() {
               {tab === "coupons" && <CouponsPanel />}
               {tab === "featured" && <FeaturedPanel />}
               {tab === "services" && <ServicesPanel />}
+              {tab === "financeiro" && <FinanceiroPanel />}
             </motion.div>
           </AnimatePresence>
         </div>
