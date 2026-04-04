@@ -16,7 +16,7 @@ import {
   Star, ArrowLeft, Search, ToggleLeft, ToggleRight, Shield, ChevronRight,
   DollarSign, Bike, MapPin, Megaphone, TrendingUp, Activity, Zap,
   CheckCircle2, XCircle, Clock, Cpu, Navigation, ArrowUpRight, Bell, X,
-  Download, BarChart3, MessageSquare, Settings, Trash2, ShieldCheck, UserCog
+  Download, BarChart3, MessageSquare, Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
