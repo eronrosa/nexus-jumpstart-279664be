@@ -564,6 +564,30 @@ function DashboardPanel() {
         newStores: newStores.count ?? 0,
       });
       setOrders(allOrders);
+
+      // Load store ranking
+      const [storesRes, allOrdersForRanking, reviewsRes] = await Promise.all([
+        supabase.from("stores").select("id, name, logo_url, category"),
+        supabase.from("orders").select("restaurant_id, total, status"),
+        supabase.from("reviews").select("store_id, rating"),
+      ]);
+      const storesData = storesRes.data ?? [];
+      const ordersData = allOrdersForRanking.data ?? [];
+      const reviewsData = reviewsRes.data ?? [];
+
+      const ranking = storesData.map(store => {
+        const storeOrders = ordersData.filter(o => o.restaurant_id === store.id && o.status === "entregue");
+        const storeReviews = reviewsData.filter(r => r.store_id === store.id);
+        const avgRating = storeReviews.length > 0 ? storeReviews.reduce((s, r) => s + r.rating, 0) / storeReviews.length : 0;
+        return {
+          id: store.id, name: store.name, logo_url: store.logo_url, category: store.category,
+          revenue: storeOrders.reduce((s, o) => s + Number(o.total), 0),
+          orderCount: storeOrders.length,
+          avgRating: Math.round(avgRating * 10) / 10,
+          reviewCount: storeReviews.length,
+        };
+      });
+      setStoreRanking(ranking);
       setLoading(false);
     };
     load();
