@@ -58,13 +58,6 @@ interface Message {
   reactions?: { emoji: string; user_id: string }[];
 }
 
-interface Reaction {
-  emoji: string;
-  count: number;
-  users: string[];
-  reacted: boolean;
-}
-
 interface UserProfile {
   user_id: string;
   display_name: string | null;
