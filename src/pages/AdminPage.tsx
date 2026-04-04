@@ -16,13 +16,13 @@ import {
   Star, ArrowLeft, Search, ToggleLeft, ToggleRight, Shield, ChevronRight,
   DollarSign, Bike, MapPin, Megaphone, TrendingUp, Activity, Zap,
   CheckCircle2, XCircle, Clock, Cpu, Navigation, ArrowUpRight, Bell, X,
-  Download, BarChart3
+  Download, BarChart3, MessageSquare, Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-type Tab = "dashboard" | "users" | "stores" | "orders" | "rides" | "drivers" | "coupons" | "featured" | "services" | "financeiro";
+type Tab = "dashboard" | "users" | "stores" | "orders" | "rides" | "drivers" | "coupons" | "featured" | "services" | "financeiro" | "avaliacoes" | "config";
 
 const TABS: { id: Tab; label: string; icon: any }[] = [
   { id: "dashboard", label: "Overview", icon: LayoutDashboard },
@@ -33,8 +33,10 @@ const TABS: { id: Tab; label: string; icon: any }[] = [
   { id: "rides", label: "Corridas", icon: Car },
   { id: "drivers", label: "Motoristas", icon: Bike },
   { id: "coupons", label: "Cupons", icon: Ticket },
+  { id: "avaliacoes", label: "Avaliações", icon: MessageSquare },
   { id: "featured", label: "Destaques", icon: Star },
   { id: "services", label: "Serviços", icon: Sparkles },
+  { id: "config", label: "Configurações", icon: Settings },
 ];
 
 /* ═══════════════════════ ANIMATED COUNTER ═══════════════════════ */
@@ -367,9 +369,11 @@ export default function AdminPage() {
               {tab === "rides" && <RidesPanel />}
               {tab === "drivers" && <DriversPanel />}
               {tab === "coupons" && <CouponsPanel />}
+              {tab === "avaliacoes" && <AvaliacoesPanel />}
               {tab === "featured" && <FeaturedPanel />}
               {tab === "services" && <ServicesPanel />}
               {tab === "financeiro" && <FinanceiroPanel />}
+              {tab === "config" && <ConfigPanel />}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -814,32 +818,160 @@ function SearchInput({ value, onChange, placeholder }: { value: string; onChange
 
 function UsersPanel() {
   const [profiles, setProfiles] = useState<any[]>([]);
+  const [roles, setRoles] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [userOrders, setUserOrders] = useState<any[]>([]);
+  const [userRides, setUserRides] = useState<any[]>([]);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const { toast } = useToast();
 
-  useEffect(() => { supabase.from("profiles").select("*").then(({ data }) => { setProfiles(data ?? []); setLoading(false); }); }, []);
+  const loadData = async () => {
+    const [p, r] = await Promise.all([
+      supabase.from("profiles").select("*").order("created_at", { ascending: false }),
+      supabase.from("user_roles").select("*"),
+    ]);
+    setProfiles(p.data ?? []);
+    setRoles(r.data ?? []);
+    setLoading(false);
+  };
+  useEffect(() => { loadData(); }, []);
+
+  const getUserRoles = (userId: string) => roles.filter(r => r.user_id === userId).map(r => r.role);
+
+  const assignRole = async (userId: string, role: string) => {
+    const existing = roles.find(r => r.user_id === userId && r.role === role);
+    if (existing) {
+      await supabase.from("user_roles").delete().eq("id", existing.id);
+      toast({ title: `Role "${role}" removida` });
+    } else {
+      await supabase.from("user_roles").insert({ user_id: userId, role: role as "admin" | "moderator" | "user" });
+      toast({ title: `Role "${role}" atribuída ✅` });
+    }
+    loadData();
+  };
+
+  const viewUserHistory = async (user: any) => {
+    setSelectedUser(user);
+    setDetailLoading(true);
+    const [o, r] = await Promise.all([
+      supabase.from("orders").select("*").eq("user_id", user.user_id).order("created_at", { ascending: false }).limit(20),
+      supabase.from("rides").select("*").eq("passenger_id", user.user_id).order("created_at", { ascending: false }).limit(20),
+    ]);
+    setUserOrders(o.data ?? []);
+    setUserRides(r.data ?? []);
+    setDetailLoading(false);
+  };
+
   const filtered = profiles.filter(p => (p.display_name ?? "").toLowerCase().includes(search.toLowerCase()) || (p.phone ?? "").includes(search));
 
   return (
     <div className="space-y-5">
-      <div><h2 className="text-2xl font-extrabold text-foreground">Usuários</h2><p className="text-muted-foreground text-sm">{profiles.length} cadastrados</p></div>
+      <div><h2 className="text-2xl font-extrabold text-foreground">Gestão de Usuários</h2><p className="text-muted-foreground text-sm">{profiles.length} cadastrados</p></div>
       <SearchInput value={search} onChange={setSearch} placeholder="Buscar por nome ou telefone..." />
+
+      <AnimatePresence>
+        {selectedUser && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setSelectedUser(null)}>
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-background rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto p-6 space-y-4" onClick={e => e.stopPropagation()}>
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-lg font-bold text-primary">
+                    {(selectedUser.display_name ?? "?").charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-extrabold text-foreground">{selectedUser.display_name ?? "Sem nome"}</h3>
+                    <p className="text-xs text-muted-foreground">{selectedUser.phone ?? "Sem telefone"} • Desde {new Date(selectedUser.created_at).toLocaleDateString("pt-BR")}</p>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedUser(null)} className="p-1 hover:bg-secondary rounded-lg"><X size={18} /></button>
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground mb-2">Gerenciar Roles</p>
+                <div className="flex gap-2">
+                  {(["admin", "moderator", "user"] as const).map(role => {
+                    const active = getUserRoles(selectedUser.user_id).includes(role);
+                    return (
+                      <button key={role} onClick={() => assignRole(selectedUser.user_id, role)}
+                        className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border transition-all",
+                          active ? "bg-primary/10 text-primary border-primary/20" : "bg-secondary text-muted-foreground border-border hover:bg-secondary/80"
+                        )}>
+                        {active ? "✓ " : ""}{role}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {detailLoading ? (
+                <div className="py-6 text-center"><span className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin inline-block" /></div>
+              ) : (
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground mb-1.5">Últimos Pedidos ({userOrders.length})</p>
+                    {userOrders.length === 0 ? <p className="text-xs text-muted-foreground">Nenhum pedido</p> : (
+                      <div className="space-y-1 max-h-[150px] overflow-y-auto">
+                        {userOrders.map(o => (
+                          <div key={o.id} className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-secondary/50 text-xs">
+                            <span className="text-foreground font-medium truncate flex-1">{o.restaurant_name}</span>
+                            <span className="text-muted-foreground mx-2">{new Date(o.created_at).toLocaleDateString("pt-BR")}</span>
+                            <span className="text-foreground font-bold">{fmt(o.total)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground mb-1.5">Últimas Corridas ({userRides.length})</p>
+                    {userRides.length === 0 ? <p className="text-xs text-muted-foreground">Nenhuma corrida</p> : (
+                      <div className="space-y-1 max-h-[150px] overflow-y-auto">
+                        {userRides.map(r => (
+                          <div key={r.id} className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-secondary/50 text-xs">
+                            <span className="text-foreground font-medium truncate flex-1">{r.origin_address ?? "—"} → {r.destination_address ?? "—"}</span>
+                            <span className="text-muted-foreground mx-2">{r.status}</span>
+                            <span className="text-foreground font-bold">{r.final_price ? fmt(r.final_price) : "—"}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {loading ? <LoadingSkeleton /> : (
         <div className="space-y-2">
-          {filtered.map((p, i) => (
-            <motion.div key={p.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.015 }}>
-              <Card className="!p-4 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary shrink-0">
-                  {(p.display_name ?? "?").charAt(0).toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-foreground text-sm truncate">{p.display_name ?? "Sem nome"}</p>
-                  <p className="text-[11px] text-muted-foreground">{p.phone ?? "Sem telefone"}</p>
-                </div>
-                <span className="text-[10px] text-muted-foreground font-mono">{new Date(p.created_at).toLocaleDateString("pt-BR")}</span>
-              </Card>
-            </motion.div>
-          ))}
+          {filtered.map((p, i) => {
+            const userRolesList = getUserRoles(p.user_id);
+            return (
+              <motion.div key={p.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.015 }}>
+                <Card className="!p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => viewUserHistory(p)}>
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary shrink-0">
+                    {(p.display_name ?? "?").charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-foreground text-sm truncate">{p.display_name ?? "Sem nome"}</p>
+                    <p className="text-[11px] text-muted-foreground">{p.phone ?? "Sem telefone"}</p>
+                  </div>
+                  <div className="flex gap-1 shrink-0">
+                    {userRolesList.map(r => (
+                      <span key={r} className={cn("text-[9px] font-bold px-2 py-0.5 rounded-full",
+                        r === "admin" ? "bg-red-50 text-red-600" : r === "moderator" ? "bg-blue-50 text-blue-600" : "bg-secondary text-muted-foreground"
+                      )}>{r}</span>
+                    ))}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground font-mono shrink-0">{new Date(p.created_at).toLocaleDateString("pt-BR")}</span>
+                </Card>
+              </motion.div>
+            );
+          })}
           {filtered.length === 0 && <EmptyState text="Nenhum usuário encontrado" />}
         </div>
       )}
@@ -1588,7 +1720,233 @@ function FinanceiroPanel() {
   );
 }
 
-/* ═══════ Utility components ═══════ */
+/* ═══════════════════════ AVALIAÇÕES (MODERATION) ═══════════════════════ */
+function AvaliacoesPanel() {
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [ratingFilter, setRatingFilter] = useState<number | null>(null);
+  const { toast } = useToast();
+
+  const loadReviews = async () => {
+    const { data } = await supabase.from("reviews").select("*, stores(name)").order("created_at", { ascending: false }).limit(200);
+    setReviews(data ?? []);
+    setLoading(false);
+  };
+  useEffect(() => { loadReviews(); }, []);
+
+  const deleteReview = async (id: string) => {
+    if (!confirm("Remover esta avaliação? Esta ação não pode ser desfeita.")) return;
+    await supabase.from("reviews").delete().eq("id", id);
+    toast({ title: "Avaliação removida 🗑" });
+    loadReviews();
+  };
+
+  const filtered = reviews
+    .filter(r => ratingFilter === null || r.rating === ratingFilter)
+    .filter(r => (r.comment ?? "").toLowerCase().includes(search.toLowerCase()) || ((r.stores as any)?.name ?? "").toLowerCase().includes(search.toLowerCase()));
+
+  const avgRating = reviews.length > 0 ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : "—";
+  const ratingDist = [5, 4, 3, 2, 1].map(n => ({ stars: n, count: reviews.filter(r => r.rating === n).length }));
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-2xl font-extrabold text-foreground">Moderação de Avaliações</h2>
+        <p className="text-muted-foreground text-sm">{reviews.length} avaliações • Média: ⭐ {avgRating}</p>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card className="!p-4 text-center">
+          <p className="text-3xl font-extrabold text-primary">⭐ {avgRating}</p>
+          <p className="text-[10px] text-muted-foreground font-medium mt-1">Média Geral</p>
+        </Card>
+        <Card className="!p-4 text-center">
+          <p className="text-2xl font-extrabold text-foreground">{reviews.length}</p>
+          <p className="text-[10px] text-muted-foreground font-medium mt-1">Total</p>
+        </Card>
+        <Card className="!p-4 text-center">
+          <p className="text-2xl font-extrabold text-emerald-600">{reviews.filter(r => r.reply).length}</p>
+          <p className="text-[10px] text-muted-foreground font-medium mt-1">Respondidas</p>
+        </Card>
+        <Card className="!p-4 text-center">
+          <p className="text-2xl font-extrabold text-amber-600">{reviews.filter(r => !r.reply).length}</p>
+          <p className="text-[10px] text-muted-foreground font-medium mt-1">Pendentes</p>
+        </Card>
+      </div>
+
+      {/* Rating distribution */}
+      <Card className="!p-4">
+        <p className="text-xs font-semibold text-muted-foreground mb-3">Distribuição de notas</p>
+        <div className="space-y-1.5">
+          {ratingDist.map(({ stars, count }) => (
+            <button key={stars} onClick={() => setRatingFilter(ratingFilter === stars ? null : stars)}
+              className={cn("flex items-center gap-2 w-full text-xs rounded-lg px-2 py-1 transition-all",
+                ratingFilter === stars ? "bg-primary/10" : "hover:bg-secondary")}>
+              <span className="w-8 text-right font-bold text-foreground">{stars}★</span>
+              <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                <div className="h-full bg-primary rounded-full transition-all" style={{ width: reviews.length ? `${(count / reviews.length) * 100}%` : "0%" }} />
+              </div>
+              <span className="w-8 text-left text-muted-foreground">{count}</span>
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <SearchInput value={search} onChange={setSearch} placeholder="Buscar por comentário ou loja..." />
+
+      {loading ? <LoadingSkeleton /> : filtered.length === 0 ? <EmptyState text="Nenhuma avaliação encontrada" /> : (
+        <div className="space-y-2">
+          {filtered.map(r => (
+            <Card key={r.id} className="!p-4 space-y-2">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} size={14} className={i < r.rating ? "text-amber-500 fill-amber-500" : "text-muted-foreground/20"} />
+                    ))}
+                  </div>
+                  <span className="text-xs text-muted-foreground font-medium">{(r.stores as any)?.name ?? "—"}</span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[10px] text-muted-foreground">{new Date(r.created_at).toLocaleDateString("pt-BR")}</span>
+                  <button onClick={() => deleteReview(r.id)}
+                    className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-all" title="Remover avaliação">
+                    <XCircle size={16} />
+                  </button>
+                </div>
+              </div>
+              {r.comment && <p className="text-sm text-foreground">{r.comment}</p>}
+              {r.reply && (
+                <div className="ml-4 pl-3 border-l-2 border-primary/20">
+                  <p className="text-xs text-muted-foreground font-semibold">Resposta da loja:</p>
+                  <p className="text-sm text-foreground">{r.reply}</p>
+                </div>
+              )}
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════ CONFIG PANEL ═══════════════════════ */
+function ConfigPanel() {
+  const [config, setConfig] = useState({
+    commissionRate: 12,
+    maxDeliveryRadius: 15,
+    minOrderValue: 10,
+    driverCommission: 85,
+  });
+  const { toast } = useToast();
+
+  const handleSave = () => {
+    localStorage.setItem("zuuppi_platform_config", JSON.stringify(config));
+    toast({ title: "Configurações salvas ✅", description: "As configurações foram atualizadas com sucesso." });
+  };
+
+  useEffect(() => {
+    const saved = localStorage.getItem("zuuppi_platform_config");
+    if (saved) {
+      try { setConfig(JSON.parse(saved)); } catch {}
+    }
+  }, []);
+
+  const configItems = [
+    { key: "commissionRate", label: "Taxa de Comissão (%)", desc: "Porcentagem cobrada sobre cada transação da plataforma", min: 0, max: 50, suffix: "%" },
+    { key: "driverCommission", label: "Repasse ao Motorista (%)", desc: "Porcentagem do valor da corrida repassada ao motorista", min: 50, max: 100, suffix: "%" },
+    { key: "maxDeliveryRadius", label: "Raio Máximo de Entrega (km)", desc: "Distância máxima permitida para entregas", min: 1, max: 50, suffix: " km" },
+    { key: "minOrderValue", label: "Pedido Mínimo (R$)", desc: "Valor mínimo para aceitar um pedido", min: 0, max: 100, suffix: "" },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-extrabold text-foreground">Configurações da Plataforma</h2>
+        <p className="text-muted-foreground text-sm">Gerencie taxas, limites e políticas do ecossistema</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {configItems.map(item => (
+          <Card key={item.key} className="space-y-3">
+            <div>
+              <p className="text-sm font-bold text-foreground">{item.label}</p>
+              <p className="text-[11px] text-muted-foreground">{item.desc}</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min={item.min}
+                max={item.max}
+                value={(config as any)[item.key]}
+                onChange={e => setConfig(prev => ({ ...prev, [item.key]: Number(e.target.value) }))}
+                className="flex-1 accent-primary h-2"
+              />
+              <span className="text-lg font-extrabold text-primary min-w-[60px] text-right tabular-nums">
+                {(config as any)[item.key]}{item.suffix}
+              </span>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      <Card className="space-y-4">
+        <div>
+          <p className="text-sm font-bold text-foreground">Resumo Financeiro</p>
+          <p className="text-[11px] text-muted-foreground">Simulação baseada nas configurações atuais</p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="p-3 rounded-xl bg-primary/5 text-center">
+            <p className="text-lg font-extrabold text-primary">{config.commissionRate}%</p>
+            <p className="text-[10px] text-muted-foreground">Comissão plataforma</p>
+          </div>
+          <div className="p-3 rounded-xl bg-blue-50 text-center">
+            <p className="text-lg font-extrabold text-blue-600">{config.driverCommission}%</p>
+            <p className="text-[10px] text-muted-foreground">Repasse motorista</p>
+          </div>
+          <div className="p-3 rounded-xl bg-amber-50 text-center">
+            <p className="text-lg font-extrabold text-amber-600">{100 - config.commissionRate - (100 - config.driverCommission)}%</p>
+            <p className="text-[10px] text-muted-foreground">Repasse loja (est.)</p>
+          </div>
+          <div className="p-3 rounded-xl bg-secondary text-center">
+            <p className="text-lg font-extrabold text-foreground">{config.maxDeliveryRadius}km</p>
+            <p className="text-[10px] text-muted-foreground">Raio máximo</p>
+          </div>
+        </div>
+      </Card>
+
+      {/* Policies */}
+      <Card className="space-y-3">
+        <p className="text-sm font-bold text-foreground">Políticas & Termos</p>
+        <div className="space-y-2">
+          {[
+            { label: "Termos de Uso", desc: "Regras gerais de utilização da plataforma" },
+            { label: "Política de Privacidade", desc: "Como tratamos os dados dos usuários" },
+            { label: "Política de Cancelamento", desc: "Regras para cancelamento de pedidos e corridas" },
+            { label: "Contrato Lojista", desc: "Termos do contrato com estabelecimentos parceiros" },
+            { label: "Contrato Motorista", desc: "Termos do contrato com motoristas parceiros" },
+          ].map(p => (
+            <div key={p.label} className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-all">
+              <div>
+                <p className="text-sm font-semibold text-foreground">{p.label}</p>
+                <p className="text-[11px] text-muted-foreground">{p.desc}</p>
+              </div>
+              <span className="text-[10px] font-bold text-muted-foreground px-2.5 py-1 rounded-full bg-secondary border border-border">Editar</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <button onClick={handleSave}
+        className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all">
+        💾 Salvar Configurações
+      </button>
+    </div>
+  );
+}
+
+
 function LoadingSkeleton({ count = 5, grid = false }: { count?: number; grid?: boolean }) {
   return (
     <div className={grid ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "space-y-2"}>
