@@ -22,10 +22,11 @@ import { cn } from "@/lib/utils";
 
 const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-type Tab = "dashboard" | "users" | "stores" | "orders" | "rides" | "drivers" | "coupons" | "featured" | "services";
+type Tab = "dashboard" | "users" | "stores" | "orders" | "rides" | "drivers" | "coupons" | "featured" | "services" | "financeiro";
 
 const TABS: { id: Tab; label: string; icon: any }[] = [
   { id: "dashboard", label: "Overview", icon: LayoutDashboard },
+  { id: "financeiro", label: "Financeiro", icon: BarChart3 },
   { id: "users", label: "Usuários", icon: Users },
   { id: "stores", label: "Estabelecimentos", icon: Store },
   { id: "orders", label: "Pedidos", icon: ShoppingBag },
