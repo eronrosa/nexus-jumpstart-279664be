@@ -518,6 +518,8 @@ function DashboardPanel() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [liveRevenue, setLiveRevenue] = useState(0);
+  const [storeRanking, setStoreRanking] = useState<{ id: string; name: string; logo_url: string | null; category: string; revenue: number; orderCount: number; avgRating: number; reviewCount: number }[]>([]);
+  const [rankSort, setRankSort] = useState<"revenue" | "rating">("revenue");
   const [now, setNow] = useState(new Date());
 
   // Live clock
