@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
-  ArrowLeft, Send, Search, Plus, Users, Image, Mic, Paperclip,
+  ArrowLeft, Send, Search, Plus, Users, Paperclip,
   Phone, Video, MoreVertical, Check, CheckCheck, Smile, X,
-  MessageCircle, UserPlus, LogOut, Crown, Camera
+  MessageCircle
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
