@@ -687,6 +687,17 @@ export default function ZuuChat() {
           </div>
         </ScrollArea>
 
+        {/* Typing indicator */}
+        {typingUsers.length > 0 && (
+          <div className="px-4 py-1 bg-card border-t border-border/50">
+            <p className="text-xs text-primary animate-pulse">
+              {typingUsers.length === 1
+                ? `${typingUsers[0]} está digitando...`
+                : `${typingUsers.length} pessoas digitando...`}
+            </p>
+          </div>
+        )}
+
         {/* Input */}
         <div className="border-t border-border p-3 bg-card shrink-0">
           <div className="flex items-center gap-2">
@@ -698,7 +709,7 @@ export default function ZuuChat() {
             <div className="flex-1 relative">
               <Input
                 value={msgText}
-                onChange={e => setMsgText(e.target.value)}
+                onChange={e => { setMsgText(e.target.value); handleTyping(); }}
                 placeholder="Mensagem..."
                 className="pr-10 rounded-full bg-muted/50 border-0"
                 onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
