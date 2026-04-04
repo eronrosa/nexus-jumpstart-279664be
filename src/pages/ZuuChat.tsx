@@ -316,10 +316,29 @@ export default function ZuuChat() {
           setProfilesCache(prev => ({ ...prev, ...newCache }));
         }
       }
+      const msgIds = data.map(m => m.id);
+      // Load reactions
+      let reactionsData: { message_id: string; emoji: string; user_id: string }[] = [];
+      if (msgIds.length) {
+        const { data: rxns } = await supabase
+          .from("message_reactions")
+          .select("message_id, emoji, user_id")
+          .in("message_id", msgIds);
+        if (rxns) reactionsData = rxns;
+      }
+      const rxnMap: Record<string, { emoji: string; user_id: string }[]> = {};
+      reactionsData.forEach(r => {
+        if (!rxnMap[r.message_id]) rxnMap[r.message_id] = [];
+        rxnMap[r.message_id].push(r);
+      });
+      setReactionsMap(rxnMap);
+
       setMessages(data.map(m => ({
         ...m,
         read_by: (m.read_by as string[]) || [],
+        reply_to_id: (m as any).reply_to_id || null,
         sender_profile: profilesCache[m.sender_id],
+        reactions: rxnMap[m.id] || [],
       })));
     }
   }, [profilesCache]);
