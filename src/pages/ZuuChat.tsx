@@ -575,18 +575,39 @@ export default function ZuuChat() {
           <button onClick={() => { setShowMobileChat(false); setActiveConv(null); }} className="md:hidden mr-1">
             <ArrowLeft size={20} className="text-foreground" />
           </button>
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={getConversationAvatar(activeConv) || undefined} />
-            <AvatarFallback className="bg-primary/10 text-primary font-bold">
-              {getConversationInitial(activeConv)}
-            </AvatarFallback>
-          </Avatar>
+          <div className="relative">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={getConversationAvatar(activeConv) || undefined} />
+              <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                {getConversationInitial(activeConv)}
+              </AvatarFallback>
+            </Avatar>
+            {activeConv.type === "private" && activeConv.other_user && (
+              <span className={cn(
+                "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-card",
+                getPresenceStatus(activeConv.other_user.user_id) === "online"
+                  ? "bg-emerald-500"
+                  : "bg-muted-foreground/40"
+              )} />
+            )}
+          </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-foreground truncate">{getConversationName(activeConv)}</p>
             <p className="text-xs text-muted-foreground">
-              {activeConv.type === "group"
-                ? `${activeConv.members?.length || 0} membros`
-                : "online"}
+              {typingUsers.length > 0
+                ? <span className="text-primary animate-pulse">
+                    {typingUsers.length === 1
+                      ? `${typingUsers[0]} está digitando...`
+                      : `${typingUsers.length} pessoas digitando...`}
+                  </span>
+                : activeConv.type === "group"
+                  ? `${activeConv.members?.length || 0} membros`
+                  : activeConv.other_user
+                    ? getPresenceStatus(activeConv.other_user.user_id) === "online"
+                      ? "online"
+                      : formatLastSeen(activeConv.other_user.user_id)
+                    : "offline"
+              }
             </p>
           </div>
           <div className="flex gap-1">
