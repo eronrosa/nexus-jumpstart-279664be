@@ -17,6 +17,8 @@ import MotoristaPage from "./pages/MotoristaPage";
 import RideHistoryPage from "./pages/RideHistoryPage";
 import NotFound from "./pages/NotFound";
 import AdminPage from "./pages/AdminPage";
+import ZuuChat from "./pages/ZuuChat";
+import FloatingChatButton from "./components/FloatingChatButton";
 
 const queryClient = new QueryClient();
 
@@ -51,9 +53,11 @@ const App = () => (
               <Route path="/motorista" element={<ProtectedRoute><MotoristaPage /></ProtectedRoute>} />
               <Route path="/zuumob/historico" element={<ProtectedRoute><RideHistoryPage /></ProtectedRoute>} />
               <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+              <Route path="/zuuchat" element={<ProtectedRoute><ZuuChat /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <FloatingChatButton />
           </CartProvider>
         </AuthProvider>
       </BrowserRouter>
