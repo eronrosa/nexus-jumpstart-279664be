@@ -16,13 +16,13 @@ import {
   Star, ArrowLeft, Search, ToggleLeft, ToggleRight, Shield, ChevronRight,
   DollarSign, Bike, MapPin, Megaphone, TrendingUp, Activity, Zap,
   CheckCircle2, XCircle, Clock, Cpu, Navigation, ArrowUpRight, Bell, X,
-  Download, BarChart3
+  Download, BarChart3, MessageSquare, Settings, Trash2, ShieldCheck, UserCog
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-type Tab = "dashboard" | "users" | "stores" | "orders" | "rides" | "drivers" | "coupons" | "featured" | "services" | "financeiro";
+type Tab = "dashboard" | "users" | "stores" | "orders" | "rides" | "drivers" | "coupons" | "featured" | "services" | "financeiro" | "avaliacoes" | "config";
 
 const TABS: { id: Tab; label: string; icon: any }[] = [
   { id: "dashboard", label: "Overview", icon: LayoutDashboard },
@@ -33,8 +33,10 @@ const TABS: { id: Tab; label: string; icon: any }[] = [
   { id: "rides", label: "Corridas", icon: Car },
   { id: "drivers", label: "Motoristas", icon: Bike },
   { id: "coupons", label: "Cupons", icon: Ticket },
+  { id: "avaliacoes", label: "Avaliações", icon: MessageSquare },
   { id: "featured", label: "Destaques", icon: Star },
   { id: "services", label: "Serviços", icon: Sparkles },
+  { id: "config", label: "Configurações", icon: Settings },
 ];
 
 /* ═══════════════════════ ANIMATED COUNTER ═══════════════════════ */
