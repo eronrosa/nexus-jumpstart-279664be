@@ -1002,31 +1002,118 @@ function StoresPanel() {
 function OrdersPanel() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  useEffect(() => { supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(100).then(({ data }) => { setOrders(data ?? []); setLoading(false); }); }, []);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [selected, setSelected] = useState<any | null>(null);
+  const { toast } = useToast();
 
-  const statusCfg: Record<string, { bg: string; text: string; icon: any }> = {
-    pendente: { bg: "bg-amber-50", text: "text-amber-600", icon: Clock },
-    preparando: { bg: "bg-blue-50", text: "text-blue-600", icon: Activity },
-    pronto: { bg: "bg-primary/10", text: "text-primary", icon: CheckCircle2 },
-    entregue: { bg: "bg-emerald-50", text: "text-emerald-600", icon: CheckCircle2 },
-    cancelado: { bg: "bg-red-50", text: "text-red-600", icon: XCircle },
+  const loadOrders = async () => {
+    const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(200);
+    setOrders(data ?? []);
+    setLoading(false);
   };
+  useEffect(() => { loadOrders(); }, []);
+
+  const cancelOrder = async (id: string) => {
+    if (!confirm("Cancelar este pedido?")) return;
+    await supabase.from("orders").update({ status: "cancelado" }).eq("id", id);
+    toast({ title: "Pedido cancelado ❌" });
+    setSelected(null);
+    loadOrders();
+  };
+
+  const statuses = ["all", "pendente", "preparando", "pronto", "entregue", "cancelado"];
+  const statusCfg: Record<string, { bg: string; text: string; icon: any; label: string }> = {
+    pendente: { bg: "bg-amber-50", text: "text-amber-600", icon: Clock, label: "Pendente" },
+    preparando: { bg: "bg-blue-50", text: "text-blue-600", icon: Activity, label: "Preparando" },
+    pronto: { bg: "bg-primary/10", text: "text-primary", icon: CheckCircle2, label: "Pronto" },
+    entregue: { bg: "bg-emerald-50", text: "text-emerald-600", icon: CheckCircle2, label: "Entregue" },
+    cancelado: { bg: "bg-red-50", text: "text-red-600", icon: XCircle, label: "Cancelado" },
+  };
+
+  const filtered = orders
+    .filter(o => statusFilter === "all" || o.status === statusFilter)
+    .filter(o => o.restaurant_name?.toLowerCase().includes(search.toLowerCase()) || o.id?.includes(search));
+
+  const totalRevenue = orders.filter(o => o.status !== "cancelado").reduce((s, o) => s + Number(o.total || 0), 0);
+  const byStatus = statuses.slice(1).map(s => ({ status: s, count: orders.filter(o => o.status === s).length }));
 
   return (
     <div className="space-y-5">
-      <div><h2 className="text-2xl font-extrabold text-foreground">Pedidos</h2><p className="text-muted-foreground text-sm">{orders.length} últimos</p></div>
-      {loading ? <LoadingSkeleton /> : (
+      <div>
+        <h2 className="text-2xl font-extrabold text-foreground">Pedidos</h2>
+        <p className="text-muted-foreground text-sm">{orders.length} pedidos • Faturamento: {fmt(totalRevenue)}</p>
+      </div>
+
+      <div className="grid grid-cols-5 gap-2">
+        {byStatus.map(b => {
+          const c = statusCfg[b.status];
+          return (
+            <Card key={b.status} className="!p-3 text-center cursor-pointer hover:shadow-md transition-shadow" onClick={() => setStatusFilter(b.status === statusFilter ? "all" : b.status)}>
+              <p className={cn("text-xl font-extrabold", c?.text)}>{b.count}</p>
+              <p className="text-[10px] text-muted-foreground font-medium">{c?.label}</p>
+            </Card>
+          );
+        })}
+      </div>
+
+      <div className="flex gap-2 items-center">
+        <SearchInput value={search} onChange={setSearch} placeholder="Buscar por restaurante ou ID..." />
+        <div className="flex bg-secondary rounded-lg p-0.5 shrink-0 overflow-x-auto">
+          {statuses.map(s => (
+            <button key={s} onClick={() => setStatusFilter(s)}
+              className={cn("px-3 py-1.5 rounded-md text-xs font-semibold transition-all whitespace-nowrap",
+                statusFilter === s ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              )}>{s === "all" ? "Todos" : statusCfg[s]?.label ?? s}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Order detail modal */}
+      <AnimatePresence>
+        {selected && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setSelected(null)}>
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-background rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4" onClick={e => e.stopPropagation()}>
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="text-lg font-extrabold text-foreground">{selected.restaurant_name}</h3>
+                  <p className="text-xs text-muted-foreground font-mono">#{selected.id?.slice(0, 8)}</p>
+                </div>
+                <button onClick={() => setSelected(null)} className="p-1 hover:bg-secondary rounded-lg"><X size={18} /></button>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div><p className="text-xs font-semibold text-muted-foreground">Status</p>
+                  {(() => { const c = statusCfg[selected.status]; return <span className={cn("text-xs font-bold px-2 py-0.5 rounded-full", c?.bg, c?.text)}>{c?.label ?? selected.status}</span>; })()}
+                </div>
+                <div><p className="text-xs font-semibold text-muted-foreground">Total</p><p className="text-foreground font-bold">{fmt(selected.total)}</p></div>
+                <div><p className="text-xs font-semibold text-muted-foreground">Taxa de entrega</p><p className="text-foreground">{fmt(selected.delivery_fee)}</p></div>
+                <div><p className="text-xs font-semibold text-muted-foreground">Data</p><p className="text-foreground">{new Date(selected.created_at).toLocaleString("pt-BR")}</p></div>
+              </div>
+              {selected.status !== "cancelado" && selected.status !== "entregue" && (
+                <button onClick={() => cancelOrder(selected.id)}
+                  className="w-full py-2.5 rounded-xl text-sm font-bold bg-red-100 text-red-600 hover:bg-red-200 transition-all">
+                  ❌ Cancelar Pedido
+                </button>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {loading ? <LoadingSkeleton /> : filtered.length === 0 ? <EmptyState text="Nenhum pedido encontrado" /> : (
         <div className="space-y-2">
-          {orders.map(o => {
-            const c = statusCfg[o.status] ?? { bg: "bg-secondary", text: "text-muted-foreground", icon: Clock };
+          {filtered.map(o => {
+            const c = statusCfg[o.status] ?? { bg: "bg-secondary", text: "text-muted-foreground", icon: Clock, label: o.status };
             return (
-              <Card key={o.id} className="!p-4 flex items-center gap-4">
+              <Card key={o.id} className="!p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelected(o)}>
                 <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center", c.bg)}><c.icon size={16} className={c.text} /></div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-foreground text-sm truncate">{o.restaurant_name}</p>
                   <p className="text-[11px] text-muted-foreground">{new Date(o.created_at).toLocaleDateString("pt-BR")} • {fmt(o.total)}</p>
                 </div>
-                <span className={cn("text-[10px] font-bold px-2.5 py-1 rounded-full", c.bg, c.text)}>{o.status?.toUpperCase()}</span>
+                <span className={cn("text-[10px] font-bold px-2.5 py-1 rounded-full", c.bg, c.text)}>{c.label?.toUpperCase()}</span>
               </Card>
             );
           })}
@@ -1039,33 +1126,129 @@ function OrdersPanel() {
 function RidesPanel() {
   const [rides, setRides] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  useEffect(() => { supabase.from("rides").select("*").order("created_at", { ascending: false }).limit(100).then(({ data }) => { setRides(data ?? []); setLoading(false); }); }, []);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [selected, setSelected] = useState<any | null>(null);
+  const { toast } = useToast();
 
-  const statusCfg: Record<string, { bg: string; text: string }> = {
-    searching: { bg: "bg-amber-50", text: "text-amber-600" }, accepted: { bg: "bg-blue-50", text: "text-blue-600" },
-    in_progress: { bg: "bg-primary/10", text: "text-primary" }, completed: { bg: "bg-emerald-50", text: "text-emerald-600" },
-    cancelled: { bg: "bg-red-50", text: "text-red-600" },
+  const loadRides = async () => {
+    const { data } = await supabase.from("rides").select("*").order("created_at", { ascending: false }).limit(200);
+    setRides(data ?? []);
+    setLoading(false);
   };
+  useEffect(() => { loadRides(); }, []);
+
+  const cancelRide = async (id: string) => {
+    if (!confirm("Cancelar esta corrida?")) return;
+    await supabase.from("rides").update({ status: "cancelled" }).eq("id", id);
+    toast({ title: "Corrida cancelada ❌" });
+    setSelected(null);
+    loadRides();
+  };
+
+  const statuses = ["all", "searching", "accepted", "in_progress", "completed", "cancelled"];
+  const statusCfg: Record<string, { bg: string; text: string; label: string }> = {
+    searching: { bg: "bg-amber-50", text: "text-amber-600", label: "Buscando" },
+    accepted: { bg: "bg-blue-50", text: "text-blue-600", label: "Aceita" },
+    in_progress: { bg: "bg-primary/10", text: "text-primary", label: "Em andamento" },
+    completed: { bg: "bg-emerald-50", text: "text-emerald-600", label: "Concluída" },
+    cancelled: { bg: "bg-red-50", text: "text-red-600", label: "Cancelada" },
+  };
+
+  const filtered = rides
+    .filter(r => statusFilter === "all" || r.status === statusFilter)
+    .filter(r => (r.origin_address ?? "").toLowerCase().includes(search.toLowerCase()) || (r.destination_address ?? "").toLowerCase().includes(search.toLowerCase()) || r.id?.includes(search));
+
+  const totalRevenue = rides.filter(r => r.status === "completed").reduce((s, r) => s + Number(r.final_price || r.estimated_price || 0), 0);
+  const byStatus = statuses.slice(1).map(s => ({ status: s, count: rides.filter(r => r.status === s).length }));
 
   return (
     <div className="space-y-5">
-      <div><h2 className="text-2xl font-extrabold text-foreground">Corridas</h2><p className="text-muted-foreground text-sm">{rides.length} registradas</p></div>
-      {loading ? <LoadingSkeleton /> : (
+      <div>
+        <h2 className="text-2xl font-extrabold text-foreground">Corridas</h2>
+        <p className="text-muted-foreground text-sm">{rides.length} corridas • Receita: {fmt(totalRevenue)}</p>
+      </div>
+
+      <div className="grid grid-cols-5 gap-2">
+        {byStatus.map(b => {
+          const c = statusCfg[b.status];
+          return (
+            <Card key={b.status} className="!p-3 text-center cursor-pointer hover:shadow-md transition-shadow" onClick={() => setStatusFilter(b.status === statusFilter ? "all" : b.status)}>
+              <p className={cn("text-xl font-extrabold", c?.text)}>{b.count}</p>
+              <p className="text-[10px] text-muted-foreground font-medium">{c?.label}</p>
+            </Card>
+          );
+        })}
+      </div>
+
+      <div className="flex gap-2 items-center">
+        <SearchInput value={search} onChange={setSearch} placeholder="Buscar por endereço ou ID..." />
+        <div className="flex bg-secondary rounded-lg p-0.5 shrink-0 overflow-x-auto">
+          {statuses.map(s => (
+            <button key={s} onClick={() => setStatusFilter(s)}
+              className={cn("px-3 py-1.5 rounded-md text-xs font-semibold transition-all whitespace-nowrap",
+                statusFilter === s ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              )}>{s === "all" ? "Todas" : statusCfg[s]?.label ?? s}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Ride detail modal */}
+      <AnimatePresence>
+        {selected && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setSelected(null)}>
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-background rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4" onClick={e => e.stopPropagation()}>
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="text-lg font-extrabold text-foreground">Corrida</h3>
+                  <p className="text-xs text-muted-foreground font-mono">#{selected.id?.slice(0, 8)}</p>
+                </div>
+                <button onClick={() => setSelected(null)} className="p-1 hover:bg-secondary rounded-lg"><X size={18} /></button>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-start gap-2"><MapPin size={14} className="text-primary mt-0.5 shrink-0" /><div><p className="text-xs text-muted-foreground">Origem</p><p className="text-foreground">{selected.origin_address ?? "—"}</p></div></div>
+                <div className="flex items-start gap-2"><Navigation size={14} className="text-red-500 mt-0.5 shrink-0" /><div><p className="text-xs text-muted-foreground">Destino</p><p className="text-foreground">{selected.destination_address ?? "—"}</p></div></div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div><p className="text-xs font-semibold text-muted-foreground">Status</p>
+                  {(() => { const c = statusCfg[selected.status]; return <span className={cn("text-xs font-bold px-2 py-0.5 rounded-full", c?.bg, c?.text)}>{c?.label ?? selected.status}</span>; })()}
+                </div>
+                <div><p className="text-xs font-semibold text-muted-foreground">Tipo</p><p className="text-foreground">{selected.ride_type ?? "—"}</p></div>
+                <div><p className="text-xs font-semibold text-muted-foreground">Preço estimado</p><p className="text-foreground font-bold">{selected.estimated_price ? fmt(selected.estimated_price) : "—"}</p></div>
+                <div><p className="text-xs font-semibold text-muted-foreground">Preço final</p><p className="text-foreground font-bold">{selected.final_price ? fmt(selected.final_price) : "—"}</p></div>
+                <div><p className="text-xs font-semibold text-muted-foreground">Distância</p><p className="text-foreground">{selected.distance_km ? `${selected.distance_km.toFixed(1)} km` : "—"}</p></div>
+                <div><p className="text-xs font-semibold text-muted-foreground">Pagamento</p><p className="text-foreground">{selected.payment_method ?? "—"}</p></div>
+                <div><p className="text-xs font-semibold text-muted-foreground">Solicitada</p><p className="text-foreground">{selected.created_at ? new Date(selected.created_at).toLocaleString("pt-BR") : "—"}</p></div>
+                <div><p className="text-xs font-semibold text-muted-foreground">Concluída</p><p className="text-foreground">{selected.completed_at ? new Date(selected.completed_at).toLocaleString("pt-BR") : "—"}</p></div>
+              </div>
+              {selected.status !== "cancelled" && selected.status !== "completed" && (
+                <button onClick={() => cancelRide(selected.id)}
+                  className="w-full py-2.5 rounded-xl text-sm font-bold bg-red-100 text-red-600 hover:bg-red-200 transition-all">
+                  ❌ Cancelar Corrida
+                </button>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {loading ? <LoadingSkeleton /> : filtered.length === 0 ? <EmptyState text="Nenhuma corrida encontrada" /> : (
         <div className="space-y-2">
-          {rides.map(r => {
-            const c = statusCfg[r.status] ?? { bg: "bg-secondary", text: "text-muted-foreground" };
+          {filtered.map(r => {
+            const c = statusCfg[r.status] ?? { bg: "bg-secondary", text: "text-muted-foreground", label: r.status };
             return (
-              <Card key={r.id} className="!p-4 flex items-center gap-4">
+              <Card key={r.id} className="!p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelected(r)}>
                 <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center"><Car size={16} className="text-purple-600" /></div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground truncate">{r.origin_address ?? "Origem"} → {r.destination_address ?? "Destino"}</p>
                   <p className="text-[11px] text-muted-foreground">{r.ride_type} • {r.created_at ? new Date(r.created_at).toLocaleDateString("pt-BR") : ""} • {r.estimated_price ? fmt(r.estimated_price) : "—"}</p>
                 </div>
-                <span className={cn("text-[10px] font-bold px-2.5 py-1 rounded-full", c.bg, c.text)}>{r.status?.toUpperCase()}</span>
+                <span className={cn("text-[10px] font-bold px-2.5 py-1 rounded-full", c.bg, c.text)}>{c.label?.toUpperCase()}</span>
               </Card>
             );
           })}
-          {rides.length === 0 && <EmptyState text="Nenhuma corrida registrada" />}
         </div>
       )}
     </div>
