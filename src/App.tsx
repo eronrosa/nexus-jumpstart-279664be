@@ -17,6 +17,8 @@ import MotoristaPage from "./pages/MotoristaPage";
 import RideHistoryPage from "./pages/RideHistoryPage";
 import NotFound from "./pages/NotFound";
 import AdminPage from "./pages/AdminPage";
+import ZuuChat from "./pages/ZuuChat";
+import FloatingChatButton from "./components/FloatingChatButton";
 
 const queryClient = new QueryClient();
 
