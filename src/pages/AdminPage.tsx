@@ -979,6 +979,334 @@ function UsersPanel() {
   );
 }
 
+function StoreMetricsModal({ store, onClose }: { store: any; onClose: () => void }) {
+  const [orders, setOrders] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [metricTab, setMetricTab] = useState<"overview" | "revenue" | "orders" | "reviews">("overview");
+
+  useEffect(() => {
+    const load = async () => {
+      const [o, r] = await Promise.all([
+        supabase.from("orders").select("*").eq("restaurant_id", store.id).order("created_at", { ascending: false }),
+        supabase.from("reviews").select("*").eq("store_id", store.id).order("created_at", { ascending: false }),
+      ]);
+      setOrders(o.data ?? []);
+      setReviews(r.data ?? []);
+      setLoading(false);
+    };
+    load();
+  }, [store.id]);
+
+  const deliveredOrders = orders.filter(o => o.status === "entregue");
+  const totalRevenue = deliveredOrders.reduce((s, o) => s + Number(o.total || 0), 0);
+  const totalDeliveryFees = deliveredOrders.reduce((s, o) => s + Number(o.delivery_fee || 0), 0);
+  const avgTicket = deliveredOrders.length > 0 ? totalRevenue / deliveredOrders.length : 0;
+  const avgRating = reviews.length > 0 ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) : 0;
+  const cancelRate = orders.length > 0 ? (orders.filter(o => o.status === "cancelado").length / orders.length * 100) : 0;
+
+  // Daily revenue chart (last 30 days)
+  const dailyRevenue = useMemo(() => {
+    const days = 30;
+    const result: { day: string; receita: number; pedidos: number }[] = [];
+    const now = new Date();
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(now.getTime() - i * 86400000);
+      const key = d.toISOString().slice(0, 10);
+      const dayOrders = deliveredOrders.filter(o => o.created_at?.startsWith(key));
+      result.push({
+        day: d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+        receita: dayOrders.reduce((s, o) => s + Number(o.total || 0), 0),
+        pedidos: dayOrders.length,
+      });
+    }
+    return result;
+  }, [deliveredOrders]);
+
+  // Order status distribution
+  const statusDist = useMemo(() => {
+    const counts: Record<string, number> = {};
+    orders.forEach(o => { counts[o.status] = (counts[o.status] || 0) + 1; });
+    return Object.entries(counts).map(([name, value]) => ({ name, value }));
+  }, [orders]);
+
+  // Rating distribution
+  const ratingDist = [5, 4, 3, 2, 1].map(n => ({ stars: n, count: reviews.filter(r => r.rating === n).length }));
+
+  const PIE_COLORS = ["hsl(122 39% 42%)", "hsl(217 91% 60%)", "hsl(38 92% 50%)", "hsl(0 84% 60%)", "hsl(262 83% 58%)"];
+
+  const metricTabs = [
+    { id: "overview" as const, label: "Visão Geral" },
+    { id: "revenue" as const, label: "Faturamento" },
+    { id: "orders" as const, label: "Pedidos" },
+    { id: "reviews" as const, label: "Avaliações" },
+  ];
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+      onClick={onClose}>
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+        className="bg-background rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="sticky top-0 bg-background z-10 border-b border-border px-6 py-4">
+          <div className="flex items-start gap-4">
+            {store.logo_url ? (
+              <img src={store.logo_url} className="w-14 h-14 rounded-2xl object-cover border border-border" />
+            ) : (
+              <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center"><Store size={22} className="text-muted-foreground" /></div>
+            )}
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-extrabold text-foreground">{store.name}</h3>
+              <p className="text-xs text-muted-foreground">{store.category} • {store.address_city ?? "Sem cidade"}</p>
+              <span className={cn("inline-block mt-1 text-[10px] font-bold px-2.5 py-1 rounded-full",
+                store.is_active ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
+              )}>{store.is_active ? "ATIVO" : "INATIVO"}</span>
+            </div>
+            <button onClick={onClose} className="p-1.5 hover:bg-secondary rounded-lg"><X size={18} /></button>
+          </div>
+          {/* Metric tabs */}
+          <div className="flex gap-1 mt-4">
+            {metricTabs.map(t => (
+              <button key={t.id} onClick={() => setMetricTab(t.id)}
+                className={cn("px-3 py-1.5 rounded-lg text-xs font-semibold transition-all",
+                  metricTab === t.id ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary"
+                )}>{t.label}</button>
+            ))}
+          </div>
+        </div>
+
+        <div className="p-6 space-y-5">
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <span className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin block" />
+            </div>
+          ) : (
+            <>
+              {/* OVERVIEW */}
+              {metricTab === "overview" && (
+                <div className="space-y-5">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {[
+                      { label: "Faturamento", value: fmt(totalRevenue), color: "text-primary", bg: "bg-primary/10", icon: DollarSign },
+                      { label: "Pedidos", value: String(orders.length), color: "text-blue-600", bg: "bg-blue-50", icon: ShoppingBag },
+                      { label: "Nota Média", value: avgRating > 0 ? `⭐ ${avgRating.toFixed(1)}` : "—", color: "text-amber-600", bg: "bg-amber-50", icon: Star },
+                      { label: "Ticket Médio", value: fmt(avgTicket), color: "text-purple-600", bg: "bg-purple-50", icon: TrendingUp },
+                    ].map(k => (
+                      <Card key={k.label} className="!p-4 space-y-2">
+                        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", k.bg)}>
+                          <k.icon size={16} className={k.color} />
+                        </div>
+                        <p className={cn("text-xl font-extrabold", k.color)}>{k.value}</p>
+                        <p className="text-[10px] text-muted-foreground font-medium">{k.label}</p>
+                      </Card>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Card className="!p-4">
+                      <p className="text-xs font-semibold text-muted-foreground mb-1">Entregues</p>
+                      <p className="text-2xl font-extrabold text-primary">{deliveredOrders.length}</p>
+                    </Card>
+                    <Card className="!p-4">
+                      <p className="text-xs font-semibold text-muted-foreground mb-1">Taxa Cancelamento</p>
+                      <p className={cn("text-2xl font-extrabold", cancelRate > 10 ? "text-destructive" : "text-foreground")}>{cancelRate.toFixed(1)}%</p>
+                    </Card>
+                  </div>
+                  {/* Mini revenue chart */}
+                  <Card>
+                    <p className="text-xs font-semibold text-muted-foreground mb-3">Faturamento (30 dias)</p>
+                    <ResponsiveContainer width="100%" height={180}>
+                      <AreaChart data={dailyRevenue}>
+                        <defs>
+                          <linearGradient id={`gradStore${store.id}`} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="hsl(122 39% 42%)" stopOpacity={0.2} />
+                            <stop offset="100%" stopColor="hsl(122 39% 42%)" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 90%)" />
+                        <XAxis dataKey="day" tick={{ fill: "hsl(0 0% 50%)", fontSize: 9 }} axisLine={false} tickLine={false} interval={6} />
+                        <YAxis tick={{ fill: "hsl(0 0% 60%)", fontSize: 9 }} axisLine={false} tickLine={false} />
+                        <Tooltip contentStyle={{ background: "#fff", border: "1px solid hsl(0 0% 88%)", borderRadius: 12, fontSize: 11 }} />
+                        <Area type="monotone" dataKey="receita" stroke="hsl(122 39% 42%)" fill={`url(#gradStore${store.id})`} strokeWidth={2} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </Card>
+                </div>
+              )}
+
+              {/* REVENUE TAB */}
+              {metricTab === "revenue" && (
+                <div className="space-y-5">
+                  <div className="grid grid-cols-3 gap-3">
+                    <Card className="!p-4 text-center">
+                      <p className="text-2xl font-extrabold text-primary">{fmt(totalRevenue)}</p>
+                      <p className="text-[10px] text-muted-foreground">Faturamento Bruto</p>
+                    </Card>
+                    <Card className="!p-4 text-center">
+                      <p className="text-2xl font-extrabold text-foreground">{fmt(totalDeliveryFees)}</p>
+                      <p className="text-[10px] text-muted-foreground">Taxas de Entrega</p>
+                    </Card>
+                    <Card className="!p-4 text-center">
+                      <p className="text-2xl font-extrabold text-emerald-600">{fmt(totalRevenue * 0.88)}</p>
+                      <p className="text-[10px] text-muted-foreground">Líquido (est.)</p>
+                    </Card>
+                  </div>
+                  <Card>
+                    <p className="text-sm font-bold text-foreground mb-1">Receita Diária</p>
+                    <p className="text-[11px] text-muted-foreground mb-4">Últimos 30 dias</p>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <AreaChart data={dailyRevenue}>
+                        <defs>
+                          <linearGradient id={`gradStoreRev${store.id}`} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="hsl(122 39% 42%)" stopOpacity={0.25} />
+                            <stop offset="100%" stopColor="hsl(122 39% 42%)" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 90%)" />
+                        <XAxis dataKey="day" tick={{ fill: "hsl(0 0% 50%)", fontSize: 10 }} axisLine={false} tickLine={false} interval={4} />
+                        <YAxis tick={{ fill: "hsl(0 0% 60%)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                        <Tooltip contentStyle={{ background: "#fff", border: "1px solid hsl(0 0% 88%)", borderRadius: 12, fontSize: 12 }} formatter={(v: number) => fmt(v)} />
+                        <Area type="monotone" dataKey="receita" stroke="hsl(122 39% 42%)" fill={`url(#gradStoreRev${store.id})`} strokeWidth={2.5} name="Receita" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </Card>
+                </div>
+              )}
+
+              {/* ORDERS TAB */}
+              {metricTab === "orders" && (
+                <div className="space-y-5">
+                  <div className="grid grid-cols-2 gap-3">
+                    <Card className="!p-4 text-center">
+                      <p className="text-2xl font-extrabold text-foreground">{orders.length}</p>
+                      <p className="text-[10px] text-muted-foreground">Total de Pedidos</p>
+                    </Card>
+                    <Card className="!p-4 text-center">
+                      <p className="text-2xl font-extrabold text-primary">{fmt(avgTicket)}</p>
+                      <p className="text-[10px] text-muted-foreground">Ticket Médio</p>
+                    </Card>
+                  </div>
+
+                  {/* Status pie chart */}
+                  <Card>
+                    <p className="text-sm font-bold text-foreground mb-3">Distribuição por Status</p>
+                    {statusDist.length > 0 ? (
+                      <>
+                        <ResponsiveContainer width="100%" height={200}>
+                          <PieChart>
+                            <Pie data={statusDist} cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={3} dataKey="value" stroke="none">
+                              {statusDist.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                            </Pie>
+                            <Tooltip contentStyle={{ background: "#fff", border: "1px solid hsl(0 0% 88%)", borderRadius: 12, fontSize: 12 }} />
+                          </PieChart>
+                        </ResponsiveContainer>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
+                          {statusDist.map((s, i) => (
+                            <span key={s.name} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                              <span className="w-2 h-2 rounded-full" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />
+                              {s.name} ({s.value})
+                            </span>
+                          ))}
+                        </div>
+                      </>
+                    ) : <EmptyState text="Sem pedidos" />}
+                  </Card>
+
+                  {/* Volume chart */}
+                  <Card>
+                    <p className="text-sm font-bold text-foreground mb-3">Volume Diário de Pedidos</p>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <AreaChart data={dailyRevenue}>
+                        <defs>
+                          <linearGradient id={`gradStoreOrd${store.id}`} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="hsl(217 91% 60%)" stopOpacity={0.2} />
+                            <stop offset="100%" stopColor="hsl(217 91% 60%)" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 90%)" />
+                        <XAxis dataKey="day" tick={{ fill: "hsl(0 0% 50%)", fontSize: 9 }} axisLine={false} tickLine={false} interval={6} />
+                        <YAxis tick={{ fill: "hsl(0 0% 60%)", fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                        <Tooltip contentStyle={{ background: "#fff", border: "1px solid hsl(0 0% 88%)", borderRadius: 12, fontSize: 12 }} />
+                        <Area type="monotone" dataKey="pedidos" stroke="hsl(217 91% 60%)" fill={`url(#gradStoreOrd${store.id})`} strokeWidth={2} name="Pedidos" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </Card>
+                </div>
+              )}
+
+              {/* REVIEWS TAB */}
+              {metricTab === "reviews" && (
+                <div className="space-y-5">
+                  <div className="grid grid-cols-3 gap-3">
+                    <Card className="!p-4 text-center">
+                      <p className="text-3xl font-extrabold text-amber-600">⭐ {avgRating > 0 ? avgRating.toFixed(1) : "—"}</p>
+                      <p className="text-[10px] text-muted-foreground">Nota Média</p>
+                    </Card>
+                    <Card className="!p-4 text-center">
+                      <p className="text-2xl font-extrabold text-foreground">{reviews.length}</p>
+                      <p className="text-[10px] text-muted-foreground">Total Avaliações</p>
+                    </Card>
+                    <Card className="!p-4 text-center">
+                      <p className="text-2xl font-extrabold text-emerald-600">{reviews.filter(r => r.rating >= 4).length}</p>
+                      <p className="text-[10px] text-muted-foreground">4-5 Estrelas</p>
+                    </Card>
+                  </div>
+
+                  {/* Rating distribution bars */}
+                  <Card className="!p-4">
+                    <p className="text-xs font-semibold text-muted-foreground mb-3">Distribuição de Notas</p>
+                    <div className="space-y-2">
+                      {ratingDist.map(({ stars, count }) => (
+                        <div key={stars} className="flex items-center gap-2 text-xs">
+                          <span className="w-8 text-right font-bold text-foreground">{stars}★</span>
+                          <div className="flex-1 h-3 bg-secondary rounded-full overflow-hidden">
+                            <div className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                              style={{ width: reviews.length ? `${(count / reviews.length) * 100}%` : "0%" }} />
+                          </div>
+                          <span className="w-10 text-left text-muted-foreground">{count} ({reviews.length ? Math.round(count / reviews.length * 100) : 0}%)</span>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+
+                  {/* Recent reviews */}
+                  <Card className="!p-4">
+                    <p className="text-xs font-semibold text-muted-foreground mb-3">Últimas Avaliações</p>
+                    {reviews.length === 0 ? <EmptyState text="Nenhuma avaliação" /> : (
+                      <div className="space-y-2 max-h-[250px] overflow-y-auto">
+                        {reviews.slice(0, 15).map(r => (
+                          <div key={r.id} className="py-2 px-3 rounded-lg bg-secondary/50 space-y-1">
+                            <div className="flex items-center gap-2">
+                              <div className="flex gap-0.5">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                  <Star key={i} size={11} className={i < r.rating ? "text-amber-500 fill-amber-500" : "text-muted-foreground/20"} />
+                                ))}
+                              </div>
+                              <span className="text-[10px] text-muted-foreground">{new Date(r.created_at).toLocaleDateString("pt-BR")}</span>
+                            </div>
+                            {r.comment && <p className="text-xs text-foreground">{r.comment}</p>}
+                            {r.reply && (
+                              <div className="ml-3 pl-2 border-l-2 border-primary/20">
+                                <p className="text-[10px] text-muted-foreground font-semibold">Resposta:</p>
+                                <p className="text-xs text-foreground">{r.reply}</p>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </Card>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function StoresPanel() {
   const [stores, setStores] = useState<any[]>([]);
   const [search, setSearch] = useState("");
@@ -1022,7 +1350,6 @@ function StoresPanel() {
         <p className="text-muted-foreground text-sm">{stores.length} cadastrados • {activeCount} ativos • {inactiveCount} inativos</p>
       </div>
 
-      {/* Stats cards */}
       <div className="grid grid-cols-3 gap-3">
         {[
           { label: "Total", value: stores.length, color: "bg-primary/10 text-primary" },
@@ -1036,7 +1363,6 @@ function StoresPanel() {
         ))}
       </div>
 
-      {/* Filters */}
       <div className="flex gap-2 items-center">
         <SearchInput value={search} onChange={setSearch} placeholder="Buscar estabelecimento..." />
         <div className="flex bg-secondary rounded-lg p-0.5 shrink-0">
@@ -1051,61 +1377,8 @@ function StoresPanel() {
         </div>
       </div>
 
-      {/* Store detail modal */}
       <AnimatePresence>
-        {selectedStore && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
-            onClick={() => setSelectedStore(null)}>
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-background rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto p-6 space-y-4"
-              onClick={e => e.stopPropagation()}>
-              <div className="flex items-start gap-4">
-                {selectedStore.logo_url ? (
-                  <img src={selectedStore.logo_url} className="w-16 h-16 rounded-2xl object-cover border border-border" />
-                ) : (
-                  <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center"><Store size={24} className="text-muted-foreground" /></div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-extrabold text-foreground">{selectedStore.name}</h3>
-                  <p className="text-sm text-muted-foreground">{selectedStore.category}</p>
-                  <span className={cn("inline-block mt-1 text-[10px] font-bold px-2.5 py-1 rounded-full",
-                    selectedStore.is_active ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
-                  )}>{selectedStore.is_active ? "ATIVO" : "INATIVO"}</span>
-                </div>
-                <button onClick={() => setSelectedStore(null)} className="p-1 hover:bg-secondary rounded-lg"><X size={18} /></button>
-              </div>
-
-              {selectedStore.cover_url && (
-                <img src={selectedStore.cover_url} className="w-full h-32 rounded-xl object-cover" />
-              )}
-
-              {selectedStore.description && (
-                <div><p className="text-xs font-semibold text-muted-foreground mb-1">Descrição</p><p className="text-sm text-foreground">{selectedStore.description}</p></div>
-              )}
-
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><p className="text-xs font-semibold text-muted-foreground">Endereço</p><p className="text-foreground">{[selectedStore.address_street, selectedStore.address_number, selectedStore.address_neighborhood, selectedStore.address_city].filter(Boolean).join(", ") || "Não informado"}</p></div>
-                <div><p className="text-xs font-semibold text-muted-foreground">CEP</p><p className="text-foreground">{selectedStore.address_zip || "—"}</p></div>
-                <div><p className="text-xs font-semibold text-muted-foreground">Cadastro</p><p className="text-foreground">{new Date(selectedStore.created_at).toLocaleDateString("pt-BR")}</p></div>
-                <div><p className="text-xs font-semibold text-muted-foreground">Última atualização</p><p className="text-foreground">{new Date(selectedStore.updated_at).toLocaleDateString("pt-BR")}</p></div>
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <button onClick={() => { toggleActive(selectedStore.id, selectedStore.is_active); setSelectedStore(null); }}
-                  className={cn("flex-1 py-2.5 rounded-xl text-sm font-bold transition-all",
-                    selectedStore.is_active ? "bg-amber-100 text-amber-700 hover:bg-amber-200" : "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
-                  )}>
-                  {selectedStore.is_active ? "⏸ Desativar" : "✅ Aprovar"}
-                </button>
-                <button onClick={() => deleteStore(selectedStore.id)}
-                  className="px-4 py-2.5 rounded-xl text-sm font-bold bg-red-100 text-red-600 hover:bg-red-200 transition-all">
-                  🗑 Excluir
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
+        {selectedStore && <StoreMetricsModal store={selectedStore} onClose={() => setSelectedStore(null)} />}
       </AnimatePresence>
 
       {loading ? <LoadingSkeleton /> : filtered.length === 0 ? <EmptyState text="Nenhum estabelecimento encontrado" /> : (
