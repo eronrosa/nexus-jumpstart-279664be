@@ -15,16 +15,18 @@ import {
   LayoutDashboard, Users, Store, ShoppingBag, Car, Ticket, Sparkles,
   Star, ArrowLeft, Search, ToggleLeft, ToggleRight, Shield, ChevronRight,
   DollarSign, Bike, MapPin, Megaphone, TrendingUp, Activity, Zap,
-  CheckCircle2, XCircle, Clock, Cpu, Navigation, ArrowUpRight, Bell, X
+  CheckCircle2, XCircle, Clock, Cpu, Navigation, ArrowUpRight, Bell, X,
+  Download, BarChart3
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-type Tab = "dashboard" | "users" | "stores" | "orders" | "rides" | "drivers" | "coupons" | "featured" | "services";
+type Tab = "dashboard" | "users" | "stores" | "orders" | "rides" | "drivers" | "coupons" | "featured" | "services" | "financeiro";
 
 const TABS: { id: Tab; label: string; icon: any }[] = [
   { id: "dashboard", label: "Overview", icon: LayoutDashboard },
+  { id: "financeiro", label: "Financeiro", icon: BarChart3 },
   { id: "users", label: "Usuários", icon: Users },
   { id: "stores", label: "Estabelecimentos", icon: Store },
   { id: "orders", label: "Pedidos", icon: ShoppingBag },
@@ -367,6 +369,7 @@ export default function AdminPage() {
               {tab === "coupons" && <CouponsPanel />}
               {tab === "featured" && <FeaturedPanel />}
               {tab === "services" && <ServicesPanel />}
+              {tab === "financeiro" && <FinanceiroPanel />}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -1408,6 +1411,179 @@ function ServicesPanel() {
           </motion.div>
         ))}
       </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════ FINANCEIRO PANEL ═══════════════════════ */
+function FinanceiroPanel() {
+  const [orders, setOrders] = useState<any[]>([]);
+  const [rides, setRides] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState<"7d" | "30d" | "90d" | "all">("30d");
+  const COMMISSION_RATE = 0.12; // 12% platform commission
+
+  useEffect(() => {
+    const load = async () => {
+      const [o, r] = await Promise.all([
+        supabase.from("orders").select("*").order("created_at", { ascending: false }),
+        supabase.from("rides").select("*").order("created_at", { ascending: false }),
+      ]);
+      setOrders(o.data ?? []);
+      setRides(r.data ?? []);
+      setLoading(false);
+    };
+    load();
+  }, []);
+
+  const now = new Date();
+  const cutoff = period === "all" ? new Date(0) : new Date(now.getTime() - (period === "7d" ? 7 : period === "30d" ? 30 : 90) * 86400000);
+
+  const filteredOrders = orders.filter(o => new Date(o.created_at) >= cutoff && o.status !== "cancelado");
+  const filteredRides = rides.filter(r => new Date(r.created_at ?? 0) >= cutoff && r.status === "completed");
+
+  const orderRevenue = filteredOrders.reduce((s, o) => s + Number(o.total || 0), 0);
+  const deliveryRevenue = filteredOrders.reduce((s, o) => s + Number(o.delivery_fee || 0), 0);
+  const rideRevenue = filteredRides.reduce((s, r) => s + Number(r.final_price || r.estimated_price || 0), 0);
+  const totalRevenue = orderRevenue + rideRevenue;
+  const platformCommission = totalRevenue * COMMISSION_RATE;
+
+  // Daily breakdown for chart
+  const dailyData = useMemo(() => {
+    const days = period === "7d" ? 7 : period === "30d" ? 30 : period === "90d" ? 90 : 60;
+    const result: { date: string; pedidos: number; corridas: number; comissao: number }[] = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(now.getTime() - i * 86400000);
+      const key = d.toISOString().slice(0, 10);
+      const label = d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+      const dayOrders = orders.filter(o => o.created_at?.startsWith(key) && o.status !== "cancelado");
+      const dayRides = rides.filter(r => (r.created_at ?? "").startsWith(key) && r.status === "completed");
+      const pedidos = dayOrders.reduce((s: number, o: any) => s + Number(o.total || 0), 0);
+      const corridas = dayRides.reduce((s: number, r: any) => s + Number(r.final_price || r.estimated_price || 0), 0);
+      result.push({ date: label, pedidos, corridas, comissao: (pedidos + corridas) * COMMISSION_RATE });
+    }
+    return result;
+  }, [orders, rides, period]);
+
+  const exportCSV = () => {
+    const headers = ["Data,Pedidos (R$),Corridas (R$),Total (R$),Comissão (R$)"];
+    const rows = dailyData.map(d => `${d.date},${d.pedidos.toFixed(2)},${d.corridas.toFixed(2)},${(d.pedidos + d.corridas).toFixed(2)},${d.comissao.toFixed(2)}`);
+    const csv = [...headers, ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `relatorio-financeiro-${period}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const periods: { id: typeof period; label: string }[] = [
+    { id: "7d", label: "7 dias" }, { id: "30d", label: "30 dias" }, { id: "90d", label: "90 dias" }, { id: "all", label: "Tudo" },
+  ];
+
+  if (loading) return <LoadingSkeleton count={6} />;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-extrabold text-foreground">Relatório Financeiro</h2>
+          <p className="text-muted-foreground text-sm">Faturamento, comissões e métricas da plataforma</p>
+        </div>
+        <div className="flex gap-2 items-center">
+          <div className="flex bg-secondary rounded-lg p-0.5">
+            {periods.map(p => (
+              <button key={p.id} onClick={() => setPeriod(p.id)}
+                className={cn("px-3 py-1.5 rounded-md text-xs font-semibold transition-all",
+                  period === p.id ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                )}>{p.label}</button>
+            ))}
+          </div>
+          <button onClick={exportCSV} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-all">
+            <Download size={14} /> CSV
+          </button>
+        </div>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        {[
+          { label: "Faturamento Total", value: fmt(totalRevenue), color: "text-primary" },
+          { label: "Pedidos (Food)", value: fmt(orderRevenue), color: "text-emerald-600" },
+          { label: "Corridas (Mob)", value: fmt(rideRevenue), color: "text-blue-600" },
+          { label: "Taxas de Entrega", value: fmt(deliveryRevenue), color: "text-amber-600" },
+          { label: `Comissão (${(COMMISSION_RATE * 100).toFixed(0)}%)`, value: fmt(platformCommission), color: "text-primary" },
+        ].map(k => (
+          <Card key={k.label} className="!p-4 text-center">
+            <p className={cn("text-xl font-extrabold", k.color)}>{k.value}</p>
+            <p className="text-[10px] text-muted-foreground font-medium mt-1">{k.label}</p>
+          </Card>
+        ))}
+      </div>
+
+      {/* Volume Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { label: "Pedidos no período", value: filteredOrders.length },
+          { label: "Corridas no período", value: filteredRides.length },
+          { label: "Ticket médio pedidos", value: filteredOrders.length ? fmt(orderRevenue / filteredOrders.length) : "—" },
+          { label: "Ticket médio corridas", value: filteredRides.length ? fmt(rideRevenue / filteredRides.length) : "—" },
+        ].map(k => (
+          <Card key={k.label} className="!p-4 text-center">
+            <p className="text-xl font-extrabold text-foreground">{k.value}</p>
+            <p className="text-[10px] text-muted-foreground font-medium mt-1">{k.label}</p>
+          </Card>
+        ))}
+      </div>
+
+      {/* Revenue Chart */}
+      <Card className="!p-5">
+        <h3 className="text-sm font-bold text-foreground mb-4">Faturamento diário</h3>
+        <div className="h-[280px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={dailyData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+              <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" tickFormatter={v => `R$${(v / 1000).toFixed(0)}k`} />
+              <Tooltip formatter={(v: number) => fmt(v)} labelStyle={{ fontSize: 11 }} />
+              <Area type="monotone" dataKey="pedidos" stackId="1" fill="hsl(122, 39%, 42%)" stroke="hsl(122, 39%, 42%)" fillOpacity={0.3} name="Pedidos" />
+              <Area type="monotone" dataKey="corridas" stackId="1" fill="hsl(210, 80%, 55%)" stroke="hsl(210, 80%, 55%)" fillOpacity={0.3} name="Corridas" />
+              <Area type="monotone" dataKey="comissao" fill="hsl(40, 90%, 55%)" stroke="hsl(40, 90%, 55%)" fillOpacity={0.2} name="Comissão" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
+
+      {/* Daily Table */}
+      <Card className="!p-5">
+        <h3 className="text-sm font-bold text-foreground mb-3">Detalhamento diário</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-2 text-muted-foreground font-semibold">Data</th>
+                <th className="text-right py-2 text-muted-foreground font-semibold">Pedidos</th>
+                <th className="text-right py-2 text-muted-foreground font-semibold">Corridas</th>
+                <th className="text-right py-2 text-muted-foreground font-semibold">Total</th>
+                <th className="text-right py-2 text-muted-foreground font-semibold">Comissão</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dailyData.slice().reverse().filter(d => d.pedidos > 0 || d.corridas > 0).slice(0, 30).map(d => (
+                <tr key={d.date} className="border-b border-border/50 hover:bg-secondary/30">
+                  <td className="py-2 text-foreground font-medium">{d.date}</td>
+                  <td className="py-2 text-right text-foreground">{fmt(d.pedidos)}</td>
+                  <td className="py-2 text-right text-foreground">{fmt(d.corridas)}</td>
+                  <td className="py-2 text-right text-foreground font-semibold">{fmt(d.pedidos + d.corridas)}</td>
+                  <td className="py-2 text-right text-primary font-semibold">{fmt(d.comissao)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {dailyData.every(d => d.pedidos === 0 && d.corridas === 0) && <EmptyState text="Sem movimentação no período" />}
+        </div>
+      </Card>
     </div>
   );
 }
