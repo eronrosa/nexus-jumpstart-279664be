@@ -1720,7 +1720,233 @@ function FinanceiroPanel() {
   );
 }
 
-/* ═══════ Utility components ═══════ */
+/* ═══════════════════════ AVALIAÇÕES (MODERATION) ═══════════════════════ */
+function AvaliacoesPanel() {
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [ratingFilter, setRatingFilter] = useState<number | null>(null);
+  const { toast } = useToast();
+
+  const loadReviews = async () => {
+    const { data } = await supabase.from("reviews").select("*, stores(name)").order("created_at", { ascending: false }).limit(200);
+    setReviews(data ?? []);
+    setLoading(false);
+  };
+  useEffect(() => { loadReviews(); }, []);
+
+  const deleteReview = async (id: string) => {
+    if (!confirm("Remover esta avaliação? Esta ação não pode ser desfeita.")) return;
+    await supabase.from("reviews").delete().eq("id", id);
+    toast({ title: "Avaliação removida 🗑" });
+    loadReviews();
+  };
+
+  const filtered = reviews
+    .filter(r => ratingFilter === null || r.rating === ratingFilter)
+    .filter(r => (r.comment ?? "").toLowerCase().includes(search.toLowerCase()) || ((r.stores as any)?.name ?? "").toLowerCase().includes(search.toLowerCase()));
+
+  const avgRating = reviews.length > 0 ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : "—";
+  const ratingDist = [5, 4, 3, 2, 1].map(n => ({ stars: n, count: reviews.filter(r => r.rating === n).length }));
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-2xl font-extrabold text-foreground">Moderação de Avaliações</h2>
+        <p className="text-muted-foreground text-sm">{reviews.length} avaliações • Média: ⭐ {avgRating}</p>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card className="!p-4 text-center">
+          <p className="text-3xl font-extrabold text-primary">⭐ {avgRating}</p>
+          <p className="text-[10px] text-muted-foreground font-medium mt-1">Média Geral</p>
+        </Card>
+        <Card className="!p-4 text-center">
+          <p className="text-2xl font-extrabold text-foreground">{reviews.length}</p>
+          <p className="text-[10px] text-muted-foreground font-medium mt-1">Total</p>
+        </Card>
+        <Card className="!p-4 text-center">
+          <p className="text-2xl font-extrabold text-emerald-600">{reviews.filter(r => r.reply).length}</p>
+          <p className="text-[10px] text-muted-foreground font-medium mt-1">Respondidas</p>
+        </Card>
+        <Card className="!p-4 text-center">
+          <p className="text-2xl font-extrabold text-amber-600">{reviews.filter(r => !r.reply).length}</p>
+          <p className="text-[10px] text-muted-foreground font-medium mt-1">Pendentes</p>
+        </Card>
+      </div>
+
+      {/* Rating distribution */}
+      <Card className="!p-4">
+        <p className="text-xs font-semibold text-muted-foreground mb-3">Distribuição de notas</p>
+        <div className="space-y-1.5">
+          {ratingDist.map(({ stars, count }) => (
+            <button key={stars} onClick={() => setRatingFilter(ratingFilter === stars ? null : stars)}
+              className={cn("flex items-center gap-2 w-full text-xs rounded-lg px-2 py-1 transition-all",
+                ratingFilter === stars ? "bg-primary/10" : "hover:bg-secondary")}>
+              <span className="w-8 text-right font-bold text-foreground">{stars}★</span>
+              <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                <div className="h-full bg-primary rounded-full transition-all" style={{ width: reviews.length ? `${(count / reviews.length) * 100}%` : "0%" }} />
+              </div>
+              <span className="w-8 text-left text-muted-foreground">{count}</span>
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <SearchInput value={search} onChange={setSearch} placeholder="Buscar por comentário ou loja..." />
+
+      {loading ? <LoadingSkeleton /> : filtered.length === 0 ? <EmptyState text="Nenhuma avaliação encontrada" /> : (
+        <div className="space-y-2">
+          {filtered.map(r => (
+            <Card key={r.id} className="!p-4 space-y-2">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} size={14} className={i < r.rating ? "text-amber-500 fill-amber-500" : "text-muted-foreground/20"} />
+                    ))}
+                  </div>
+                  <span className="text-xs text-muted-foreground font-medium">{(r.stores as any)?.name ?? "—"}</span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[10px] text-muted-foreground">{new Date(r.created_at).toLocaleDateString("pt-BR")}</span>
+                  <button onClick={() => deleteReview(r.id)}
+                    className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-all" title="Remover avaliação">
+                    <XCircle size={16} />
+                  </button>
+                </div>
+              </div>
+              {r.comment && <p className="text-sm text-foreground">{r.comment}</p>}
+              {r.reply && (
+                <div className="ml-4 pl-3 border-l-2 border-primary/20">
+                  <p className="text-xs text-muted-foreground font-semibold">Resposta da loja:</p>
+                  <p className="text-sm text-foreground">{r.reply}</p>
+                </div>
+              )}
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════ CONFIG PANEL ═══════════════════════ */
+function ConfigPanel() {
+  const [config, setConfig] = useState({
+    commissionRate: 12,
+    maxDeliveryRadius: 15,
+    minOrderValue: 10,
+    driverCommission: 85,
+  });
+  const { toast } = useToast();
+
+  const handleSave = () => {
+    localStorage.setItem("zuuppi_platform_config", JSON.stringify(config));
+    toast({ title: "Configurações salvas ✅", description: "As configurações foram atualizadas com sucesso." });
+  };
+
+  useEffect(() => {
+    const saved = localStorage.getItem("zuuppi_platform_config");
+    if (saved) {
+      try { setConfig(JSON.parse(saved)); } catch {}
+    }
+  }, []);
+
+  const configItems = [
+    { key: "commissionRate", label: "Taxa de Comissão (%)", desc: "Porcentagem cobrada sobre cada transação da plataforma", min: 0, max: 50, suffix: "%" },
+    { key: "driverCommission", label: "Repasse ao Motorista (%)", desc: "Porcentagem do valor da corrida repassada ao motorista", min: 50, max: 100, suffix: "%" },
+    { key: "maxDeliveryRadius", label: "Raio Máximo de Entrega (km)", desc: "Distância máxima permitida para entregas", min: 1, max: 50, suffix: " km" },
+    { key: "minOrderValue", label: "Pedido Mínimo (R$)", desc: "Valor mínimo para aceitar um pedido", min: 0, max: 100, suffix: "" },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-extrabold text-foreground">Configurações da Plataforma</h2>
+        <p className="text-muted-foreground text-sm">Gerencie taxas, limites e políticas do ecossistema</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {configItems.map(item => (
+          <Card key={item.key} className="space-y-3">
+            <div>
+              <p className="text-sm font-bold text-foreground">{item.label}</p>
+              <p className="text-[11px] text-muted-foreground">{item.desc}</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min={item.min}
+                max={item.max}
+                value={(config as any)[item.key]}
+                onChange={e => setConfig(prev => ({ ...prev, [item.key]: Number(e.target.value) }))}
+                className="flex-1 accent-primary h-2"
+              />
+              <span className="text-lg font-extrabold text-primary min-w-[60px] text-right tabular-nums">
+                {(config as any)[item.key]}{item.suffix}
+              </span>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      <Card className="space-y-4">
+        <div>
+          <p className="text-sm font-bold text-foreground">Resumo Financeiro</p>
+          <p className="text-[11px] text-muted-foreground">Simulação baseada nas configurações atuais</p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="p-3 rounded-xl bg-primary/5 text-center">
+            <p className="text-lg font-extrabold text-primary">{config.commissionRate}%</p>
+            <p className="text-[10px] text-muted-foreground">Comissão plataforma</p>
+          </div>
+          <div className="p-3 rounded-xl bg-blue-50 text-center">
+            <p className="text-lg font-extrabold text-blue-600">{config.driverCommission}%</p>
+            <p className="text-[10px] text-muted-foreground">Repasse motorista</p>
+          </div>
+          <div className="p-3 rounded-xl bg-amber-50 text-center">
+            <p className="text-lg font-extrabold text-amber-600">{100 - config.commissionRate - (100 - config.driverCommission)}%</p>
+            <p className="text-[10px] text-muted-foreground">Repasse loja (est.)</p>
+          </div>
+          <div className="p-3 rounded-xl bg-secondary text-center">
+            <p className="text-lg font-extrabold text-foreground">{config.maxDeliveryRadius}km</p>
+            <p className="text-[10px] text-muted-foreground">Raio máximo</p>
+          </div>
+        </div>
+      </Card>
+
+      {/* Policies */}
+      <Card className="space-y-3">
+        <p className="text-sm font-bold text-foreground">Políticas & Termos</p>
+        <div className="space-y-2">
+          {[
+            { label: "Termos de Uso", desc: "Regras gerais de utilização da plataforma" },
+            { label: "Política de Privacidade", desc: "Como tratamos os dados dos usuários" },
+            { label: "Política de Cancelamento", desc: "Regras para cancelamento de pedidos e corridas" },
+            { label: "Contrato Lojista", desc: "Termos do contrato com estabelecimentos parceiros" },
+            { label: "Contrato Motorista", desc: "Termos do contrato com motoristas parceiros" },
+          ].map(p => (
+            <div key={p.label} className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-all">
+              <div>
+                <p className="text-sm font-semibold text-foreground">{p.label}</p>
+                <p className="text-[11px] text-muted-foreground">{p.desc}</p>
+              </div>
+              <span className="text-[10px] font-bold text-muted-foreground px-2.5 py-1 rounded-full bg-secondary border border-border">Editar</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <button onClick={handleSave}
+        className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all">
+        💾 Salvar Configurações
+      </button>
+    </div>
+  );
+}
+
+
 function LoadingSkeleton({ count = 5, grid = false }: { count?: number; grid?: boolean }) {
   return (
     <div className={grid ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "space-y-2"}>
