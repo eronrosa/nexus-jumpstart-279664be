@@ -361,6 +361,7 @@ export default function ZuuChat() {
       toast({ title: "Erro ao enviar mensagem", variant: "destructive" });
     } else {
       setMsgText("");
+      setTyping(null);
       // Update conversation timestamp
       await supabase.from("conversations")
         .update({ updated_at: new Date().toISOString() })
