@@ -378,9 +378,9 @@ export default function AdminPage() {
 /* ═══════════════════════════════════════════════════════════════════════════════
    CARD — clean white card
    ═══════════════════════════════════════════════════════════════════════════════ */
-function Card({ children, className }: { children: React.ReactNode; className?: string }) {
+function Card({ children, className, onClick }: { children: React.ReactNode; className?: string; onClick?: () => void }) {
   return (
-    <div className={cn("rounded-2xl border border-border bg-card p-5 shadow-sm", className)}>
+    <div onClick={onClick} className={cn("rounded-2xl border border-border bg-card p-5 shadow-sm", className)}>
       {children}
     </div>
   );
@@ -847,30 +847,148 @@ function UsersPanel() {
 function StoresPanel() {
   const [stores, setStores] = useState<any[]>([]);
   const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
+  const [selectedStore, setSelectedStore] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const loadStores = async () => { const { data } = await supabase.from("stores").select("*"); setStores(data ?? []); setLoading(false); };
+  const loadStores = async () => {
+    const { data } = await supabase.from("stores").select("*").order("created_at", { ascending: false });
+    setStores(data ?? []);
+    setLoading(false);
+  };
   useEffect(() => { loadStores(); }, []);
-  const toggleActive = async (id: string, current: boolean) => { await supabase.from("stores").update({ is_active: !current }).eq("id", id); toast({ title: !current ? "Loja ativada ✅" : "Loja desativada" }); loadStores(); };
-  const filtered = stores.filter(s => s.name.toLowerCase().includes(search.toLowerCase()));
+
+  const toggleActive = async (id: string, current: boolean) => {
+    await supabase.from("stores").update({ is_active: !current }).eq("id", id);
+    toast({ title: !current ? "Loja aprovada ✅" : "Loja desativada ❌" });
+    loadStores();
+  };
+
+  const deleteStore = async (id: string) => {
+    if (!confirm("Tem certeza que deseja excluir este estabelecimento?")) return;
+    await supabase.from("stores").delete().eq("id", id);
+    toast({ title: "Estabelecimento excluído" });
+    setSelectedStore(null);
+    loadStores();
+  };
+
+  const filtered = stores
+    .filter(s => s.name.toLowerCase().includes(search.toLowerCase()))
+    .filter(s => filter === "all" ? true : filter === "active" ? s.is_active : !s.is_active);
+
+  const activeCount = stores.filter(s => s.is_active).length;
+  const inactiveCount = stores.filter(s => !s.is_active).length;
 
   return (
     <div className="space-y-5">
-      <div><h2 className="text-2xl font-extrabold text-foreground">Estabelecimentos</h2><p className="text-muted-foreground text-sm">{stores.length} cadastrados</p></div>
-      <SearchInput value={search} onChange={setSearch} placeholder="Buscar estabelecimento..." />
-      {loading ? <LoadingSkeleton /> : (
+      <div>
+        <h2 className="text-2xl font-extrabold text-foreground">Estabelecimentos</h2>
+        <p className="text-muted-foreground text-sm">{stores.length} cadastrados • {activeCount} ativos • {inactiveCount} inativos</p>
+      </div>
+
+      {/* Stats cards */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { label: "Total", value: stores.length, color: "bg-primary/10 text-primary" },
+          { label: "Ativos", value: activeCount, color: "bg-emerald-50 text-emerald-600" },
+          { label: "Pendentes", value: inactiveCount, color: "bg-amber-50 text-amber-600" },
+        ].map(s => (
+          <Card key={s.label} className="!p-4 text-center">
+            <p className={cn("text-2xl font-extrabold", s.color.split(" ")[1])}>{s.value}</p>
+            <p className="text-[11px] text-muted-foreground font-medium">{s.label}</p>
+          </Card>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <div className="flex gap-2 items-center">
+        <SearchInput value={search} onChange={setSearch} placeholder="Buscar estabelecimento..." />
+        <div className="flex bg-secondary rounded-lg p-0.5 shrink-0">
+          {(["all", "active", "inactive"] as const).map(f => (
+            <button key={f} onClick={() => setFilter(f)}
+              className={cn("px-3 py-1.5 rounded-md text-xs font-semibold transition-all",
+                filter === f ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              )}>
+              {f === "all" ? "Todos" : f === "active" ? "Ativos" : "Inativos"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Store detail modal */}
+      <AnimatePresence>
+        {selectedStore && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+            onClick={() => setSelectedStore(null)}>
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-background rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto p-6 space-y-4"
+              onClick={e => e.stopPropagation()}>
+              <div className="flex items-start gap-4">
+                {selectedStore.logo_url ? (
+                  <img src={selectedStore.logo_url} className="w-16 h-16 rounded-2xl object-cover border border-border" />
+                ) : (
+                  <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center"><Store size={24} className="text-muted-foreground" /></div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-extrabold text-foreground">{selectedStore.name}</h3>
+                  <p className="text-sm text-muted-foreground">{selectedStore.category}</p>
+                  <span className={cn("inline-block mt-1 text-[10px] font-bold px-2.5 py-1 rounded-full",
+                    selectedStore.is_active ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
+                  )}>{selectedStore.is_active ? "ATIVO" : "INATIVO"}</span>
+                </div>
+                <button onClick={() => setSelectedStore(null)} className="p-1 hover:bg-secondary rounded-lg"><X size={18} /></button>
+              </div>
+
+              {selectedStore.cover_url && (
+                <img src={selectedStore.cover_url} className="w-full h-32 rounded-xl object-cover" />
+              )}
+
+              {selectedStore.description && (
+                <div><p className="text-xs font-semibold text-muted-foreground mb-1">Descrição</p><p className="text-sm text-foreground">{selectedStore.description}</p></div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div><p className="text-xs font-semibold text-muted-foreground">Endereço</p><p className="text-foreground">{[selectedStore.address_street, selectedStore.address_number, selectedStore.address_neighborhood, selectedStore.address_city].filter(Boolean).join(", ") || "Não informado"}</p></div>
+                <div><p className="text-xs font-semibold text-muted-foreground">CEP</p><p className="text-foreground">{selectedStore.address_zip || "—"}</p></div>
+                <div><p className="text-xs font-semibold text-muted-foreground">Cadastro</p><p className="text-foreground">{new Date(selectedStore.created_at).toLocaleDateString("pt-BR")}</p></div>
+                <div><p className="text-xs font-semibold text-muted-foreground">Última atualização</p><p className="text-foreground">{new Date(selectedStore.updated_at).toLocaleDateString("pt-BR")}</p></div>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button onClick={() => { toggleActive(selectedStore.id, selectedStore.is_active); setSelectedStore(null); }}
+                  className={cn("flex-1 py-2.5 rounded-xl text-sm font-bold transition-all",
+                    selectedStore.is_active ? "bg-amber-100 text-amber-700 hover:bg-amber-200" : "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                  )}>
+                  {selectedStore.is_active ? "⏸ Desativar" : "✅ Aprovar"}
+                </button>
+                <button onClick={() => deleteStore(selectedStore.id)}
+                  className="px-4 py-2.5 rounded-xl text-sm font-bold bg-red-100 text-red-600 hover:bg-red-200 transition-all">
+                  🗑 Excluir
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {loading ? <LoadingSkeleton /> : filtered.length === 0 ? <EmptyState text="Nenhum estabelecimento encontrado" /> : (
         <div className="space-y-2">
           {filtered.map(s => (
-            <Card key={s.id} className="!p-4 flex items-center gap-4">
+            <Card key={s.id} className="!p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelectedStore(s)}>
               {s.logo_url ? <img src={s.logo_url} className="w-12 h-12 rounded-xl object-cover shrink-0 border border-border" /> : (
                 <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center"><Store size={20} className="text-muted-foreground" /></div>
               )}
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-foreground text-sm truncate">{s.name}</p>
-                <p className="text-[11px] text-muted-foreground">{s.category} • {s.address_city ?? "Sem cidade"}</p>
+                <p className="text-[11px] text-muted-foreground">{s.category} • {s.address_city ?? "Sem cidade"} • {new Date(s.created_at).toLocaleDateString("pt-BR")}</p>
               </div>
-              <button onClick={() => toggleActive(s.id, s.is_active)} className={cn("p-2 rounded-lg transition-all", s.is_active ? "text-primary hover:bg-primary/10" : "text-muted-foreground hover:bg-secondary")}>
+              <span className={cn("text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0",
+                s.is_active ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
+              )}>{s.is_active ? "ATIVO" : "INATIVO"}</span>
+              <button onClick={(e) => { e.stopPropagation(); toggleActive(s.id, s.is_active); }}
+                className={cn("p-2 rounded-lg transition-all shrink-0", s.is_active ? "text-primary hover:bg-primary/10" : "text-muted-foreground hover:bg-secondary")}>
                 {s.is_active ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}
               </button>
             </Card>
