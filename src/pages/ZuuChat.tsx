@@ -794,12 +794,22 @@ export default function ZuuChat() {
                   activeConv?.id === conv.id && "bg-primary/5"
                 )}
               >
-                <Avatar className="h-12 w-12 shrink-0">
-                  <AvatarImage src={getConversationAvatar(conv) || undefined} />
-                  <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                    {getConversationInitial(conv)}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="relative shrink-0">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={getConversationAvatar(conv) || undefined} />
+                    <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                      {getConversationInitial(conv)}
+                    </AvatarFallback>
+                  </Avatar>
+                  {conv.type === "private" && conv.other_user && (
+                    <span className={cn(
+                      "absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-card",
+                      getPresenceStatus(conv.other_user.user_id) === "online"
+                        ? "bg-emerald-500"
+                        : "bg-muted-foreground/40"
+                    )} />
+                  )}
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-baseline">
                     <p className="font-semibold text-sm text-foreground truncate">
