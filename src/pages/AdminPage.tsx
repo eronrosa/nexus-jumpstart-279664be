@@ -369,9 +369,11 @@ export default function AdminPage() {
               {tab === "rides" && <RidesPanel />}
               {tab === "drivers" && <DriversPanel />}
               {tab === "coupons" && <CouponsPanel />}
+              {tab === "avaliacoes" && <AvaliacoesPanel />}
               {tab === "featured" && <FeaturedPanel />}
               {tab === "services" && <ServicesPanel />}
               {tab === "financeiro" && <FinanceiroPanel />}
+              {tab === "config" && <ConfigPanel />}
             </motion.div>
           </AnimatePresence>
         </div>
