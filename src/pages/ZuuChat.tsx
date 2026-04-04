@@ -406,7 +406,63 @@ export default function ZuuChat() {
     setSending(false);
   };
 
-  // Upload media
+  // Toggle emoji reaction
+  const toggleReaction = async (messageId: string, emoji: string) => {
+    if (!user) return;
+    const existing = (reactionsMap[messageId] || []).find(
+      r => r.emoji === emoji && r.user_id === user.id
+    );
+    if (existing) {
+      await supabase.from("message_reactions")
+        .delete()
+        .eq("message_id", messageId)
+        .eq("user_id", user.id)
+        .eq("emoji", emoji);
+      setReactionsMap(prev => ({
+        ...prev,
+        [messageId]: (prev[messageId] || []).filter(
+          r => !(r.emoji === emoji && r.user_id === user.id)
+        ),
+      }));
+      setMessages(prev => prev.map(m =>
+        m.id === messageId
+          ? { ...m, reactions: (m.reactions || []).filter(r => !(r.emoji === emoji && r.user_id === user.id)) }
+          : m
+      ));
+    } else {
+      await supabase.from("message_reactions").insert({
+        message_id: messageId,
+        user_id: user.id,
+        emoji,
+      });
+      const newR = { emoji, user_id: user.id };
+      setReactionsMap(prev => ({
+        ...prev,
+        [messageId]: [...(prev[messageId] || []), newR],
+      }));
+      setMessages(prev => prev.map(m =>
+        m.id === messageId
+          ? { ...m, reactions: [...(m.reactions || []), newR] }
+          : m
+      ));
+    }
+    setShowEmojiPicker(null);
+  };
+
+  // Group reactions by emoji
+  const getGroupedReactions = (reactions: { emoji: string; user_id: string }[]) => {
+    const map: Record<string, string[]> = {};
+    reactions.forEach(r => {
+      if (!map[r.emoji]) map[r.emoji] = [];
+      map[r.emoji].push(r.user_id);
+    });
+    return Object.entries(map).map(([emoji, users]) => ({
+      emoji,
+      count: users.length,
+      reacted: user ? users.includes(user.id) : false,
+    }));
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
