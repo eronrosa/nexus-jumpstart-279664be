@@ -818,32 +818,160 @@ function SearchInput({ value, onChange, placeholder }: { value: string; onChange
 
 function UsersPanel() {
   const [profiles, setProfiles] = useState<any[]>([]);
+  const [roles, setRoles] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [userOrders, setUserOrders] = useState<any[]>([]);
+  const [userRides, setUserRides] = useState<any[]>([]);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const { toast } = useToast();
 
-  useEffect(() => { supabase.from("profiles").select("*").then(({ data }) => { setProfiles(data ?? []); setLoading(false); }); }, []);
+  const loadData = async () => {
+    const [p, r] = await Promise.all([
+      supabase.from("profiles").select("*").order("created_at", { ascending: false }),
+      supabase.from("user_roles").select("*"),
+    ]);
+    setProfiles(p.data ?? []);
+    setRoles(r.data ?? []);
+    setLoading(false);
+  };
+  useEffect(() => { loadData(); }, []);
+
+  const getUserRoles = (userId: string) => roles.filter(r => r.user_id === userId).map(r => r.role);
+
+  const assignRole = async (userId: string, role: string) => {
+    const existing = roles.find(r => r.user_id === userId && r.role === role);
+    if (existing) {
+      await supabase.from("user_roles").delete().eq("id", existing.id);
+      toast({ title: `Role "${role}" removida` });
+    } else {
+      await supabase.from("user_roles").insert({ user_id: userId, role });
+      toast({ title: `Role "${role}" atribuída ✅` });
+    }
+    loadData();
+  };
+
+  const viewUserHistory = async (user: any) => {
+    setSelectedUser(user);
+    setDetailLoading(true);
+    const [o, r] = await Promise.all([
+      supabase.from("orders").select("*").eq("user_id", user.user_id).order("created_at", { ascending: false }).limit(20),
+      supabase.from("rides").select("*").eq("passenger_id", user.user_id).order("created_at", { ascending: false }).limit(20),
+    ]);
+    setUserOrders(o.data ?? []);
+    setUserRides(r.data ?? []);
+    setDetailLoading(false);
+  };
+
   const filtered = profiles.filter(p => (p.display_name ?? "").toLowerCase().includes(search.toLowerCase()) || (p.phone ?? "").includes(search));
 
   return (
     <div className="space-y-5">
-      <div><h2 className="text-2xl font-extrabold text-foreground">Usuários</h2><p className="text-muted-foreground text-sm">{profiles.length} cadastrados</p></div>
+      <div><h2 className="text-2xl font-extrabold text-foreground">Gestão de Usuários</h2><p className="text-muted-foreground text-sm">{profiles.length} cadastrados</p></div>
       <SearchInput value={search} onChange={setSearch} placeholder="Buscar por nome ou telefone..." />
+
+      <AnimatePresence>
+        {selectedUser && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setSelectedUser(null)}>
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-background rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto p-6 space-y-4" onClick={e => e.stopPropagation()}>
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-lg font-bold text-primary">
+                    {(selectedUser.display_name ?? "?").charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-extrabold text-foreground">{selectedUser.display_name ?? "Sem nome"}</h3>
+                    <p className="text-xs text-muted-foreground">{selectedUser.phone ?? "Sem telefone"} • Desde {new Date(selectedUser.created_at).toLocaleDateString("pt-BR")}</p>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedUser(null)} className="p-1 hover:bg-secondary rounded-lg"><X size={18} /></button>
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground mb-2">Gerenciar Roles</p>
+                <div className="flex gap-2">
+                  {(["admin", "moderator", "user"] as const).map(role => {
+                    const active = getUserRoles(selectedUser.user_id).includes(role);
+                    return (
+                      <button key={role} onClick={() => assignRole(selectedUser.user_id, role)}
+                        className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border transition-all",
+                          active ? "bg-primary/10 text-primary border-primary/20" : "bg-secondary text-muted-foreground border-border hover:bg-secondary/80"
+                        )}>
+                        {active ? "✓ " : ""}{role}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {detailLoading ? (
+                <div className="py-6 text-center"><span className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin inline-block" /></div>
+              ) : (
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground mb-1.5">Últimos Pedidos ({userOrders.length})</p>
+                    {userOrders.length === 0 ? <p className="text-xs text-muted-foreground">Nenhum pedido</p> : (
+                      <div className="space-y-1 max-h-[150px] overflow-y-auto">
+                        {userOrders.map(o => (
+                          <div key={o.id} className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-secondary/50 text-xs">
+                            <span className="text-foreground font-medium truncate flex-1">{o.restaurant_name}</span>
+                            <span className="text-muted-foreground mx-2">{new Date(o.created_at).toLocaleDateString("pt-BR")}</span>
+                            <span className="text-foreground font-bold">{fmt(o.total)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground mb-1.5">Últimas Corridas ({userRides.length})</p>
+                    {userRides.length === 0 ? <p className="text-xs text-muted-foreground">Nenhuma corrida</p> : (
+                      <div className="space-y-1 max-h-[150px] overflow-y-auto">
+                        {userRides.map(r => (
+                          <div key={r.id} className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-secondary/50 text-xs">
+                            <span className="text-foreground font-medium truncate flex-1">{r.origin_address ?? "—"} → {r.destination_address ?? "—"}</span>
+                            <span className="text-muted-foreground mx-2">{r.status}</span>
+                            <span className="text-foreground font-bold">{r.final_price ? fmt(r.final_price) : "—"}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {loading ? <LoadingSkeleton /> : (
         <div className="space-y-2">
-          {filtered.map((p, i) => (
-            <motion.div key={p.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.015 }}>
-              <Card className="!p-4 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary shrink-0">
-                  {(p.display_name ?? "?").charAt(0).toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-foreground text-sm truncate">{p.display_name ?? "Sem nome"}</p>
-                  <p className="text-[11px] text-muted-foreground">{p.phone ?? "Sem telefone"}</p>
-                </div>
-                <span className="text-[10px] text-muted-foreground font-mono">{new Date(p.created_at).toLocaleDateString("pt-BR")}</span>
-              </Card>
-            </motion.div>
-          ))}
+          {filtered.map((p, i) => {
+            const userRolesList = getUserRoles(p.user_id);
+            return (
+              <motion.div key={p.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.015 }}>
+                <Card className="!p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => viewUserHistory(p)}>
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary shrink-0">
+                    {(p.display_name ?? "?").charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-foreground text-sm truncate">{p.display_name ?? "Sem nome"}</p>
+                    <p className="text-[11px] text-muted-foreground">{p.phone ?? "Sem telefone"}</p>
+                  </div>
+                  <div className="flex gap-1 shrink-0">
+                    {userRolesList.map(r => (
+                      <span key={r} className={cn("text-[9px] font-bold px-2 py-0.5 rounded-full",
+                        r === "admin" ? "bg-red-50 text-red-600" : r === "moderator" ? "bg-blue-50 text-blue-600" : "bg-secondary text-muted-foreground"
+                      )}>{r}</span>
+                    ))}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground font-mono shrink-0">{new Date(p.created_at).toLocaleDateString("pt-BR")}</span>
+                </Card>
+              </motion.div>
+            );
+          })}
           {filtered.length === 0 && <EmptyState text="Nenhum usuário encontrado" />}
         </div>
       )}
