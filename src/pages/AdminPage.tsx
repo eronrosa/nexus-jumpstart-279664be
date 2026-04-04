@@ -846,7 +846,7 @@ function UsersPanel() {
       await supabase.from("user_roles").delete().eq("id", existing.id);
       toast({ title: `Role "${role}" removida` });
     } else {
-      await supabase.from("user_roles").insert({ user_id: userId, role });
+      await supabase.from("user_roles").insert({ user_id: userId, role: role as "admin" | "moderator" | "user" });
       toast({ title: `Role "${role}" atribuída ✅` });
     }
     loadData();
