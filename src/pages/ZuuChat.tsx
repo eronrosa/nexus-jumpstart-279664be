@@ -53,7 +53,16 @@ interface Message {
   media_url: string | null;
   created_at: string;
   read_by: string[];
+  reply_to_id: string | null;
   sender_profile?: { display_name: string | null; avatar_url: string | null };
+  reactions?: { emoji: string; user_id: string }[];
+}
+
+interface Reaction {
+  emoji: string;
+  count: number;
+  users: string[];
+  reacted: boolean;
 }
 
 interface UserProfile {
