@@ -1,4 +1,4 @@
-import { Home, List, Sparkles, Wallet, User, LogIn, Store, ShieldCheck } from "lucide-react";
+import { Home, List, Sparkles, Wallet, User, LogIn, Store, ShieldCheck, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
