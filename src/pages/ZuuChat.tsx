@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, Send, Search, Plus, Users, Paperclip,
   Phone, Video, MoreVertical, Check, CheckCheck, Smile, X,
-  MessageCircle
+  MessageCircle, Reply, Heart
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
