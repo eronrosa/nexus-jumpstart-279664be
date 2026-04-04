@@ -874,6 +874,25 @@ export default function ZuuChat() {
           </div>
         )}
 
+        {/* Reply preview bar */}
+        {replyTo && (
+          <div className="px-4 py-2 bg-card border-t border-border/50 flex items-center gap-3">
+            <div className="flex-1 border-l-2 border-primary pl-3">
+              <p className="text-xs font-semibold text-primary">
+                {replyTo.sender_id === user.id
+                  ? "Você"
+                  : profilesCache[replyTo.sender_id]?.display_name || "Usuário"}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {replyTo.content || (replyTo.message_type !== "text" ? "📎 Mídia" : "")}
+              </p>
+            </div>
+            <button onClick={() => setReplyTo(null)} className="p-1 rounded-full hover:bg-muted">
+              <X size={16} className="text-muted-foreground" />
+            </button>
+          </div>
+        )}
+
         {/* Input */}
         <div className="border-t border-border p-3 bg-card shrink-0">
           <div className="flex items-center gap-2">
