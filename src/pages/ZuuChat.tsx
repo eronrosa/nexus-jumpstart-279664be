@@ -94,13 +94,118 @@ export default function ZuuChat() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [showMobileChat, setShowMobileChat] = useState(false);
   const [profilesCache, setProfilesCache] = useState<Record<string, UserProfile>>({});
+  const [presenceMap, setPresenceMap] = useState<Record<string, { status: string; last_seen: string; typing_in: string | null }>>({});
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
+
+  // ─── Presence: set online + heartbeat ───
+  useEffect(() => {
+    if (!user) return;
+    const upsertPresence = async (status: string) => {
+      await supabase.from("user_presence").upsert({
+        user_id: user.id,
+        status,
+        last_seen: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id" });
+    };
+    upsertPresence("online");
+    const interval = setInterval(() => upsertPresence("online"), 30000);
+    const handleBeforeUnload = () => {
+      navigator.sendBeacon?.(""); // best-effort
+      upsertPresence("offline");
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      upsertPresence("offline");
+    };
+  }, [user]);
+
+  // ─── Subscribe to presence changes ───
+  useEffect(() => {
+    if (!user) return;
+    // Load initial presence
+    const loadPresence = async () => {
+      const { data } = await supabase.from("user_presence").select("*");
+      if (data) {
+        const map: typeof presenceMap = {};
+        data.forEach(p => { map[p.user_id] = { status: p.status, last_seen: p.last_seen, typing_in: p.typing_in }; });
+        setPresenceMap(map);
+      }
+    };
+    loadPresence();
+
+    const channel = supabase
+      .channel("user-presence-changes")
+      .on("postgres_changes", {
+        event: "*", schema: "public", table: "user_presence",
+      }, (payload) => {
+        const row = payload.new as any;
+        if (row?.user_id) {
+          setPresenceMap(prev => ({
+            ...prev,
+            [row.user_id]: { status: row.status, last_seen: row.last_seen, typing_in: row.typing_in },
+          }));
+        }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
+
+  // ─── Typing indicator ───
+  const setTyping = useCallback(async (convId: string | null) => {
+    if (!user) return;
+    await supabase.from("user_presence").upsert({
+      user_id: user.id,
+      typing_in: convId,
+      updated_at: new Date().toISOString(),
+      status: "online",
+      last_seen: new Date().toISOString(),
+    }, { onConflict: "user_id" });
+  }, [user]);
+
+  const handleTyping = useCallback(() => {
+    if (!activeConv) return;
+    setTyping(activeConv.id);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => setTyping(null), 3000);
+  }, [activeConv, setTyping]);
+
+  // Get typing users for current conversation
+  const typingUsers = activeConv
+    ? Object.entries(presenceMap)
+        .filter(([uid, p]) => p.typing_in === activeConv.id && uid !== user?.id)
+        .map(([uid]) => profilesCache[uid]?.display_name || "Alguém")
+    : [];
+
+  const getPresenceStatus = (userId: string) => {
+    const p = presenceMap[userId];
+    if (!p) return "offline";
+    if (p.status === "online") {
+      const lastSeen = new Date(p.last_seen).getTime();
+      if (Date.now() - lastSeen > 60000) return "offline";
+      return "online";
+    }
+    return "offline";
+  };
+
+  const formatLastSeen = (userId: string) => {
+    const p = presenceMap[userId];
+    if (!p || !p.last_seen) return "";
+    const d = new Date(p.last_seen);
+    if (isToday(d)) return `visto hoje às ${format(d, "HH:mm")}`;
+    if (isYesterday(d)) return `visto ontem às ${format(d, "HH:mm")}`;
+    return `visto ${format(d, "dd/MM HH:mm")}`;
+  };
 
   // Load conversations
   const loadConversations = useCallback(async () => {
