@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
-  ArrowLeft, Send, Search, Plus, Users, Image, Mic, Paperclip,
+  ArrowLeft, Send, Search, Plus, Users, Paperclip,
   Phone, Video, MoreVertical, Check, CheckCheck, Smile, X,
-  MessageCircle, UserPlus, LogOut, Crown, Camera
+  MessageCircle
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { format, isToday, isYesterday } from "date-fns";
-import { ptBR } from "date-fns/locale";
+
 
 interface Conversation {
   id: string;
@@ -94,13 +94,118 @@ export default function ZuuChat() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [showMobileChat, setShowMobileChat] = useState(false);
   const [profilesCache, setProfilesCache] = useState<Record<string, UserProfile>>({});
+  const [presenceMap, setPresenceMap] = useState<Record<string, { status: string; last_seen: string; typing_in: string | null }>>({});
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
+
+  // ─── Presence: set online + heartbeat ───
+  useEffect(() => {
+    if (!user) return;
+    const upsertPresence = async (status: string) => {
+      await supabase.from("user_presence").upsert({
+        user_id: user.id,
+        status,
+        last_seen: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id" });
+    };
+    upsertPresence("online");
+    const interval = setInterval(() => upsertPresence("online"), 30000);
+    const handleBeforeUnload = () => {
+      navigator.sendBeacon?.(""); // best-effort
+      upsertPresence("offline");
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      upsertPresence("offline");
+    };
+  }, [user]);
+
+  // ─── Subscribe to presence changes ───
+  useEffect(() => {
+    if (!user) return;
+    // Load initial presence
+    const loadPresence = async () => {
+      const { data } = await supabase.from("user_presence").select("*");
+      if (data) {
+        const map: typeof presenceMap = {};
+        data.forEach(p => { map[p.user_id] = { status: p.status, last_seen: p.last_seen, typing_in: p.typing_in }; });
+        setPresenceMap(map);
+      }
+    };
+    loadPresence();
+
+    const channel = supabase
+      .channel("user-presence-changes")
+      .on("postgres_changes", {
+        event: "*", schema: "public", table: "user_presence",
+      }, (payload) => {
+        const row = payload.new as any;
+        if (row?.user_id) {
+          setPresenceMap(prev => ({
+            ...prev,
+            [row.user_id]: { status: row.status, last_seen: row.last_seen, typing_in: row.typing_in },
+          }));
+        }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
+
+  // ─── Typing indicator ───
+  const setTyping = useCallback(async (convId: string | null) => {
+    if (!user) return;
+    await supabase.from("user_presence").upsert({
+      user_id: user.id,
+      typing_in: convId,
+      updated_at: new Date().toISOString(),
+      status: "online",
+      last_seen: new Date().toISOString(),
+    }, { onConflict: "user_id" });
+  }, [user]);
+
+  const handleTyping = useCallback(() => {
+    if (!activeConv) return;
+    setTyping(activeConv.id);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => setTyping(null), 3000);
+  }, [activeConv, setTyping]);
+
+  // Get typing users for current conversation
+  const typingUsers = activeConv
+    ? Object.entries(presenceMap)
+        .filter(([uid, p]) => p.typing_in === activeConv.id && uid !== user?.id)
+        .map(([uid]) => profilesCache[uid]?.display_name || "Alguém")
+    : [];
+
+  const getPresenceStatus = (userId: string) => {
+    const p = presenceMap[userId];
+    if (!p) return "offline";
+    if (p.status === "online") {
+      const lastSeen = new Date(p.last_seen).getTime();
+      if (Date.now() - lastSeen > 60000) return "offline";
+      return "online";
+    }
+    return "offline";
+  };
+
+  const formatLastSeen = (userId: string) => {
+    const p = presenceMap[userId];
+    if (!p || !p.last_seen) return "";
+    const d = new Date(p.last_seen);
+    if (isToday(d)) return `visto hoje às ${format(d, "HH:mm")}`;
+    if (isYesterday(d)) return `visto ontem às ${format(d, "HH:mm")}`;
+    return `visto ${format(d, "dd/MM HH:mm")}`;
+  };
 
   // Load conversations
   const loadConversations = useCallback(async () => {
@@ -256,6 +361,7 @@ export default function ZuuChat() {
       toast({ title: "Erro ao enviar mensagem", variant: "destructive" });
     } else {
       setMsgText("");
+      setTyping(null);
       // Update conversation timestamp
       await supabase.from("conversations")
         .update({ updated_at: new Date().toISOString() })
@@ -470,18 +576,39 @@ export default function ZuuChat() {
           <button onClick={() => { setShowMobileChat(false); setActiveConv(null); }} className="md:hidden mr-1">
             <ArrowLeft size={20} className="text-foreground" />
           </button>
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={getConversationAvatar(activeConv) || undefined} />
-            <AvatarFallback className="bg-primary/10 text-primary font-bold">
-              {getConversationInitial(activeConv)}
-            </AvatarFallback>
-          </Avatar>
+          <div className="relative">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={getConversationAvatar(activeConv) || undefined} />
+              <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                {getConversationInitial(activeConv)}
+              </AvatarFallback>
+            </Avatar>
+            {activeConv.type === "private" && activeConv.other_user && (
+              <span className={cn(
+                "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-card",
+                getPresenceStatus(activeConv.other_user.user_id) === "online"
+                  ? "bg-emerald-500"
+                  : "bg-muted-foreground/40"
+              )} />
+            )}
+          </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-foreground truncate">{getConversationName(activeConv)}</p>
             <p className="text-xs text-muted-foreground">
-              {activeConv.type === "group"
-                ? `${activeConv.members?.length || 0} membros`
-                : "online"}
+              {typingUsers.length > 0
+                ? <span className="text-primary animate-pulse">
+                    {typingUsers.length === 1
+                      ? `${typingUsers[0]} está digitando...`
+                      : `${typingUsers.length} pessoas digitando...`}
+                  </span>
+                : activeConv.type === "group"
+                  ? `${activeConv.members?.length || 0} membros`
+                  : activeConv.other_user
+                    ? getPresenceStatus(activeConv.other_user.user_id) === "online"
+                      ? "online"
+                      : formatLastSeen(activeConv.other_user.user_id)
+                    : "offline"
+              }
             </p>
           </div>
           <div className="flex gap-1">
@@ -561,6 +688,17 @@ export default function ZuuChat() {
           </div>
         </ScrollArea>
 
+        {/* Typing indicator */}
+        {typingUsers.length > 0 && (
+          <div className="px-4 py-1 bg-card border-t border-border/50">
+            <p className="text-xs text-primary animate-pulse">
+              {typingUsers.length === 1
+                ? `${typingUsers[0]} está digitando...`
+                : `${typingUsers.length} pessoas digitando...`}
+            </p>
+          </div>
+        )}
+
         {/* Input */}
         <div className="border-t border-border p-3 bg-card shrink-0">
           <div className="flex items-center gap-2">
@@ -572,7 +710,7 @@ export default function ZuuChat() {
             <div className="flex-1 relative">
               <Input
                 value={msgText}
-                onChange={e => setMsgText(e.target.value)}
+                onChange={e => { setMsgText(e.target.value); handleTyping(); }}
                 placeholder="Mensagem..."
                 className="pr-10 rounded-full bg-muted/50 border-0"
                 onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
@@ -657,12 +795,22 @@ export default function ZuuChat() {
                   activeConv?.id === conv.id && "bg-primary/5"
                 )}
               >
-                <Avatar className="h-12 w-12 shrink-0">
-                  <AvatarImage src={getConversationAvatar(conv) || undefined} />
-                  <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                    {getConversationInitial(conv)}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="relative shrink-0">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={getConversationAvatar(conv) || undefined} />
+                    <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                      {getConversationInitial(conv)}
+                    </AvatarFallback>
+                  </Avatar>
+                  {conv.type === "private" && conv.other_user && (
+                    <span className={cn(
+                      "absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-card",
+                      getPresenceStatus(conv.other_user.user_id) === "online"
+                        ? "bg-emerald-500"
+                        : "bg-muted-foreground/40"
+                    )} />
+                  )}
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-baseline">
                     <p className="font-semibold text-sm text-foreground truncate">
