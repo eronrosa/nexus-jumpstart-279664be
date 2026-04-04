@@ -90,8 +90,8 @@ const Index = () => {
         {[
           { icon: Home, label: "Início", path: "/" },
           { icon: ClipboardList, label: "Pedidos", path: "/pedidos" },
+          { icon: MessageCircle, label: "ZuuChat", path: "/zuuchat" },
           { icon: Sparkles, label: "ZUZU", path: "/" },
-          { icon: CreditCard, label: "Zuupay", path: "/" },
           { icon: User, label: "Perfil", path: user ? "/perfil" : "/auth" },
         ].map(({ icon: Icon, label, path }) => (
           <button
