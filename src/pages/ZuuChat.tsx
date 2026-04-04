@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, Send, Search, Plus, Users, Paperclip,
   Phone, Video, MoreVertical, Check, CheckCheck, Smile, X,
-  MessageCircle
+  MessageCircle, Reply
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -53,7 +53,9 @@ interface Message {
   media_url: string | null;
   created_at: string;
   read_by: string[];
+  reply_to_id: string | null;
   sender_profile?: { display_name: string | null; avatar_url: string | null };
+  reactions?: { emoji: string; user_id: string }[];
 }
 
 interface UserProfile {
@@ -95,6 +97,10 @@ export default function ZuuChat() {
   const [showMobileChat, setShowMobileChat] = useState(false);
   const [profilesCache, setProfilesCache] = useState<Record<string, UserProfile>>({});
   const [presenceMap, setPresenceMap] = useState<Record<string, { status: string; last_seen: string; typing_in: string | null }>>({});
+  const [replyTo, setReplyTo] = useState<Message | null>(null);
+  const [reactionsMap, setReactionsMap] = useState<Record<string, { emoji: string; user_id: string }[]>>({});
+  const [showEmojiPicker, setShowEmojiPicker] = useState<string | null>(null);
+  const QUICK_EMOJIS = ["❤️", "😂", "👍", "😮", "😢", "🔥", "🎉", "👏"];
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -303,10 +309,29 @@ export default function ZuuChat() {
           setProfilesCache(prev => ({ ...prev, ...newCache }));
         }
       }
+      const msgIds = data.map(m => m.id);
+      // Load reactions
+      let reactionsData: { message_id: string; emoji: string; user_id: string }[] = [];
+      if (msgIds.length) {
+        const { data: rxns } = await supabase
+          .from("message_reactions")
+          .select("message_id, emoji, user_id")
+          .in("message_id", msgIds);
+        if (rxns) reactionsData = rxns;
+      }
+      const rxnMap: Record<string, { emoji: string; user_id: string }[]> = {};
+      reactionsData.forEach(r => {
+        if (!rxnMap[r.message_id]) rxnMap[r.message_id] = [];
+        rxnMap[r.message_id].push(r);
+      });
+      setReactionsMap(rxnMap);
+
       setMessages(data.map(m => ({
         ...m,
         read_by: (m.read_by as string[]) || [],
+        reply_to_id: (m as any).reply_to_id || null,
         sender_profile: profilesCache[m.sender_id],
+        reactions: rxnMap[m.id] || [],
       })));
     }
   }, [profilesCache]);
@@ -349,18 +374,22 @@ export default function ZuuChat() {
     if (type === "text" && !msgText.trim()) return;
 
     setSending(true);
-    const { error } = await supabase.from("messages").insert({
+    const insertData: any = {
       conversation_id: activeConv.id,
       sender_id: user.id,
       content: type === "text" ? msgText.trim() : null,
       message_type: type,
       media_url: mediaUrl || null,
-    });
+    };
+    if (replyTo) insertData.reply_to_id = replyTo.id;
+
+    const { error } = await supabase.from("messages").insert(insertData);
 
     if (error) {
       toast({ title: "Erro ao enviar mensagem", variant: "destructive" });
     } else {
       setMsgText("");
+      setReplyTo(null);
       setTyping(null);
       // Update conversation timestamp
       await supabase.from("conversations")
@@ -370,7 +399,63 @@ export default function ZuuChat() {
     setSending(false);
   };
 
-  // Upload media
+  // Toggle emoji reaction
+  const toggleReaction = async (messageId: string, emoji: string) => {
+    if (!user) return;
+    const existing = (reactionsMap[messageId] || []).find(
+      r => r.emoji === emoji && r.user_id === user.id
+    );
+    if (existing) {
+      await supabase.from("message_reactions")
+        .delete()
+        .eq("message_id", messageId)
+        .eq("user_id", user.id)
+        .eq("emoji", emoji);
+      setReactionsMap(prev => ({
+        ...prev,
+        [messageId]: (prev[messageId] || []).filter(
+          r => !(r.emoji === emoji && r.user_id === user.id)
+        ),
+      }));
+      setMessages(prev => prev.map(m =>
+        m.id === messageId
+          ? { ...m, reactions: (m.reactions || []).filter(r => !(r.emoji === emoji && r.user_id === user.id)) }
+          : m
+      ));
+    } else {
+      await supabase.from("message_reactions").insert({
+        message_id: messageId,
+        user_id: user.id,
+        emoji,
+      });
+      const newR = { emoji, user_id: user.id };
+      setReactionsMap(prev => ({
+        ...prev,
+        [messageId]: [...(prev[messageId] || []), newR],
+      }));
+      setMessages(prev => prev.map(m =>
+        m.id === messageId
+          ? { ...m, reactions: [...(m.reactions || []), newR] }
+          : m
+      ));
+    }
+    setShowEmojiPicker(null);
+  };
+
+  // Group reactions by emoji
+  const getGroupedReactions = (reactions: { emoji: string; user_id: string }[]) => {
+    const map: Record<string, string[]> = {};
+    reactions.forEach(r => {
+      if (!map[r.emoji]) map[r.emoji] = [];
+      map[r.emoji].push(r.user_id);
+    });
+    return Object.entries(map).map(([emoji, users]) => ({
+      emoji,
+      count: users.length,
+      reacted: user ? users.includes(user.id) : false,
+    }));
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
@@ -626,13 +711,15 @@ export default function ZuuChat() {
               const showAvatar = activeConv.type === "group" && !isMe &&
                 (i === 0 || messages[i - 1].sender_id !== msg.sender_id);
               const senderProfile = msg.sender_profile || profilesCache[msg.sender_id];
+              const grouped = getGroupedReactions(msg.reactions || []);
+              const repliedMsg = msg.reply_to_id ? messages.find(m => m.id === msg.reply_to_id) : null;
 
               return (
                 <motion.div
                   key={msg.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={cn("flex gap-2", isMe ? "justify-end" : "justify-start")}
+                  className={cn("flex gap-2 group relative", isMe ? "justify-end" : "justify-start")}
                 >
                   {!isMe && activeConv.type === "group" && (
                     <div className="w-8 shrink-0">
@@ -646,40 +733,121 @@ export default function ZuuChat() {
                       )}
                     </div>
                   )}
-                  <div className={cn(
-                    "max-w-[75%] rounded-2xl px-3 py-2 shadow-sm",
-                    isMe
-                      ? "bg-primary text-primary-foreground rounded-br-md"
-                      : "bg-card border border-border rounded-bl-md"
-                  )}>
-                    {!isMe && activeConv.type === "group" && showAvatar && (
-                      <p className="text-xs font-semibold text-primary mb-1">
-                        {senderProfile?.display_name || "Usuário"}
-                      </p>
-                    )}
-                    {msg.message_type === "image" && msg.media_url && (
-                      <img src={msg.media_url} className="rounded-lg max-w-full max-h-60 object-cover mb-1" alt="imagem" />
-                    )}
-                    {msg.message_type === "audio" && msg.media_url && (
-                      <audio controls src={msg.media_url} className="max-w-full mb-1" />
-                    )}
-                    {msg.message_type === "file" && msg.media_url && (
-                      <a href={msg.media_url} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-2 underline text-sm">
-                        <Paperclip size={14} /> Arquivo
-                      </a>
-                    )}
-                    {msg.content && (
-                      <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
-                    )}
-                    <div className={cn("flex items-center gap-1 mt-0.5", isMe ? "justify-end" : "justify-start")}>
-                      <span className={cn("text-[10px]", isMe ? "text-primary-foreground/60" : "text-muted-foreground")}>
-                        {formatMessageTime(msg.created_at)}
-                      </span>
-                      {isMe && (
-                        <CheckCheck size={12} className="text-primary-foreground/60" />
-                      )}
+                  <div className="max-w-[75%] relative">
+                    {/* Action buttons on hover */}
+                    <div className={cn(
+                      "absolute top-0 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10",
+                      isMe ? "left-0 -translate-x-full pr-1" : "right-0 translate-x-full pl-1"
+                    )}>
+                      <button
+                        onClick={() => setShowEmojiPicker(showEmojiPicker === msg.id ? null : msg.id)}
+                        className="p-1 rounded-full hover:bg-muted bg-card border border-border shadow-sm"
+                        title="Reagir"
+                      >
+                        <Smile size={14} className="text-muted-foreground" />
+                      </button>
+                      <button
+                        onClick={() => setReplyTo(msg)}
+                        className="p-1 rounded-full hover:bg-muted bg-card border border-border shadow-sm"
+                        title="Responder"
+                      >
+                        <Reply size={14} className="text-muted-foreground" />
+                      </button>
                     </div>
+
+                    {/* Emoji picker dropdown */}
+                    {showEmojiPicker === msg.id && (
+                      <div className={cn(
+                        "absolute z-20 bg-card border border-border rounded-xl shadow-lg p-2 flex gap-1 flex-wrap max-w-[200px]",
+                        isMe ? "right-0 -top-10" : "left-0 -top-10"
+                      )}>
+                        {QUICK_EMOJIS.map(emoji => (
+                          <button
+                            key={emoji}
+                            onClick={() => toggleReaction(msg.id, emoji)}
+                            className="text-lg hover:scale-125 transition-transform p-0.5"
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className={cn(
+                      "rounded-2xl px-3 py-2 shadow-sm",
+                      isMe
+                        ? "bg-primary text-primary-foreground rounded-br-md"
+                        : "bg-card border border-border rounded-bl-md"
+                    )}>
+                      {/* Reply preview */}
+                      {repliedMsg && (
+                        <div className={cn(
+                          "text-xs rounded-lg px-2 py-1 mb-1.5 border-l-2",
+                          isMe
+                            ? "bg-primary-foreground/10 border-primary-foreground/40"
+                            : "bg-muted/50 border-primary/40"
+                        )}>
+                          <p className={cn("font-semibold", isMe ? "text-primary-foreground/80" : "text-primary")}>
+                            {repliedMsg.sender_id === user.id
+                              ? "Você"
+                              : profilesCache[repliedMsg.sender_id]?.display_name || "Usuário"}
+                          </p>
+                          <p className={cn("truncate", isMe ? "text-primary-foreground/60" : "text-muted-foreground")}>
+                            {repliedMsg.content || (repliedMsg.message_type !== "text" ? "📎 Mídia" : "")}
+                          </p>
+                        </div>
+                      )}
+
+                      {!isMe && activeConv.type === "group" && showAvatar && (
+                        <p className="text-xs font-semibold text-primary mb-1">
+                          {senderProfile?.display_name || "Usuário"}
+                        </p>
+                      )}
+                      {msg.message_type === "image" && msg.media_url && (
+                        <img src={msg.media_url} className="rounded-lg max-w-full max-h-60 object-cover mb-1" alt="imagem" />
+                      )}
+                      {msg.message_type === "audio" && msg.media_url && (
+                        <audio controls src={msg.media_url} className="max-w-full mb-1" />
+                      )}
+                      {msg.message_type === "file" && msg.media_url && (
+                        <a href={msg.media_url} target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-2 underline text-sm">
+                          <Paperclip size={14} /> Arquivo
+                        </a>
+                      )}
+                      {msg.content && (
+                        <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
+                      )}
+                      <div className={cn("flex items-center gap-1 mt-0.5", isMe ? "justify-end" : "justify-start")}>
+                        <span className={cn("text-[10px]", isMe ? "text-primary-foreground/60" : "text-muted-foreground")}>
+                          {formatMessageTime(msg.created_at)}
+                        </span>
+                        {isMe && (
+                          <CheckCheck size={12} className="text-primary-foreground/60" />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Reactions display */}
+                    {grouped.length > 0 && (
+                      <div className={cn("flex flex-wrap gap-1 mt-1", isMe ? "justify-end" : "justify-start")}>
+                        {grouped.map(r => (
+                          <button
+                            key={r.emoji}
+                            onClick={() => toggleReaction(msg.id, r.emoji)}
+                            className={cn(
+                              "inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-full border transition-colors",
+                              r.reacted
+                                ? "bg-primary/10 border-primary/30 text-primary"
+                                : "bg-card border-border text-muted-foreground hover:bg-muted"
+                            )}
+                          >
+                            <span>{r.emoji}</span>
+                            {r.count > 1 && <span className="text-[10px]">{r.count}</span>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               );
@@ -696,6 +864,25 @@ export default function ZuuChat() {
                 ? `${typingUsers[0]} está digitando...`
                 : `${typingUsers.length} pessoas digitando...`}
             </p>
+          </div>
+        )}
+
+        {/* Reply preview bar */}
+        {replyTo && (
+          <div className="px-4 py-2 bg-card border-t border-border/50 flex items-center gap-3">
+            <div className="flex-1 border-l-2 border-primary pl-3">
+              <p className="text-xs font-semibold text-primary">
+                {replyTo.sender_id === user.id
+                  ? "Você"
+                  : profilesCache[replyTo.sender_id]?.display_name || "Usuário"}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {replyTo.content || (replyTo.message_type !== "text" ? "📎 Mídia" : "")}
+              </p>
+            </div>
+            <button onClick={() => setReplyTo(null)} className="p-1 rounded-full hover:bg-muted">
+              <X size={16} className="text-muted-foreground" />
+            </button>
           </div>
         )}
 
