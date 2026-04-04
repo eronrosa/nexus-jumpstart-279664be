@@ -13,6 +13,7 @@ const Sidebar = () => {
     { icon: Sparkles, label: "ZUZU", path: "/" },
     { icon: Wallet, label: "Zuupay", path: "/" },
     { icon: Store, label: "Painel", path: "/painel" },
+    { icon: MessageCircle, label: "ZuuChat", path: "/zuuchat" },
     { icon: ShieldCheck, label: "Admin", path: "/admin" },
   ];
 
