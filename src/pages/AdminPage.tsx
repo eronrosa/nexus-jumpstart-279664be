@@ -773,6 +773,84 @@ function DashboardPanel() {
       {/* ── ROW 3.5: Live Drivers Map ── */}
       <LiveDriversMap />
 
+      {/* ── ROW 3.6: Store Ranking ── */}
+      {storeRanking.length > 0 && (
+        <Card>
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h3 className="text-sm font-bold text-foreground">🏆 Ranking de Estabelecimentos</h3>
+              <p className="text-[11px] text-muted-foreground">Top lojas por faturamento e avaliação</p>
+            </div>
+            <div className="flex gap-1.5">
+              {(["revenue", "rating"] as const).map(s => (
+                <button key={s} onClick={() => setRankSort(s)}
+                  className={cn("px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all",
+                    rankSort === s ? "bg-primary text-primary-foreground shadow-sm" : "bg-secondary text-muted-foreground hover:text-foreground")}>
+                  {s === "revenue" ? "Faturamento" : "Avaliação"}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="text-[10px] text-muted-foreground uppercase tracking-widest border-b border-border">
+                  <th className="text-left px-3 py-2.5 font-bold">#</th>
+                  <th className="text-left px-3 py-2.5 font-bold">Loja</th>
+                  <th className="text-right px-3 py-2.5 font-bold">Faturamento</th>
+                  <th className="text-right px-3 py-2.5 font-bold">Pedidos</th>
+                  <th className="text-right px-3 py-2.5 font-bold">Avaliação</th>
+                  <th className="text-right px-3 py-2.5 font-bold">Reviews</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...storeRanking]
+                  .sort((a, b) => rankSort === "revenue" ? b.revenue - a.revenue : b.avgRating - a.avgRating)
+                  .slice(0, 10)
+                  .map((store, i) => (
+                    <motion.tr key={store.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
+                      className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                      <td className="px-3 py-2.5">
+                        <span className={cn("w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-extrabold",
+                          i === 0 ? "bg-amber-100 text-amber-700" : i === 1 ? "bg-gray-100 text-gray-600" : i === 2 ? "bg-orange-100 text-orange-700" : "bg-secondary text-muted-foreground")}>
+                          {i + 1}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <div className="flex items-center gap-2.5">
+                          {store.logo_url ? (
+                            <img src={store.logo_url} alt="" className="w-8 h-8 rounded-lg object-cover border border-border" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                              <Store size={14} className="text-primary" />
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-sm font-bold text-foreground leading-tight">{store.name}</p>
+                            <p className="text-[10px] text-muted-foreground">{store.category}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-3 py-2.5 text-right text-sm font-bold text-foreground">{fmt(store.revenue)}</td>
+                      <td className="px-3 py-2.5 text-right text-sm text-muted-foreground">{store.orderCount}</td>
+                      <td className="px-3 py-2.5 text-right">
+                        <span className="inline-flex items-center gap-1 text-sm font-bold text-amber-600">
+                          <Star size={12} className="fill-amber-400 text-amber-400" />
+                          {store.avgRating > 0 ? store.avgRating.toFixed(1) : "—"}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5 text-right text-sm text-muted-foreground">{store.reviewCount}</td>
+                    </motion.tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+          {storeRanking.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground text-sm">Nenhuma loja cadastrada</div>
+          )}
+        </Card>
+      )}
+
       {/* ── ROW 4: Real-time indicators ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="flex items-center gap-4">
