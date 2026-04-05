@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Send, Search, Plus, Users, Paperclip,
-  Phone, Video, MoreVertical, Check, CheckCheck, Smile, X,
+  Phone, Video, MoreVertical, Check, CheckCheck, X,
   MessageCircle, Reply
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -98,9 +98,6 @@ export default function ZuuChat() {
   const [profilesCache, setProfilesCache] = useState<Record<string, UserProfile>>({});
   const [presenceMap, setPresenceMap] = useState<Record<string, { status: string; last_seen: string; typing_in: string | null }>>({});
   const [replyTo, setReplyTo] = useState<Message | null>(null);
-  const [reactionsMap, setReactionsMap] = useState<Record<string, { emoji: string; user_id: string }[]>>({});
-  const [showEmojiPicker, setShowEmojiPicker] = useState<string | null>(null);
-  const QUICK_EMOJIS = ["❤️", "😂", "👍", "😮", "😢", "🔥", "🎉", "👏"];
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
