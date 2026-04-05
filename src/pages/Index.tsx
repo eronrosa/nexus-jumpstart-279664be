@@ -1,4 +1,4 @@
-import { Search, Mic, User, LogIn, Home, ClipboardList, Sparkles, CreditCard, MessageCircle } from "lucide-react";
+import { Search, Mic, User, LogIn, Home, ClipboardList, Sparkles, CreditCard, MessageCircle, Flame, Pizza, Ticket, Coffee, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BannerCarousel from "@/components/BannerCarousel";
 import ServicesGrid from "@/components/ServicesGrid";
