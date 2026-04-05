@@ -193,8 +193,8 @@ const CouponDetail = () => {
           )}
 
           {!expired && (
-            <p className="text-xs text-muted-foreground text-center mt-3">
-              🎟️ <span className="font-semibold text-foreground">{coupon.remaining}</span> cupons restantes
+            <p className="text-xs text-muted-foreground text-center mt-3 flex items-center justify-center gap-1">
+              <Tag size={13} className="text-primary" /> <span className="font-semibold text-foreground">{coupon.remaining}</span> cupons restantes
             </p>
           )}
         </motion.div>
@@ -220,7 +220,7 @@ const CouponDetail = () => {
                     : "bg-primary text-primary-foreground hover:opacity-90"
                 }`}
               >
-                {expired ? "Cupom indisponível" : "🎟️ Resgatar cupom"}
+                {expired ? "Cupom indisponível" : "Resgatar cupom"}
               </motion.button>
             ) : (
               <motion.div

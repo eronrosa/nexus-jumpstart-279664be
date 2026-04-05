@@ -1,4 +1,4 @@
-import { Search, Mic, User, LogIn, Home, ClipboardList, Sparkles, CreditCard, MessageCircle } from "lucide-react";
+import { Search, Mic, User, LogIn, Home, ClipboardList, Sparkles, CreditCard, MessageCircle, Flame, Pizza, Ticket, Coffee, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BannerCarousel from "@/components/BannerCarousel";
 import ServicesGrid from "@/components/ServicesGrid";
@@ -10,10 +10,10 @@ import Sidebar from "@/components/Sidebar";
 import { useAuth } from "@/contexts/AuthContext";
 
 const dailyOffers = [
-  { emoji: "🍕", label: "Pizza Hut 2x1" },
-  { emoji: "🎫", label: "Festa Sertaneja 30% OFF" },
-  { emoji: "🥤", label: "Cupom Coca-Cola grátis" },
-  { emoji: "🍟", label: "McOferta do dia" },
+  { icon: Pizza, label: "Pizza Hut 2x1" },
+  { icon: Ticket, label: "Festa Sertaneja 30% OFF" },
+  { icon: Coffee, label: "Cupom Coca-Cola grátis" },
+  { icon: ShoppingBag, label: "McOferta do dia" },
 ];
 
 const Index = () => {
@@ -30,10 +30,10 @@ const Index = () => {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xl">✨</div>
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center"><Sparkles size={20} className="text-primary" /></div>
               <div>
                 <p className="font-semibold text-foreground">
-                  {user ? `Olá, ${profile?.display_name ?? "usuário"} 👋` : "Oi, eu sou a Zuzu 👋"}
+                  {user ? `Olá, ${profile?.display_name ?? "usuário"}` : "Oi, eu sou a Zuzu"}
                 </p>
                 <p className="text-xs text-muted-foreground">No que posso te ajudar hoje?</p>
               </div>
@@ -66,14 +66,17 @@ const Index = () => {
           <BannerCarousel />
 
           <section>
-            <h2 className="text-base font-bold mb-3">🔥 Ofertas do dia</h2>
+            <h2 className="text-base font-bold mb-3 flex items-center gap-2"><Flame size={18} className="text-primary" /> Ofertas do dia</h2>
             <div className="flex gap-2 overflow-x-auto pb-1">
-              {dailyOffers.map((o) => (
-                <button key={o.label} className="flex items-center gap-2 bg-card border border-border rounded-full px-4 py-2 text-sm whitespace-nowrap hover:bg-secondary transition-colors shrink-0">
-                  <span>{o.emoji}</span>
-                  <span className="font-medium">{o.label}</span>
-                </button>
-              ))}
+              {dailyOffers.map((o) => {
+                const Icon = o.icon;
+                return (
+                  <button key={o.label} className="flex items-center gap-2 bg-card border border-border rounded-full px-4 py-2 text-sm whitespace-nowrap hover:bg-secondary transition-colors shrink-0">
+                    <Icon size={16} className="text-primary" />
+                    <span className="font-medium">{o.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </section>
 
