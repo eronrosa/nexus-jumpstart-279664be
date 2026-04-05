@@ -307,28 +307,13 @@ export default function ZuuChat() {
         }
       }
       const msgIds = data.map(m => m.id);
-      // Load reactions
-      let reactionsData: { message_id: string; emoji: string; user_id: string }[] = [];
-      if (msgIds.length) {
-        const { data: rxns } = await supabase
-          .from("message_reactions")
-          .select("message_id, emoji, user_id")
-          .in("message_id", msgIds);
-        if (rxns) reactionsData = rxns;
-      }
-      const rxnMap: Record<string, { emoji: string; user_id: string }[]> = {};
-      reactionsData.forEach(r => {
-        if (!rxnMap[r.message_id]) rxnMap[r.message_id] = [];
-        rxnMap[r.message_id].push(r);
-      });
-      setReactionsMap(rxnMap);
 
       setMessages(data.map(m => ({
         ...m,
         read_by: (m.read_by as string[]) || [],
         reply_to_id: (m as any).reply_to_id || null,
         sender_profile: profilesCache[m.sender_id],
-        reactions: rxnMap[m.id] || [],
+        reactions: [],
       })));
     }
   }, [profilesCache]);
@@ -396,60 +381,6 @@ export default function ZuuChat() {
     setSending(false);
   };
 
-  // Toggle emoji reaction
-  const toggleReaction = async (messageId: string, emoji: string) => {
-    if (!user) return;
-    const existing = (reactionsMap[messageId] || []).find(
-      r => r.emoji === emoji && r.user_id === user.id
-    );
-    if (existing) {
-      await supabase.from("message_reactions")
-        .delete()
-        .eq("message_id", messageId)
-        .eq("user_id", user.id)
-        .eq("emoji", emoji);
-      setReactionsMap(prev => ({
-        ...prev,
-        [messageId]: (prev[messageId] || []).filter(
-          r => !(r.emoji === emoji && r.user_id === user.id)
-        ),
-      }));
-      setMessages(prev => prev.map(m =>
-        m.id === messageId
-          ? { ...m, reactions: (m.reactions || []).filter(r => !(r.emoji === emoji && r.user_id === user.id)) }
-          : m
-      ));
-    } else {
-      await supabase.from("message_reactions").insert({
-        message_id: messageId,
-        user_id: user.id,
-        emoji,
-      });
-      const newR = { emoji, user_id: user.id };
-      setReactionsMap(prev => ({
-        ...prev,
-        [messageId]: [...(prev[messageId] || []), newR],
-      }));
-      setMessages(prev => prev.map(m =>
-        m.id === messageId
-          ? { ...m, reactions: [...(m.reactions || []), newR] }
-          : m
-      ));
-    }
-    setShowEmojiPicker(null);
-  };
-
-  // Group reactions by emoji
-  const getGroupedReactions = (reactions: { emoji: string; user_id: string }[]) => {
-    const map: Record<string, string[]> = {};
-    reactions.forEach(r => {
-      if (!map[r.emoji]) map[r.emoji] = [];
-      map[r.emoji].push(r.user_id);
-    });
-    return Object.entries(map).map(([emoji, users]) => ({
-      emoji,
-      count: users.length,
-      reacted: user ? users.includes(user.id) : false,
     }));
   };
 
@@ -708,7 +639,6 @@ export default function ZuuChat() {
               const showAvatar = activeConv.type === "group" && !isMe &&
                 (i === 0 || messages[i - 1].sender_id !== msg.sender_id);
               const senderProfile = msg.sender_profile || profilesCache[msg.sender_id];
-              const grouped = getGroupedReactions(msg.reactions || []);
               const repliedMsg = msg.reply_to_id ? messages.find(m => m.id === msg.reply_to_id) : null;
 
               return (
@@ -737,13 +667,6 @@ export default function ZuuChat() {
                       isMe ? "left-0 -translate-x-full pr-1" : "right-0 translate-x-full pl-1"
                     )}>
                       <button
-                        onClick={() => setShowEmojiPicker(showEmojiPicker === msg.id ? null : msg.id)}
-                        className="p-1 rounded-full hover:bg-muted bg-card border border-border shadow-sm"
-                        title="Reagir"
-                      >
-                        <Smile size={14} className="text-muted-foreground" />
-                      </button>
-                      <button
                         onClick={() => setReplyTo(msg)}
                         className="p-1 rounded-full hover:bg-muted bg-card border border-border shadow-sm"
                         title="Responder"
@@ -751,24 +674,6 @@ export default function ZuuChat() {
                         <Reply size={14} className="text-muted-foreground" />
                       </button>
                     </div>
-
-                    {/* Emoji picker dropdown */}
-                    {showEmojiPicker === msg.id && (
-                      <div className={cn(
-                        "absolute z-20 bg-card border border-border rounded-xl shadow-lg p-2 flex gap-1 flex-wrap max-w-[200px]",
-                        isMe ? "right-0 -top-10" : "left-0 -top-10"
-                      )}>
-                        {QUICK_EMOJIS.map(emoji => (
-                          <button
-                            key={emoji}
-                            onClick={() => toggleReaction(msg.id, emoji)}
-                            className="text-lg hover:scale-125 transition-transform p-0.5"
-                          >
-                            {emoji}
-                          </button>
-                        ))}
-                      </div>
-                    )}
 
                     <div className={cn(
                       "rounded-2xl px-3 py-2 shadow-sm",
@@ -825,26 +730,6 @@ export default function ZuuChat() {
                       </div>
                     </div>
 
-                    {/* Reactions display */}
-                    {grouped.length > 0 && (
-                      <div className={cn("flex flex-wrap gap-1 mt-1", isMe ? "justify-end" : "justify-start")}>
-                        {grouped.map(r => (
-                          <button
-                            key={r.emoji}
-                            onClick={() => toggleReaction(msg.id, r.emoji)}
-                            className={cn(
-                              "inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-full border transition-colors",
-                              r.reacted
-                                ? "bg-primary/10 border-primary/30 text-primary"
-                                : "bg-card border-border text-muted-foreground hover:bg-muted"
-                            )}
-                          >
-                            <span>{r.emoji}</span>
-                            {r.count > 1 && <span className="text-[10px]">{r.count}</span>}
-                          </button>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 </motion.div>
               );
@@ -899,9 +784,6 @@ export default function ZuuChat() {
                 className="pr-10 rounded-full bg-muted/50 border-0"
                 onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
               />
-              <button className="absolute right-3 top-1/2 -translate-y-1/2">
-                <Smile size={18} className="text-muted-foreground" />
-              </button>
             </div>
             <Button
               size="icon"
