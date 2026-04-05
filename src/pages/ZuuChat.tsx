@@ -306,7 +306,7 @@ export default function ZuuChat() {
           setProfilesCache(prev => ({ ...prev, ...newCache }));
         }
       }
-      const msgIds = data.map(m => m.id);
+      
 
       setMessages(data.map(m => ({
         ...m,
