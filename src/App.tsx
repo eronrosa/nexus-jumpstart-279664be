@@ -35,6 +35,29 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageTransition><Index /></PageTransition>} />
+        <Route path="/coupondetail" element={<PageTransition><CouponDetail /></PageTransition>} />
+        <Route path="/zuufood" element={<PageTransition><ZuuFood /></PageTransition>} />
+        <Route path="/pedidos" element={<ProtectedRoute><PageTransition><PedidosPage /></PageTransition></ProtectedRoute>} />
+        <Route path="/painel" element={<ProtectedRoute><PageTransition><PainelPage /></PageTransition></ProtectedRoute>} />
+        <Route path="/auth" element={<PageTransition><AuthPage /></PageTransition>} />
+        <Route path="/perfil" element={<ProtectedRoute><PageTransition><ProfilePage /></PageTransition></ProtectedRoute>} />
+        <Route path="/zuumob" element={<PageTransition><ZuuMob /></PageTransition>} />
+        <Route path="/motorista" element={<ProtectedRoute><PageTransition><MotoristaPage /></PageTransition></ProtectedRoute>} />
+        <Route path="/zuumob/historico" element={<ProtectedRoute><PageTransition><RideHistoryPage /></PageTransition></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute><PageTransition><AdminPage /></PageTransition></ProtectedRoute>} />
+        <Route path="/zuuchat" element={<ProtectedRoute><PageTransition><ZuuChat /></PageTransition></ProtectedRoute>} />
+        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+      </Routes>
+    </AnimatePresence>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -43,22 +66,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <CartProvider>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/coupondetail" element={<CouponDetail />} />
-              <Route path="/zuufood" element={<ZuuFood />} />
-              <Route path="/pedidos" element={<ProtectedRoute><PedidosPage /></ProtectedRoute>} />
-              <Route path="/painel" element={<ProtectedRoute><PainelPage /></ProtectedRoute>} />
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="/perfil" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-              <Route path="/zuumob" element={<ZuuMob />} />
-              <Route path="/motorista" element={<ProtectedRoute><MotoristaPage /></ProtectedRoute>} />
-              <Route path="/zuumob/historico" element={<ProtectedRoute><RideHistoryPage /></ProtectedRoute>} />
-              <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
-              <Route path="/zuuchat" element={<ProtectedRoute><ZuuChat /></ProtectedRoute>} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <AnimatedRoutes />
             <FloatingChatButton />
           </CartProvider>
         </AuthProvider>
