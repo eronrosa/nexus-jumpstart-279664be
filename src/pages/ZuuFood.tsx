@@ -711,7 +711,7 @@ const ZuuFood = () => {
             {filtered.length > 0 && (
               <section>
                 <h2 className="text-lg font-bold text-foreground mb-3">Todos os restaurantes</h2>
-                <div className="space-y-3">
+                <div className="space-y-3 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-3 md:space-y-0">
                   {filtered.map((r, i) => (
                     <motion.div key={`list-${r.id}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.04 }}
