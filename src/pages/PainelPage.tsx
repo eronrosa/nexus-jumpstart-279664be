@@ -11,7 +11,7 @@ import {
   Menu as MenuIcon, Activity, Zap, Search,
   Star, TrendingUp, CreditCard,
   DollarSign, CircleDot,
-  Gift, MapPinned, UserCircle, Award, Sparkles
+  Gift, MapPinned, UserCircle, Award, Sparkles, CalendarDays
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardTab from "@/components/DashboardTab";
@@ -22,6 +22,7 @@ import PagamentoTab from "@/components/painel/PagamentoTab";
 import ServicosTab from "@/components/painel/ServicosTab";
 import PerfilTab from "@/components/painel/PerfilTab";
 import RecomendacoesTab from "@/components/painel/RecomendacoesTab";
+import ReservasTab from "@/components/painel/ReservasTab";
 
 /* ─── Types ─── */
 interface OrderItem {
