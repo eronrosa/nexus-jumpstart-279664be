@@ -979,15 +979,16 @@ const ZuuFood = () => {
               {/* Certifications */}
               <div className="px-4 md:px-0 mt-3 grid grid-cols-3 gap-2">
                 {[
-                  { icon: ShieldCheck, label: "Certificado", sub: "Verificado" },
-                  { icon: CalendarDays, label: "Reservar mesa", sub: "" },
-                  { icon: ChefHat, label: "Catering", sub: "" },
+                  { icon: ShieldCheck, label: "Certificado", sub: "Verificado", onClick: undefined as (() => void) | undefined },
+                  { icon: CalendarDays, label: "Reservar mesa", sub: "", onClick: () => { if (!user) navigate("/auth"); else setReserveOpen(true); } },
+                  { icon: ChefHat, label: "Catering", sub: "", onClick: undefined },
                 ].map(cert => (
-                  <div key={cert.label} className="flex flex-col items-center gap-1 p-3 rounded-xl border border-border bg-card">
+                  <button key={cert.label} onClick={cert.onClick}
+                    className={`flex flex-col items-center gap-1 p-3 rounded-xl border border-border bg-card ${cert.onClick ? "hover:border-primary/40 hover:bg-primary/5 cursor-pointer" : ""} transition-colors`}>
                     <cert.icon size={20} className="text-primary" />
                     <span className="text-[11px] font-semibold text-foreground text-center">{cert.label}</span>
                     {cert.sub && <span className="text-[9px] text-muted-foreground">{cert.sub}</span>}
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
