@@ -1110,6 +1110,79 @@ const ZuuFood = () => {
       </AnimatePresence>
 
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
+
+      {/* Reservation Modal */}
+      <AnimatePresence>
+        {reserveOpen && selectedRestaurant && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 flex items-end md:items-center justify-center"
+            onClick={() => setReserveOpen(false)}>
+            <motion.div initial={{ y: 100 }} animate={{ y: 0 }} exit={{ y: 100 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-card w-full md:max-w-md rounded-t-2xl md:rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-foreground">Reservar mesa</h2>
+                <button onClick={() => setReserveOpen(false)} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                  <X size={16} />
+                </button>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">{selectedRestaurant.name}</p>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-semibold text-foreground mb-1 block">Data</label>
+                  <input type="date" value={reserveDate} onChange={e => setReserveDate(e.target.value)}
+                    min={new Date().toISOString().split("T")[0]}
+                    className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-foreground mb-1 block">Horário</label>
+                  <input type="time" value={reserveTime} onChange={e => setReserveTime(e.target.value)}
+                    className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-foreground mb-1 block">Número de pessoas</label>
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => setReserveGuests(Math.max(1, reserveGuests - 1))}
+                      className="w-9 h-9 rounded-full border border-border flex items-center justify-center text-foreground hover:bg-muted transition-colors">
+                      <Minus size={14} />
+                    </button>
+                    <span className="text-lg font-bold text-foreground w-8 text-center">{reserveGuests}</span>
+                    <button onClick={() => setReserveGuests(Math.min(20, reserveGuests + 1))}
+                      className="w-9 h-9 rounded-full border border-border flex items-center justify-center text-foreground hover:bg-muted transition-colors">
+                      <Plus size={14} />
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-foreground mb-1 block">Seu nome</label>
+                  <input type="text" value={reserveName} onChange={e => setReserveName(e.target.value)}
+                    placeholder="Nome completo"
+                    className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-foreground mb-1 block">Telefone (opcional)</label>
+                  <input type="tel" value={reservePhone} onChange={e => setReservePhone(e.target.value)}
+                    placeholder="(00) 00000-0000"
+                    className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-foreground mb-1 block">Observações (opcional)</label>
+                  <textarea value={reserveNotes} onChange={e => setReserveNotes(e.target.value)}
+                    placeholder="Aniversário, cadeirinha, etc."
+                    rows={2}
+                    className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none" />
+                </div>
+              </div>
+
+              <button onClick={handleReserve} disabled={reserving}
+                className="w-full mt-4 bg-primary text-primary-foreground font-bold py-3 rounded-xl text-sm hover:bg-primary/90 transition-colors disabled:opacity-50">
+                {reserving ? "Enviando..." : "Confirmar reserva"}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
