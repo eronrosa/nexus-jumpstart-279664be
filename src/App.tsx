@@ -67,7 +67,6 @@ const App = () => (
         <AuthProvider>
           <CartProvider>
             <AnimatedRoutes />
-            <FloatingChatButton />
           </CartProvider>
         </AuthProvider>
       </BrowserRouter>
