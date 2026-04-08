@@ -34,6 +34,31 @@ interface AddressData {
 /* ─── Static fallback data ─── */
 const CATEGORIES = ["Todos", "Japonês", "Hambúrguer", "Pizza", "Lanches", "Saudável", "Sobremesas", "Árabe"];
 
+const FOOD_ICONS = [
+  { label: "Pizza", image: "https://img.icons8.com/color/96/pizza.png" },
+  { label: "Hambúrguer", image: "https://img.icons8.com/color/96/hamburger.png" },
+  { label: "Lanches", image: "https://img.icons8.com/color/96/hot-dog.png" },
+  { label: "Sopa", image: "https://img.icons8.com/color/96/soup-plate.png" },
+  { label: "Japonês", image: "https://img.icons8.com/color/96/sushi.png" },
+  { label: "Café", image: "https://img.icons8.com/color/96/coffee-to-go.png" },
+  { label: "Sobremesas", image: "https://img.icons8.com/color/96/cake.png" },
+  { label: "Saudável", image: "https://img.icons8.com/color/96/salad.png" },
+];
+
+const CUISINES = [
+  { label: "Brasileira", image: "https://img.icons8.com/color/48/brazil-circular.png" },
+  { label: "Japonesa", image: "https://img.icons8.com/color/48/japan-circular.png" },
+  { label: "Italiana", image: "https://img.icons8.com/color/48/italy-circular.png" },
+  { label: "Mexicana", image: "https://img.icons8.com/color/48/mexico-circular.png" },
+  { label: "Árabe", image: "https://img.icons8.com/color/48/saudi-arabia-circular.png" },
+];
+
+const FOOD_BANNERS = [
+  { image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80&fit=crop", tag: "Oferta Especial", title: "Chicken Burger", subtitle: "Até 50% OFF", cta: "Peça agora" },
+  { image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80&fit=crop", tag: "Novidade", title: "Pizza Artesanal", subtitle: "A partir de R$ 29,90", cta: "Ver cardápio" },
+  { image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&q=80&fit=crop", tag: "Promo", title: "Combo Japonês", subtitle: "30 peças + Bebida", cta: "Aproveitar" },
+];
+
 const STATIC_RESTAURANTS: RestaurantData[] = [
   {
     id: "r1", name: "Restaurante Mitsuba", category: "Japonês", rating: 4.8, reviewCount: 0,
