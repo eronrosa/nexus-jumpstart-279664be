@@ -900,7 +900,7 @@ const ZuuFood = () => {
                   { icon: Package, label: "Retirada", active: false },
                   { icon: Users, label: "Pedido em grupo", active: false },
                 ].map(opt => (
-                  <button key={opt.label} className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-semibold border transition-colors ${
+                  <button key={opt.label} className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-semibold border whitespace-nowrap shrink-0 transition-colors ${
                     opt.active
                       ? "bg-destructive text-destructive-foreground border-destructive"
                       : "bg-card text-foreground border-border hover:border-primary/40"
