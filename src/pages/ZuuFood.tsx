@@ -5,7 +5,7 @@ import {
   ArrowLeft, Search, Star, Clock, ShoppingCart, Plus, Minus,
   Trash2, ChevronRight, X, MapPin, Bike, CheckCircle, Store as StoreIcon,
   CreditCard, Banknote, Smartphone, Tag, Home, Building, Mic,
-  SlidersHorizontal, Heart
+  SlidersHorizontal, Heart, User
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -425,6 +425,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
 const ZuuFood = () => {
   const navigate = useNavigate();
   const { add, count, items } = useCart();
+  const { user, profile } = useAuth();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("Todos");
   const [selectedRestaurant, setSelectedRestaurant] = useState<RestaurantData | null>(null);
