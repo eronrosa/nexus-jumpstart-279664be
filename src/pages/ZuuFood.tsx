@@ -649,29 +649,28 @@ const ZuuFood = () => {
               </div>
             </section>
 
-            {/* Fastest Near You - HORIZONTAL SCROLL of large cards */}
+            {/* Fastest Near You */}
             <section>
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-lg font-bold text-foreground">Mais rápidos perto de você</h2>
-                <ArrowLeft size={18} className="text-muted-foreground rotate-180" />
+                <button className="text-xs text-primary font-semibold">Ver todos</button>
               </div>
 
               {filtered.length === 0 ? (
                 <p className="text-center text-muted-foreground text-sm py-12">Nenhum restaurante encontrado</p>
               ) : (
-                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
+                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory md:grid md:grid-cols-3 lg:grid-cols-4 md:overflow-visible">
                   {filtered.map((r, i) => (
-                    <motion.div key={r.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.06 }}
+                    <motion.div key={r.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
                       onClick={() => handleSelectRestaurant(r)}
-                      className={`bg-card rounded-2xl border border-border overflow-hidden cursor-pointer hover:shadow-lg transition-shadow shrink-0 snap-start ${
+                      className={`bg-card rounded-2xl border border-border overflow-hidden cursor-pointer hover:shadow-lg transition-all shrink-0 snap-start ${
                         r.isOpen === false ? "opacity-60" : ""
                       }`}
                       style={{ width: "72vw", maxWidth: "320px" }}>
-                      <div className="relative h-48">
+                      <div className="relative h-44 md:h-40">
                         <img src={r.image} alt={r.name} className="w-full h-full object-cover" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                        {/* Free Delivery badge */}
                         {r.deliveryFee === 0 && (
                           <span className="absolute top-3 left-3 bg-primary text-primary-foreground text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-sm">
                             <Bike size={12} /> Frete Grátis
@@ -682,18 +681,16 @@ const ZuuFood = () => {
                             <Tag size={11} /> {r.promo}
                           </span>
                         )}
-                        {/* Heart button */}
-                        <button onClick={e => e.stopPropagation()} className="absolute top-3 right-3 w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-red-500 transition-colors shadow-sm">
-                          <Heart size={18} />
+                        <button onClick={e => e.stopPropagation()} className="absolute top-3 right-3 w-8 h-8 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-red-500 transition-colors shadow-sm">
+                          <Heart size={16} />
                         </button>
                         {r.isOpen === false && (
                           <span className="absolute bottom-3 left-3 bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">Fechado</span>
                         )}
                       </div>
-                      {/* Card footer */}
                       <div className="p-3 flex items-center justify-between">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <img src={r.logo} alt={r.name} className="w-8 h-8 rounded-lg border border-border bg-card object-cover shrink-0" />
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <img src={r.logo} alt={r.name} className="w-9 h-9 rounded-xl border border-border bg-card object-cover shrink-0" />
                           <div className="min-w-0">
                             <p className="font-bold text-foreground text-sm truncate">{r.name}</p>
                             <p className="text-[11px] text-muted-foreground truncate">{r.category} · {r.deliveryTime}</p>
@@ -702,7 +699,6 @@ const ZuuFood = () => {
                         <div className="flex items-center gap-1 shrink-0 bg-secondary/80 rounded-lg px-2 py-1">
                           <Star size={12} className="text-yellow-500" fill="currentColor" />
                           <span className="text-xs font-bold text-foreground">{r.rating > 0 ? r.rating.toFixed(1) : "Novo"}</span>
-                          {r.reviewCount > 0 && <span className="text-[10px] text-muted-foreground">({r.reviewCount})</span>}
                         </div>
                       </div>
                     </motion.div>
