@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { CalendarDays, Clock, Users, CheckCircle, XCircle, Phone, User, FileText } from "lucide-react";
+import { CalendarDays, Clock, Users, CheckCircle, XCircle, Phone, User, FileText, BellRing } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+// Short notification beep (base64-encoded)
+const NOTIF_SOUND = "data:audio/wav;base64,UklGRl4AAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YToAAAA/f39/Pz8/fz8/P39/Pz8/f39/fz8/P39/Pz8/f39/fz8/P39/Pz8/f39/fz8/P39/Pz8/fz8/Pw==";
 interface Reservation {
   id: string;
   store_id: string;
