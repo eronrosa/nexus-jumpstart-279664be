@@ -1,11 +1,20 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { CalendarDays, Clock, Users, CheckCircle, XCircle, Phone, User, FileText, BellRing } from "lucide-react";
+import { CalendarDays, Clock, Users, CheckCircle, XCircle, Phone, User, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Short notification beep (base64-encoded)
-const NOTIF_SOUND = "data:audio/wav;base64,UklGRl4AAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YToAAAA/f39/Pz8/fz8/P39/Pz8/f39/fz8/P39/Pz8/f39/fz8/P39/Pz8/f39/fz8/P39/Pz8/fz8/Pw==";
+// Short notification beep (base64 WAV)
+const NOTIF_SOUND = "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YUoGAACAgICAgICAgICAgICBgYKCg4OEhIWFhoaHh4iIiYmKiouLjIyNjY6Oj4+QkJGRkpKTk5SUlZWWlpeXmJiZmZqam5ucnJ2dnp6fn6CgoaGioqOjpKSlpaampqenqKipqaqqq6usrK2trq6vr7CwsbGysrOztLS1tba2t7e4uLm5urq7u7y8vb2+vr+/wMDBwcLCw8PExMXFxsbHx8jIycnKysvLzMzNzc7Oz8/Q0NHR0tLT09TU1dXW1tfX2NjZ2dra29vc3N3d3t7f3+Dg4eHi4uPj5OTl5ebm5+fo6Onp6urr6+zs7e3u7u/v8PDx8fLy8/P09PX19vb39/j4+fn6+vv7/Pz9/f7+//8=";
+
+function playNotificationSound() {
+  try {
+    const audio = new Audio(NOTIF_SOUND);
+    audio.volume = 0.5;
+    audio.play().catch(() => {});
+  } catch {}
+}
+
 interface Reservation {
   id: string;
   store_id: string;
@@ -31,25 +40,44 @@ export default function ReservasTab({ storeId }: { storeId: string }) {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
-
-  const loadReservations = async () => {
-    const { data, error } = await supabase
-      .from("reservations")
-      .select("*")
-      .eq("store_id", storeId)
-      .order("reservation_date", { ascending: true })
-      .order("reservation_time", { ascending: true });
-    if (!error && data) setReservations(data as Reservation[]);
-    setLoading(false);
-  };
+  const initialLoadDone = useRef(false);
 
   useEffect(() => {
-    loadReservations();
+    const load = async () => {
+      const { data, error } = await supabase
+        .from("reservations")
+        .select("*")
+        .eq("store_id", storeId)
+        .order("reservation_date", { ascending: true })
+        .order("reservation_time", { ascending: true });
+      if (!error && data) setReservations(data as Reservation[]);
+      setLoading(false);
+    };
+    load();
+
     const channel = supabase
       .channel("store-reservations")
-      .on("postgres_changes", { event: "*", schema: "public", table: "reservations", filter: `store_id=eq.${storeId}` },
-        () => loadReservations()
-      ).subscribe();
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "reservations", filter: `store_id=eq.${storeId}` },
+        (payload) => {
+          const newRes = payload.new as Reservation;
+          setReservations(prev => [...prev, newRes]);
+          if (initialLoadDone.current) {
+            playNotificationSound();
+            toast.info(`Nova reserva de ${newRes.guest_name} para ${newRes.guests} pessoas`, {
+              duration: 8000,
+              description: `${newRes.reservation_date} às ${newRes.reservation_time}`,
+            });
+          }
+        }
+      )
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "reservations", filter: `store_id=eq.${storeId}` },
+        (payload) => {
+          setReservations(prev => prev.map(r => r.id === (payload.new as Reservation).id ? payload.new as Reservation : r));
+        }
+      )
+      .subscribe();
+
+    setTimeout(() => { initialLoadDone.current = true; }, 2000);
     return () => { supabase.removeChannel(channel); };
   }, [storeId]);
 
