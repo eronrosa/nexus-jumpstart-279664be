@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Search, Star, Clock, ShoppingCart, Plus, Minus,
   Trash2, ChevronRight, X, MapPin, Bike, CheckCircle, Store as StoreIcon,
-  CreditCard, Banknote, Smartphone, Tag, Home, Building
+  CreditCard, Banknote, Smartphone, Tag, Home, Building, Mic,
+  SlidersHorizontal, Heart
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,6 +33,66 @@ interface AddressData {
 
 /* ─── Static fallback data ─── */
 const CATEGORIES = ["Todos", "Japonês", "Hambúrguer", "Pizza", "Lanches", "Saudável", "Sobremesas", "Árabe"];
+
+const FOOD_ICONS = [
+  { label: "Pizza", image: "https://img.icons8.com/color/96/pizza.png" },
+  { label: "Hambúrguer", image: "https://img.icons8.com/color/96/hamburger.png" },
+  { label: "Lanches", image: "https://img.icons8.com/color/96/hot-dog.png" },
+  { label: "Sopa", image: "https://img.icons8.com/color/96/soup-plate.png" },
+  { label: "Japonês", image: "https://img.icons8.com/color/96/sushi.png" },
+  { label: "Café", image: "https://img.icons8.com/color/96/coffee-to-go.png" },
+  { label: "Sobremesas", image: "https://img.icons8.com/color/96/cake.png" },
+  { label: "Saudável", image: "https://img.icons8.com/color/96/salad.png" },
+];
+
+const CUISINES = [
+  { label: "Brasileira", image: "https://img.icons8.com/color/48/brazil-circular.png" },
+  { label: "Japonesa", image: "https://img.icons8.com/color/48/japan-circular.png" },
+  { label: "Italiana", image: "https://img.icons8.com/color/48/italy-circular.png" },
+  { label: "Mexicana", image: "https://img.icons8.com/color/48/mexico-circular.png" },
+  { label: "Árabe", image: "https://img.icons8.com/color/48/saudi-arabia-circular.png" },
+];
+
+const FOOD_BANNERS = [
+  { image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80&fit=crop", tag: "Oferta Especial", title: "Chicken Burger", subtitle: "Até 50% OFF", cta: "Peça agora" },
+  { image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80&fit=crop", tag: "Novidade", title: "Pizza Artesanal", subtitle: "A partir de R$ 29,90", cta: "Ver cardápio" },
+  { image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&q=80&fit=crop", tag: "Promo", title: "Combo Japonês", subtitle: "30 peças + Bebida", cta: "Aproveitar" },
+];
+
+function FoodBannerCarousel() {
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setCurrent(c => (c + 1) % FOOD_BANNERS.length), 4000);
+    return () => clearInterval(id);
+  }, []);
+
+  const b = FOOD_BANNERS[current];
+
+  return (
+    <div className="relative rounded-2xl overflow-hidden h-44">
+      <AnimatePresence mode="wait">
+        <motion.div key={current} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }} className="absolute inset-0">
+          <img src={b.image} alt={b.title} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
+          <div className="absolute inset-0 flex flex-col justify-center px-5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-primary-foreground bg-primary/80 px-2 py-0.5 rounded-md w-fit mb-1.5">{b.tag}</span>
+            <p className="text-xs text-white/80">{b.subtitle}</p>
+            <h3 className="text-xl font-extrabold text-white leading-tight">{b.title}</h3>
+            <button className="mt-2 bg-primary text-primary-foreground text-xs font-bold px-4 py-1.5 rounded-full w-fit hover:opacity-90 transition-opacity">{b.cta}</button>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+      {/* Dots */}
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+        {FOOD_BANNERS.map((_, i) => (
+          <button key={i} onClick={() => setCurrent(i)}
+            className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-white w-5" : "bg-white/50"}`} />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 const STATIC_RESTAURANTS: RestaurantData[] = [
   {
@@ -500,21 +561,44 @@ const ZuuFood = () => {
       }, {} as Record<string, MenuItemData[]>)
     : {};
 
-  const dynamicCategories = [...new Set(allRestaurants.map(r => r.category))];
-  const allCategories = ["Todos", ...new Set([...CATEGORIES.slice(1), ...dynamicCategories])];
+  
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-card/90 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
-        <button onClick={selectedRestaurant ? () => setSelectedRestaurant(null) : () => navigate("/")} className="p-1 text-muted-foreground hover:text-foreground">
-          <ArrowLeft size={20} />
-        </button>
-        <div className="flex-1">
-          <h1 className="font-extrabold text-foreground text-base leading-tight">
-            {selectedRestaurant ? selectedRestaurant.name : "ZuuFood"}
-          </h1>
-          {selectedRestaurant && (
+      {!selectedRestaurant ? (
+        <div className="sticky top-0 z-20 bg-card border-b border-border px-4 py-3">
+          <div className="max-w-3xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button onClick={() => navigate("/")} className="p-1 text-muted-foreground hover:text-foreground">
+                <ArrowLeft size={20} />
+              </button>
+              <div>
+                <p className="font-bold text-foreground text-sm">ZuuFood</p>
+                <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                  <MapPin size={10} className="text-primary" /> Sua localização
+                </p>
+              </div>
+            </div>
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              onClick={() => setCartOpen(true)} className="relative p-2 bg-primary/10 text-primary rounded-full">
+              <ShoppingCart size={20} />
+              {count > 0 && (
+                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center">
+                  {count}
+                </motion.span>
+              )}
+            </motion.button>
+          </div>
+        </div>
+      ) : (
+        <div className="sticky top-0 z-20 bg-card/90 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
+          <button onClick={() => setSelectedRestaurant(null)} className="p-1 text-muted-foreground hover:text-foreground">
+            <ArrowLeft size={20} />
+          </button>
+          <div className="flex-1">
+            <h1 className="font-extrabold text-foreground text-base leading-tight">{selectedRestaurant.name}</h1>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <Clock size={11} /> {selectedRestaurant.deliveryTime}
               <span className="mx-1">·</span>
@@ -522,90 +606,142 @@ const ZuuFood = () => {
               {selectedRestaurant.rating > 0 ? selectedRestaurant.rating.toFixed(1) : "Novo"}
               {selectedRestaurant.reviewCount > 0 && <span className="text-muted-foreground/60">({selectedRestaurant.reviewCount})</span>}
             </p>
-          )}
+          </div>
+          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+            onClick={() => setCartOpen(true)} className="relative p-2 bg-primary/10 text-primary rounded-full">
+            <ShoppingCart size={20} />
+            {count > 0 && (
+              <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
+                className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center">
+                {count}
+              </motion.span>
+            )}
+          </motion.button>
         </div>
-        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-          onClick={() => setCartOpen(true)} className="relative p-2 bg-primary/10 text-primary rounded-full">
-          <ShoppingCart size={20} />
-          {count > 0 && (
-            <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
-              className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center">
-              {count}
-            </motion.span>
-          )}
-        </motion.button>
-      </div>
+      )}
 
       <div className="max-w-3xl mx-auto">
         {!selectedRestaurant ? (
-          /* ── LISTING VIEW ── */
-          <div className="px-4 py-4 space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={15} />
-              <input value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Buscar restaurante ou categoria..."
-                className="w-full bg-card border border-border rounded-full pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+          /* ── LISTING VIEW (clone of reference design) ── */
+          <div className="px-4 py-4 space-y-5">
+
+            {/* Search bar */}
+            <div className="relative flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={15} />
+                <input value={search} onChange={e => setSearch(e.target.value)}
+                  placeholder="Buscar restaurante, comida..."
+                  className="w-full bg-card border border-border rounded-full pl-9 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+                <Mic className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground cursor-pointer hover:text-foreground" size={15} />
+              </div>
+              <button className="p-2.5 bg-card border border-border rounded-full text-muted-foreground hover:text-foreground transition-colors">
+                <SlidersHorizontal size={16} />
+              </button>
             </div>
 
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              {allCategories.map(cat => (
-                <motion.button key={cat} whileTap={{ scale: 0.95 }} onClick={() => setActiveCategory(cat)}
-                  className={`px-4 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap transition-colors shrink-0 ${
-                    activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground hover:text-foreground"
-                  }`}>
-                  {cat}
-                </motion.button>
-              ))}
-            </div>
+            {/* Food Banner Carousel */}
+            <FoodBannerCarousel />
 
-            <div className="space-y-3">
-              {filtered.length === 0 && (
-                <p className="text-center text-muted-foreground text-sm py-12">Nenhum restaurante encontrado</p>
-              )}
-              {filtered.map((r, i) => (
-                <motion.div key={r.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.06 }} whileHover={{ scale: 1.01 }}
-                  onClick={() => handleSelectRestaurant(r)}
-                  className={`bg-card rounded-2xl border border-border overflow-hidden cursor-pointer hover:shadow-md transition-shadow ${r.isOpen === false ? "opacity-60" : ""}`}>
-                  <div className="relative h-36">
-                    <img src={r.image} alt={r.name} className="w-full h-full object-cover" />
-                    {r.promo && (
-                      <span className="absolute top-2 left-2 bg-primary text-primary-foreground text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><Tag size={10} />{r.promo}</span>
-                    )}
-                    {r.isOpen === false && (
-                      <span className="absolute top-2 right-2 bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">Fechado</span>
-                    )}
-                    {r.isDynamic && r.isOpen !== false && (
-                      <span className="absolute top-2 right-2 bg-card/90 backdrop-blur text-foreground text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <StoreIcon size={10} /> Parceiro
-                      </span>
-                    )}
-                  </div>
-                  <div className="p-3 flex items-center gap-3">
-                    <img src={r.logo} alt={r.name} className="w-10 h-10 rounded-xl border border-border bg-card shrink-0 object-cover" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-foreground text-sm">{r.name}</p>
-                      <p className="text-xs text-muted-foreground">{r.category}</p>
+            {/* What's your favourite food? */}
+            <section>
+              <h2 className="text-base font-bold text-foreground mb-3">Qual sua comida favorita?</h2>
+              <div className="flex gap-4 overflow-x-auto pb-1 scrollbar-hide">
+                {FOOD_ICONS.map(food => (
+                  <button key={food.label} onClick={() => {
+                    const cat = CATEGORIES.includes(food.label) ? food.label : "Todos";
+                    setActiveCategory(cat);
+                  }}
+                    className={`flex flex-col items-center gap-1.5 shrink-0 transition-all ${
+                      activeCategory === food.label ? "scale-110" : "hover:scale-105"
+                    }`}>
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors ${
+                      activeCategory === food.label ? "bg-primary/15 ring-2 ring-primary" : "bg-card border border-border"
+                    }`}>
+                      <img src={food.image} alt={food.label} className="w-9 h-9 object-contain" />
                     </div>
-                    <div className="text-right shrink-0 space-y-0.5">
-                      <div className="flex items-center gap-1 justify-end">
+                    <span className={`text-[11px] font-semibold ${
+                      activeCategory === food.label ? "text-primary" : "text-muted-foreground"
+                    }`}>{food.label}</span>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {/* Favourite Cuisines */}
+            <section>
+              <h2 className="text-base font-bold text-foreground mb-3">Cozinhas favoritas</h2>
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                {CUISINES.map(cuisine => (
+                  <button key={cuisine.label}
+                    className="flex items-center gap-2 bg-card border border-border rounded-full px-4 py-2 text-sm whitespace-nowrap hover:bg-secondary transition-colors shrink-0">
+                    <img src={cuisine.image} alt={cuisine.label} className="w-5 h-5 rounded-full object-cover" />
+                    <span className="font-medium text-foreground">{cuisine.label}</span>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {/* Fastest Near You */}
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-base font-bold text-foreground">Mais rápidos perto de você</h2>
+                <ChevronRight size={18} className="text-muted-foreground" />
+              </div>
+
+              <div className="space-y-3">
+                {filtered.length === 0 && (
+                  <p className="text-center text-muted-foreground text-sm py-12">Nenhum restaurante encontrado</p>
+                )}
+                {filtered.map((r, i) => (
+                  <motion.div key={r.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    onClick={() => handleSelectRestaurant(r)}
+                    className={`bg-card rounded-2xl border border-border overflow-hidden cursor-pointer hover:shadow-md transition-shadow ${r.isOpen === false ? "opacity-60" : ""}`}>
+                    <div className="relative h-40">
+                      <img src={r.image} alt={r.name} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                      {/* Badges */}
+                      {r.deliveryFee === 0 && (
+                        <span className="absolute top-3 left-3 bg-primary text-primary-foreground text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
+                          <Bike size={11} /> Frete Grátis
+                        </span>
+                      )}
+                      {r.promo && r.deliveryFee !== 0 && (
+                        <span className="absolute top-3 left-3 bg-primary text-primary-foreground text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
+                          <Tag size={10} /> {r.promo}
+                        </span>
+                      )}
+                      <button onClick={e => e.stopPropagation()} className="absolute top-3 right-3 w-8 h-8 rounded-full bg-card/80 backdrop-blur flex items-center justify-center text-muted-foreground hover:text-red-500 transition-colors">
+                        <Heart size={16} />
+                      </button>
+                      {r.isOpen === false && (
+                        <span className="absolute top-3 right-12 bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">Fechado</span>
+                      )}
+                      {/* Logo overlay bottom-left */}
+                      <div className="absolute bottom-3 left-3 flex items-center gap-2">
+                        <img src={r.logo} alt={r.name} className="w-10 h-10 rounded-xl border-2 border-card bg-card object-cover shadow-sm" />
+                      </div>
+                      {/* Rating bottom-right */}
+                      <div className="absolute bottom-3 right-3 bg-card/90 backdrop-blur rounded-lg px-2 py-1 flex items-center gap-1">
                         <Star size={12} className="text-yellow-500" fill="currentColor" />
                         <span className="text-xs font-bold text-foreground">{r.rating > 0 ? r.rating.toFixed(1) : "Novo"}</span>
                         {r.reviewCount > 0 && <span className="text-[10px] text-muted-foreground">({r.reviewCount})</span>}
                       </div>
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <Clock size={11} />
-                        <span className="text-xs">{r.deliveryTime}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {r.deliveryFee === 0 ? <span className="text-emerald-600 font-semibold">Frete grátis</span> : `Frete: ${fmt(r.deliveryFee)}`}
-                      </p>
                     </div>
-                    <ChevronRight size={16} className="text-muted-foreground shrink-0" />
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                    <div className="p-3">
+                      <p className="font-bold text-foreground text-sm">{r.name}</p>
+                      <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                        <span>{r.category}</span>
+                        <span>·</span>
+                        <span className="flex items-center gap-1"><Clock size={11} /> {r.deliveryTime}</span>
+                        <span>·</span>
+                        <span>{r.deliveryFee === 0 ? <span className="text-emerald-600 font-semibold">Grátis</span> : fmt(r.deliveryFee)}</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </section>
           </div>
         ) : (
           /* ── RESTAURANT MENU VIEW ── */
