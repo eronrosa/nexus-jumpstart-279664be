@@ -806,7 +806,7 @@ const ZuuFood = () => {
           </motion.button>
         </div>
         <div className="max-w-3xl mx-auto">
-          /* ── RESTAURANT MENU VIEW ── */
+          {/* ── RESTAURANT MENU VIEW ── */}
           <div className="px-4 py-4 pb-32 space-y-6">
             <div className="relative rounded-2xl overflow-hidden h-40">
               <img src={selectedRestaurant.image} alt={selectedRestaurant.name} className="w-full h-full object-cover" />
