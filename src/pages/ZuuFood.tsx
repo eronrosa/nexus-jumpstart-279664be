@@ -443,6 +443,31 @@ const ZuuFood = () => {
   const [reservePhone, setReservePhone] = useState(profile?.phone ?? "");
   const [reserveNotes, setReserveNotes] = useState("");
   const [reserving, setReserving] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+
+  // Load user favorites
+  useEffect(() => {
+    if (!user) { setFavoriteIds(new Set()); return; }
+    supabase.from("favorite_stores").select("store_id").eq("user_id", user.id)
+      .then(({ data }) => {
+        if (data) setFavoriteIds(new Set(data.map((f: any) => f.store_id)));
+      });
+  }, [user]);
+
+  const toggleFavorite = async (e: React.MouseEvent, storeId: string) => {
+    e.stopPropagation();
+    if (!user) { toast.error("Faça login para favoritar"); navigate("/auth"); return; }
+    const isFav = favoriteIds.has(storeId);
+    if (isFav) {
+      setFavoriteIds(prev => { const n = new Set(prev); n.delete(storeId); return n; });
+      await supabase.from("favorite_stores").delete().eq("user_id", user.id).eq("store_id", storeId);
+      toast.success("Removido dos favoritos");
+    } else {
+      setFavoriteIds(prev => new Set(prev).add(storeId));
+      await supabase.from("favorite_stores").insert({ user_id: user.id, store_id: storeId });
+      toast.success("Adicionado aos favoritos ❤️");
+    }
+  };
 
   // Load dynamic stores + real ratings + delivery zones + promotions
   useEffect(() => {
@@ -746,8 +771,8 @@ const ZuuFood = () => {
                             <Tag size={11} /> {r.promo}
                           </span>
                         )}
-                        <button onClick={e => e.stopPropagation()} className="absolute top-3 right-3 w-8 h-8 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-red-500 transition-colors shadow-sm">
-                          <Heart size={16} />
+                        <button onClick={e => toggleFavorite(e, r.id)} className={`absolute top-3 right-3 w-8 h-8 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center transition-colors shadow-sm ${favoriteIds.has(r.id) ? "text-red-500" : "text-muted-foreground hover:text-red-500"}`}>
+                          <Heart size={16} fill={favoriteIds.has(r.id) ? "currentColor" : "none"} />
                         </button>
                         {r.isOpen === false && (
                           <span className="absolute bottom-3 left-3 bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">Fechado</span>
@@ -889,8 +914,8 @@ const ZuuFood = () => {
                       <button className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
                         <Tag size={14} />
                       </button>
-                      <button className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-red-500 transition-colors">
-                        <Heart size={14} />
+                      <button onClick={e => selectedRestaurant && toggleFavorite(e, selectedRestaurant.id)} className={`w-8 h-8 rounded-full border border-border flex items-center justify-center transition-colors ${selectedRestaurant && favoriteIds.has(selectedRestaurant.id) ? "text-red-500" : "text-muted-foreground hover:text-red-500"}`}>
+                        <Heart size={14} fill={selectedRestaurant && favoriteIds.has(selectedRestaurant.id) ? "currentColor" : "none"} />
                       </button>
                       <button onClick={handleShare} className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
                         <Share2 size={14} />
