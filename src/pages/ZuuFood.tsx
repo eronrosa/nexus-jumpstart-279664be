@@ -5,7 +5,9 @@ import {
   ArrowLeft, Search, Star, Clock, ShoppingCart, Plus, Minus,
   Trash2, ChevronRight, X, MapPin, Bike, CheckCircle, Store as StoreIcon,
   CreditCard, Banknote, Smartphone, Tag, Home, Building, Mic,
-  SlidersHorizontal, Heart, User
+  SlidersHorizontal, Heart, User, Phone, Share2, Wifi, ParkingCircle,
+  Music, UtensilsCrossed, Package, Users, ChevronDown, ShieldCheck,
+  CalendarDays, ChefHat, Flame, Sparkles, BadgePercent, Trophy
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { supabase } from "@/integrations/supabase/client";
