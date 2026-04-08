@@ -435,6 +435,14 @@ const ZuuFood = () => {
   const [addedId, setAddedId] = useState<string | null>(null);
   const [allRestaurants, setAllRestaurants] = useState<RestaurantData[]>(STATIC_RESTAURANTS);
   const [loadingMenu, setLoadingMenu] = useState(false);
+  const [reserveOpen, setReserveOpen] = useState(false);
+  const [reserveDate, setReserveDate] = useState("");
+  const [reserveTime, setReserveTime] = useState("");
+  const [reserveGuests, setReserveGuests] = useState(2);
+  const [reserveName, setReserveName] = useState(profile?.display_name ?? "");
+  const [reservePhone, setReservePhone] = useState(profile?.phone ?? "");
+  const [reserveNotes, setReserveNotes] = useState("");
+  const [reserving, setReserving] = useState(false);
 
   // Load dynamic stores + real ratings + delivery zones + promotions
   useEffect(() => {
@@ -564,7 +572,64 @@ const ZuuFood = () => {
       }, {} as Record<string, MenuItemData[]>)
     : {};
 
-  
+  const handleShare = async () => {
+    if (!selectedRestaurant) return;
+    const url = window.location.href;
+    const text = `Confira ${selectedRestaurant.name} no ZuuFood!`;
+    if (navigator.share) {
+      try { await navigator.share({ title: selectedRestaurant.name, text, url }); } catch {}
+    } else {
+      await navigator.clipboard.writeText(`${text} ${url}`);
+      toast.success("Link copiado!");
+    }
+  };
+
+  const handleChatWithStore = async () => {
+    if (!user) { navigate("/auth"); return; }
+    if (!selectedRestaurant?.isDynamic) { toast.info("Chat disponível apenas para lojas cadastradas"); return; }
+    // Find or create conversation with store owner
+    const { data: storeData } = await supabase.from("stores").select("owner_id").eq("id", selectedRestaurant.id).single();
+    if (!storeData) { toast.error("Loja não encontrada"); return; }
+    if (storeData.owner_id === user.id) { toast.info("Você é o dono desta loja"); return; }
+    // Check existing conversation
+    const { data: myConvs } = await supabase.from("conversation_members").select("conversation_id").eq("user_id", user.id);
+    const { data: ownerConvs } = await supabase.from("conversation_members").select("conversation_id").eq("user_id", storeData.owner_id);
+    if (myConvs && ownerConvs) {
+      const myIds = new Set(myConvs.map(c => c.conversation_id));
+      const common = ownerConvs.find(c => myIds.has(c.conversation_id));
+      if (common) { navigate("/zuuchat"); return; }
+    }
+    // Create new private conversation
+    const { data: conv, error } = await supabase.from("conversations").insert({ created_by: user.id, type: "private", name: selectedRestaurant.name }).select().single();
+    if (error || !conv) { toast.error("Erro ao iniciar conversa"); return; }
+    await supabase.from("conversation_members").insert([
+      { conversation_id: conv.id, user_id: user.id, role: "member" },
+      { conversation_id: conv.id, user_id: storeData.owner_id, role: "admin" },
+    ]);
+    navigate("/zuuchat");
+  };
+
+  const handleReserve = async () => {
+    if (!user) { navigate("/auth"); return; }
+    if (!selectedRestaurant?.isDynamic) { toast.info("Reservas disponíveis apenas para lojas cadastradas"); return; }
+    if (!reserveDate || !reserveTime || !reserveName.trim()) { toast.error("Preencha data, horário e nome"); return; }
+    setReserving(true);
+    const { error } = await supabase.from("reservations").insert({
+      store_id: selectedRestaurant.id,
+      user_id: user.id,
+      reservation_date: reserveDate,
+      reservation_time: reserveTime,
+      guests: reserveGuests,
+      guest_name: reserveName.trim(),
+      guest_phone: reservePhone.trim() || null,
+      notes: reserveNotes.trim() || null,
+    });
+    setReserving(false);
+    if (error) { toast.error("Erro ao reservar"); return; }
+    toast.success("Reserva enviada! O restaurante irá confirmar em breve.");
+    setReserveOpen(false);
+    setReserveNotes("");
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -827,7 +892,7 @@ const ZuuFood = () => {
                       <button className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-red-500 transition-colors">
                         <Heart size={14} />
                       </button>
-                      <button className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                      <button onClick={handleShare} className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
                         <Share2 size={14} />
                       </button>
                     </div>
@@ -866,7 +931,7 @@ const ZuuFood = () => {
                         </span>
                       )}
                     </div>
-                    <button className="w-10 h-10 rounded-full bg-emerald-500 text-card flex items-center justify-center shadow shrink-0">
+                    <button onClick={handleChatWithStore} className="w-10 h-10 rounded-full bg-emerald-500 text-card flex items-center justify-center shadow shrink-0" title="Chat com a loja">
                       <Phone size={18} />
                     </button>
                   </div>
@@ -914,15 +979,16 @@ const ZuuFood = () => {
               {/* Certifications */}
               <div className="px-4 md:px-0 mt-3 grid grid-cols-3 gap-2">
                 {[
-                  { icon: ShieldCheck, label: "Certificado", sub: "Verificado" },
-                  { icon: CalendarDays, label: "Reservar mesa", sub: "" },
-                  { icon: ChefHat, label: "Catering", sub: "" },
+                  { icon: ShieldCheck, label: "Certificado", sub: "Verificado", onClick: undefined as (() => void) | undefined },
+                  { icon: CalendarDays, label: "Reservar mesa", sub: "", onClick: () => { if (!user) navigate("/auth"); else setReserveOpen(true); } },
+                  { icon: ChefHat, label: "Catering", sub: "", onClick: undefined },
                 ].map(cert => (
-                  <div key={cert.label} className="flex flex-col items-center gap-1 p-3 rounded-xl border border-border bg-card">
+                  <button key={cert.label} onClick={cert.onClick}
+                    className={`flex flex-col items-center gap-1 p-3 rounded-xl border border-border bg-card ${cert.onClick ? "hover:border-primary/40 hover:bg-primary/5 cursor-pointer" : ""} transition-colors`}>
                     <cert.icon size={20} className="text-primary" />
                     <span className="text-[11px] font-semibold text-foreground text-center">{cert.label}</span>
                     {cert.sub && <span className="text-[9px] text-muted-foreground">{cert.sub}</span>}
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -1044,6 +1110,79 @@ const ZuuFood = () => {
       </AnimatePresence>
 
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
+
+      {/* Reservation Modal */}
+      <AnimatePresence>
+        {reserveOpen && selectedRestaurant && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 flex items-end md:items-center justify-center"
+            onClick={() => setReserveOpen(false)}>
+            <motion.div initial={{ y: 100 }} animate={{ y: 0 }} exit={{ y: 100 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-card w-full md:max-w-md rounded-t-2xl md:rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-foreground">Reservar mesa</h2>
+                <button onClick={() => setReserveOpen(false)} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                  <X size={16} />
+                </button>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">{selectedRestaurant.name}</p>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-semibold text-foreground mb-1 block">Data</label>
+                  <input type="date" value={reserveDate} onChange={e => setReserveDate(e.target.value)}
+                    min={new Date().toISOString().split("T")[0]}
+                    className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-foreground mb-1 block">Horário</label>
+                  <input type="time" value={reserveTime} onChange={e => setReserveTime(e.target.value)}
+                    className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-foreground mb-1 block">Número de pessoas</label>
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => setReserveGuests(Math.max(1, reserveGuests - 1))}
+                      className="w-9 h-9 rounded-full border border-border flex items-center justify-center text-foreground hover:bg-muted transition-colors">
+                      <Minus size={14} />
+                    </button>
+                    <span className="text-lg font-bold text-foreground w-8 text-center">{reserveGuests}</span>
+                    <button onClick={() => setReserveGuests(Math.min(20, reserveGuests + 1))}
+                      className="w-9 h-9 rounded-full border border-border flex items-center justify-center text-foreground hover:bg-muted transition-colors">
+                      <Plus size={14} />
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-foreground mb-1 block">Seu nome</label>
+                  <input type="text" value={reserveName} onChange={e => setReserveName(e.target.value)}
+                    placeholder="Nome completo"
+                    className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-foreground mb-1 block">Telefone (opcional)</label>
+                  <input type="tel" value={reservePhone} onChange={e => setReservePhone(e.target.value)}
+                    placeholder="(00) 00000-0000"
+                    className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-foreground mb-1 block">Observações (opcional)</label>
+                  <textarea value={reserveNotes} onChange={e => setReserveNotes(e.target.value)}
+                    placeholder="Aniversário, cadeirinha, etc."
+                    rows={2}
+                    className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none" />
+                </div>
+              </div>
+
+              <button onClick={handleReserve} disabled={reserving}
+                className="w-full mt-4 bg-primary text-primary-foreground font-bold py-3 rounded-xl text-sm hover:bg-primary/90 transition-colors disabled:opacity-50">
+                {reserving ? "Enviando..." : "Confirmar reserva"}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
