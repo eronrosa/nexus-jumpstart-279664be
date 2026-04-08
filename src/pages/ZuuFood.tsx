@@ -435,6 +435,14 @@ const ZuuFood = () => {
   const [addedId, setAddedId] = useState<string | null>(null);
   const [allRestaurants, setAllRestaurants] = useState<RestaurantData[]>(STATIC_RESTAURANTS);
   const [loadingMenu, setLoadingMenu] = useState(false);
+  const [reserveOpen, setReserveOpen] = useState(false);
+  const [reserveDate, setReserveDate] = useState("");
+  const [reserveTime, setReserveTime] = useState("");
+  const [reserveGuests, setReserveGuests] = useState(2);
+  const [reserveName, setReserveName] = useState(profile?.display_name ?? "");
+  const [reservePhone, setReservePhone] = useState(profile?.phone ?? "");
+  const [reserveNotes, setReserveNotes] = useState("");
+  const [reserving, setReserving] = useState(false);
 
   // Load dynamic stores + real ratings + delivery zones + promotions
   useEffect(() => {
@@ -564,7 +572,64 @@ const ZuuFood = () => {
       }, {} as Record<string, MenuItemData[]>)
     : {};
 
-  
+  const handleShare = async () => {
+    if (!selectedRestaurant) return;
+    const url = window.location.href;
+    const text = `Confira ${selectedRestaurant.name} no ZuuFood!`;
+    if (navigator.share) {
+      try { await navigator.share({ title: selectedRestaurant.name, text, url }); } catch {}
+    } else {
+      await navigator.clipboard.writeText(`${text} ${url}`);
+      toast.success("Link copiado!");
+    }
+  };
+
+  const handleChatWithStore = async () => {
+    if (!user) { navigate("/auth"); return; }
+    if (!selectedRestaurant?.isDynamic) { toast.info("Chat disponível apenas para lojas cadastradas"); return; }
+    // Find or create conversation with store owner
+    const { data: storeData } = await supabase.from("stores").select("owner_id").eq("id", selectedRestaurant.id).single();
+    if (!storeData) { toast.error("Loja não encontrada"); return; }
+    if (storeData.owner_id === user.id) { toast.info("Você é o dono desta loja"); return; }
+    // Check existing conversation
+    const { data: myConvs } = await supabase.from("conversation_members").select("conversation_id").eq("user_id", user.id);
+    const { data: ownerConvs } = await supabase.from("conversation_members").select("conversation_id").eq("user_id", storeData.owner_id);
+    if (myConvs && ownerConvs) {
+      const myIds = new Set(myConvs.map(c => c.conversation_id));
+      const common = ownerConvs.find(c => myIds.has(c.conversation_id));
+      if (common) { navigate("/zuuchat"); return; }
+    }
+    // Create new private conversation
+    const { data: conv, error } = await supabase.from("conversations").insert({ created_by: user.id, type: "private", name: selectedRestaurant.name }).select().single();
+    if (error || !conv) { toast.error("Erro ao iniciar conversa"); return; }
+    await supabase.from("conversation_members").insert([
+      { conversation_id: conv.id, user_id: user.id, role: "member" },
+      { conversation_id: conv.id, user_id: storeData.owner_id, role: "admin" },
+    ]);
+    navigate("/zuuchat");
+  };
+
+  const handleReserve = async () => {
+    if (!user) { navigate("/auth"); return; }
+    if (!selectedRestaurant?.isDynamic) { toast.info("Reservas disponíveis apenas para lojas cadastradas"); return; }
+    if (!reserveDate || !reserveTime || !reserveName.trim()) { toast.error("Preencha data, horário e nome"); return; }
+    setReserving(true);
+    const { error } = await supabase.from("reservations").insert({
+      store_id: selectedRestaurant.id,
+      user_id: user.id,
+      reservation_date: reserveDate,
+      reservation_time: reserveTime,
+      guests: reserveGuests,
+      guest_name: reserveName.trim(),
+      guest_phone: reservePhone.trim() || null,
+      notes: reserveNotes.trim() || null,
+    });
+    setReserving(false);
+    if (error) { toast.error("Erro ao reservar"); return; }
+    toast.success("Reserva enviada! O restaurante irá confirmar em breve.");
+    setReserveOpen(false);
+    setReserveNotes("");
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20">
