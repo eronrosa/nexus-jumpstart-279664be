@@ -599,6 +599,59 @@ export type Database = {
         }
         Relationships: []
       }
+      reservations: {
+        Row: {
+          created_at: string
+          guest_name: string
+          guest_phone: string | null
+          guests: number
+          id: string
+          notes: string | null
+          reservation_date: string
+          reservation_time: string
+          status: string
+          store_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          guest_name: string
+          guest_phone?: string | null
+          guests?: number
+          id?: string
+          notes?: string | null
+          reservation_date: string
+          reservation_time: string
+          status?: string
+          store_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          guest_name?: string
+          guest_phone?: string | null
+          guests?: number
+          id?: string
+          notes?: string | null
+          reservation_date?: string
+          reservation_time?: string
+          status?: string
+          store_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservations_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           comment: string | null
