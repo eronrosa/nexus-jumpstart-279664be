@@ -564,35 +564,222 @@ const ZuuFood = () => {
   
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
+    <div className="min-h-screen bg-background pb-20">
       {!selectedRestaurant ? (
-        <div className="sticky top-0 z-20 bg-card border-b border-border px-4 py-3">
-          <div className="max-w-3xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button onClick={() => navigate("/")} className="p-1 text-muted-foreground hover:text-foreground">
-                <ArrowLeft size={20} />
-              </button>
-              <div>
-                <p className="font-bold text-foreground text-sm">ZuuFood</p>
-                <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-                  <MapPin size={10} className="text-primary" /> Sua localização
-                </p>
+        <>
+          {/* ── HEADER (matching reference) ── */}
+          <div className="sticky top-0 z-20 bg-orange-50 dark:bg-card px-4 pt-3 pb-2">
+            <div className="max-w-3xl mx-auto">
+              {/* Top row: avatar + name/location + wallet */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <ShoppingCart size={18} className="text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground text-sm leading-tight">
+                      {user ? (profile?.display_name ?? "Usuário") : "ZuuFood"}
+                    </p>
+                    <button onClick={() => navigate("/")} className="text-[11px] text-muted-foreground flex items-center gap-1 hover:text-foreground transition-colors">
+                      <MapPin size={10} className="text-primary" /> Sua localização
+                      <ChevronRight size={10} className="rotate-90" />
+                    </button>
+                  </div>
+                </div>
+                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                  onClick={() => setCartOpen(true)}
+                  className="flex items-center gap-1.5 bg-card border border-border rounded-full px-3 py-1.5 text-sm font-semibold text-foreground shadow-sm">
+                  <ShoppingCart size={14} className="text-primary" />
+                  {count > 0 ? <span className="text-primary font-bold">{count}</span> : <span>Carrinho</span>}
+                </motion.button>
+              </div>
+
+              {/* Search bar */}
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+                  <input value={search} onChange={e => setSearch(e.target.value)}
+                    placeholder="Buscar restaurante, comida..."
+                    className="w-full bg-card border border-border rounded-full pl-10 pr-16 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-sm" />
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    <button className="p-1.5 text-muted-foreground hover:text-foreground transition-colors">
+                      <Mic size={16} />
+                    </button>
+                    <button className="p-1.5 text-muted-foreground hover:text-foreground transition-colors">
+                      <SlidersHorizontal size={16} />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-              onClick={() => setCartOpen(true)} className="relative p-2 bg-primary/10 text-primary rounded-full">
-              <ShoppingCart size={20} />
-              {count > 0 && (
-                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
-                  className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center">
-                  {count}
-                </motion.span>
-              )}
-            </motion.button>
           </div>
-        </div>
+
+          <div className="max-w-3xl mx-auto px-4 py-4 space-y-6">
+
+            {/* Banner Carousel */}
+            <FoodBannerCarousel />
+
+            {/* What's your favourite food? - Large icons without boxes */}
+            <section>
+              <h2 className="text-lg font-bold text-foreground mb-4">Qual sua comida favorita?</h2>
+              <div className="flex gap-5 overflow-x-auto pb-2 scrollbar-hide">
+                {FOOD_ICONS.map(food => (
+                  <button key={food.label} onClick={() => {
+                    const cat = CATEGORIES.includes(food.label) ? food.label : "Todos";
+                    setActiveCategory(cat === activeCategory ? "Todos" : cat);
+                  }}
+                    className="flex flex-col items-center gap-1 shrink-0 transition-transform hover:scale-105">
+                    <img src={food.image} alt={food.label} className={`w-12 h-12 object-contain transition-all ${
+                      activeCategory === food.label ? "scale-110 drop-shadow-md" : ""
+                    }`} />
+                    <span className={`text-xs font-medium ${
+                      activeCategory === food.label ? "text-primary font-bold" : "text-foreground"
+                    }`}>{food.label}</span>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {/* Favourite Cuisines */}
+            <section>
+              <h2 className="text-lg font-bold text-foreground mb-3">Cozinhas favoritas</h2>
+              <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide">
+                {CUISINES.map(cuisine => (
+                  <button key={cuisine.label}
+                    className="flex items-center gap-2 bg-card border border-border rounded-full px-4 py-2.5 text-sm whitespace-nowrap hover:border-primary/40 hover:bg-primary/5 transition-all shrink-0 shadow-sm">
+                    <img src={cuisine.image} alt={cuisine.label} className="w-6 h-6 rounded-full object-cover" />
+                    <span className="font-medium text-foreground">{cuisine.label}</span>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {/* Fastest Near You - HORIZONTAL SCROLL of large cards */}
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-bold text-foreground">Mais rápidos perto de você</h2>
+                <ArrowLeft size={18} className="text-muted-foreground rotate-180" />
+              </div>
+
+              {filtered.length === 0 ? (
+                <p className="text-center text-muted-foreground text-sm py-12">Nenhum restaurante encontrado</p>
+              ) : (
+                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
+                  {filtered.map((r, i) => (
+                    <motion.div key={r.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.06 }}
+                      onClick={() => handleSelectRestaurant(r)}
+                      className={`bg-card rounded-2xl border border-border overflow-hidden cursor-pointer hover:shadow-lg transition-shadow shrink-0 snap-start ${
+                        r.isOpen === false ? "opacity-60" : ""
+                      }`}
+                      style={{ width: "72vw", maxWidth: "320px" }}>
+                      <div className="relative h-48">
+                        <img src={r.image} alt={r.name} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                        {/* Free Delivery badge */}
+                        {r.deliveryFee === 0 && (
+                          <span className="absolute top-3 left-3 bg-primary text-primary-foreground text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-sm">
+                            <Bike size={12} /> Frete Grátis
+                          </span>
+                        )}
+                        {r.promo && r.deliveryFee !== 0 && (
+                          <span className="absolute top-3 left-3 bg-primary text-primary-foreground text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-sm">
+                            <Tag size={11} /> {r.promo}
+                          </span>
+                        )}
+                        {/* Heart button */}
+                        <button onClick={e => e.stopPropagation()} className="absolute top-3 right-3 w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-red-500 transition-colors shadow-sm">
+                          <Heart size={18} />
+                        </button>
+                        {r.isOpen === false && (
+                          <span className="absolute bottom-3 left-3 bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">Fechado</span>
+                        )}
+                      </div>
+                      {/* Card footer */}
+                      <div className="p-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <img src={r.logo} alt={r.name} className="w-8 h-8 rounded-lg border border-border bg-card object-cover shrink-0" />
+                          <div className="min-w-0">
+                            <p className="font-bold text-foreground text-sm truncate">{r.name}</p>
+                            <p className="text-[11px] text-muted-foreground truncate">{r.category} · {r.deliveryTime}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0 bg-secondary/80 rounded-lg px-2 py-1">
+                          <Star size={12} className="text-yellow-500" fill="currentColor" />
+                          <span className="text-xs font-bold text-foreground">{r.rating > 0 ? r.rating.toFixed(1) : "Novo"}</span>
+                          {r.reviewCount > 0 && <span className="text-[10px] text-muted-foreground">({r.reviewCount})</span>}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {/* All restaurants vertical list */}
+            {filtered.length > 0 && (
+              <section>
+                <h2 className="text-lg font-bold text-foreground mb-3">Todos os restaurantes</h2>
+                <div className="space-y-3">
+                  {filtered.map((r, i) => (
+                    <motion.div key={`list-${r.id}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.04 }}
+                      onClick={() => handleSelectRestaurant(r)}
+                      className={`bg-card rounded-2xl border border-border p-3 flex gap-3 items-center cursor-pointer hover:shadow-md transition-shadow ${r.isOpen === false ? "opacity-60" : ""}`}>
+                      <img src={r.logo} alt={r.name} className="w-14 h-14 rounded-xl border border-border bg-card object-cover shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-foreground text-sm truncate">{r.name}</p>
+                        <p className="text-xs text-muted-foreground">{r.category}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="flex items-center gap-0.5 text-xs">
+                            <Star size={11} className="text-yellow-500" fill="currentColor" />
+                            <span className="font-semibold text-foreground">{r.rating > 0 ? r.rating.toFixed(1) : "Novo"}</span>
+                          </span>
+                          <span className="text-[11px] text-muted-foreground flex items-center gap-0.5"><Clock size={10} /> {r.deliveryTime}</span>
+                          <span className="text-[11px] text-muted-foreground">
+                            {r.deliveryFee === 0 ? <span className="text-emerald-600 font-semibold">Grátis</span> : fmt(r.deliveryFee)}
+                          </span>
+                        </div>
+                      </div>
+                      <ChevronRight size={16} className="text-muted-foreground shrink-0" />
+                    </motion.div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+
+          {/* Bottom Navigation */}
+          <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border flex justify-around items-center py-2 z-50">
+            <button className="flex flex-col items-center gap-0.5 px-3 py-1 text-primary">
+              <Home size={20} strokeWidth={1.8} />
+              <span className="text-[10px] font-semibold">Food</span>
+            </button>
+            <button onClick={() => navigate("/")} className="flex flex-col items-center gap-0.5 px-3 py-1 text-muted-foreground hover:text-primary transition-colors">
+              <StoreIcon size={20} strokeWidth={1.8} />
+              <span className="text-[10px] font-medium">Mercado</span>
+            </button>
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              onClick={() => setCartOpen(true)}
+              className="w-12 h-12 -mt-5 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center shadow-lg">
+              <ShoppingCart size={22} />
+            </motion.button>
+            <button onClick={() => setCartOpen(true)} className="flex flex-col items-center gap-0.5 px-3 py-1 text-muted-foreground hover:text-primary transition-colors relative">
+              <ShoppingCart size={20} strokeWidth={1.8} />
+              <span className="text-[10px] font-medium">Carrinho</span>
+              {count > 0 && (
+                <span className="absolute -top-0.5 right-1.5 bg-primary text-primary-foreground text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">{count}</span>
+              )}
+            </button>
+            <button onClick={() => navigate(user ? "/perfil" : "/auth")} className="flex flex-col items-center gap-0.5 px-3 py-1 text-muted-foreground hover:text-primary transition-colors">
+              <User size={20} strokeWidth={1.8} />
+              <span className="text-[10px] font-medium">Perfil</span>
+            </button>
+          </nav>
+        </>
       ) : (
+        <>
+        {/* Restaurant header */}
         <div className="sticky top-0 z-20 bg-card/90 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
           <button onClick={() => setSelectedRestaurant(null)} className="p-1 text-muted-foreground hover:text-foreground">
             <ArrowLeft size={20} />
@@ -618,132 +805,7 @@ const ZuuFood = () => {
             )}
           </motion.button>
         </div>
-      )}
-
-      <div className="max-w-3xl mx-auto">
-        {!selectedRestaurant ? (
-          /* ── LISTING VIEW (clone of reference design) ── */
-          <div className="px-4 py-4 space-y-5">
-
-            {/* Search bar */}
-            <div className="relative flex items-center gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={15} />
-                <input value={search} onChange={e => setSearch(e.target.value)}
-                  placeholder="Buscar restaurante, comida..."
-                  className="w-full bg-card border border-border rounded-full pl-9 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
-                <Mic className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground cursor-pointer hover:text-foreground" size={15} />
-              </div>
-              <button className="p-2.5 bg-card border border-border rounded-full text-muted-foreground hover:text-foreground transition-colors">
-                <SlidersHorizontal size={16} />
-              </button>
-            </div>
-
-            {/* Food Banner Carousel */}
-            <FoodBannerCarousel />
-
-            {/* What's your favourite food? */}
-            <section>
-              <h2 className="text-base font-bold text-foreground mb-3">Qual sua comida favorita?</h2>
-              <div className="flex gap-4 overflow-x-auto pb-1 scrollbar-hide">
-                {FOOD_ICONS.map(food => (
-                  <button key={food.label} onClick={() => {
-                    const cat = CATEGORIES.includes(food.label) ? food.label : "Todos";
-                    setActiveCategory(cat);
-                  }}
-                    className={`flex flex-col items-center gap-1.5 shrink-0 transition-all ${
-                      activeCategory === food.label ? "scale-110" : "hover:scale-105"
-                    }`}>
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors ${
-                      activeCategory === food.label ? "bg-primary/15 ring-2 ring-primary" : "bg-card border border-border"
-                    }`}>
-                      <img src={food.image} alt={food.label} className="w-9 h-9 object-contain" />
-                    </div>
-                    <span className={`text-[11px] font-semibold ${
-                      activeCategory === food.label ? "text-primary" : "text-muted-foreground"
-                    }`}>{food.label}</span>
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            {/* Favourite Cuisines */}
-            <section>
-              <h2 className="text-base font-bold text-foreground mb-3">Cozinhas favoritas</h2>
-              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                {CUISINES.map(cuisine => (
-                  <button key={cuisine.label}
-                    className="flex items-center gap-2 bg-card border border-border rounded-full px-4 py-2 text-sm whitespace-nowrap hover:bg-secondary transition-colors shrink-0">
-                    <img src={cuisine.image} alt={cuisine.label} className="w-5 h-5 rounded-full object-cover" />
-                    <span className="font-medium text-foreground">{cuisine.label}</span>
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            {/* Fastest Near You */}
-            <section>
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base font-bold text-foreground">Mais rápidos perto de você</h2>
-                <ChevronRight size={18} className="text-muted-foreground" />
-              </div>
-
-              <div className="space-y-3">
-                {filtered.length === 0 && (
-                  <p className="text-center text-muted-foreground text-sm py-12">Nenhum restaurante encontrado</p>
-                )}
-                {filtered.map((r, i) => (
-                  <motion.div key={r.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    onClick={() => handleSelectRestaurant(r)}
-                    className={`bg-card rounded-2xl border border-border overflow-hidden cursor-pointer hover:shadow-md transition-shadow ${r.isOpen === false ? "opacity-60" : ""}`}>
-                    <div className="relative h-40">
-                      <img src={r.image} alt={r.name} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-                      {/* Badges */}
-                      {r.deliveryFee === 0 && (
-                        <span className="absolute top-3 left-3 bg-primary text-primary-foreground text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
-                          <Bike size={11} /> Frete Grátis
-                        </span>
-                      )}
-                      {r.promo && r.deliveryFee !== 0 && (
-                        <span className="absolute top-3 left-3 bg-primary text-primary-foreground text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
-                          <Tag size={10} /> {r.promo}
-                        </span>
-                      )}
-                      <button onClick={e => e.stopPropagation()} className="absolute top-3 right-3 w-8 h-8 rounded-full bg-card/80 backdrop-blur flex items-center justify-center text-muted-foreground hover:text-red-500 transition-colors">
-                        <Heart size={16} />
-                      </button>
-                      {r.isOpen === false && (
-                        <span className="absolute top-3 right-12 bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">Fechado</span>
-                      )}
-                      {/* Logo overlay bottom-left */}
-                      <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                        <img src={r.logo} alt={r.name} className="w-10 h-10 rounded-xl border-2 border-card bg-card object-cover shadow-sm" />
-                      </div>
-                      {/* Rating bottom-right */}
-                      <div className="absolute bottom-3 right-3 bg-card/90 backdrop-blur rounded-lg px-2 py-1 flex items-center gap-1">
-                        <Star size={12} className="text-yellow-500" fill="currentColor" />
-                        <span className="text-xs font-bold text-foreground">{r.rating > 0 ? r.rating.toFixed(1) : "Novo"}</span>
-                        {r.reviewCount > 0 && <span className="text-[10px] text-muted-foreground">({r.reviewCount})</span>}
-                      </div>
-                    </div>
-                    <div className="p-3">
-                      <p className="font-bold text-foreground text-sm">{r.name}</p>
-                      <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                        <span>{r.category}</span>
-                        <span>·</span>
-                        <span className="flex items-center gap-1"><Clock size={11} /> {r.deliveryTime}</span>
-                        <span>·</span>
-                        <span>{r.deliveryFee === 0 ? <span className="text-emerald-600 font-semibold">Grátis</span> : fmt(r.deliveryFee)}</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </section>
-          </div>
-        ) : (
+        <div className="max-w-3xl mx-auto">
           /* ── RESTAURANT MENU VIEW ── */
           <div className="px-4 py-4 pb-32 space-y-6">
             <div className="relative rounded-2xl overflow-hidden h-40">
