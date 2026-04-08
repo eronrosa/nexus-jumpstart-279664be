@@ -894,7 +894,7 @@ const ZuuFood = () => {
               </div>
 
               {/* Order type chips - side by side */}
-              <div className="px-4 md:px-0 mt-3 flex gap-2 flex-wrap">
+              <div className="px-4 md:px-0 mt-3 flex gap-2 overflow-x-auto scrollbar-hide">
                 {[
                   { icon: Bike, label: "Delivery", active: true },
                   { icon: Package, label: "Retirada", active: false },
