@@ -892,7 +892,7 @@ const ZuuFood = () => {
                       <button className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-red-500 transition-colors">
                         <Heart size={14} />
                       </button>
-                      <button className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                      <button onClick={handleShare} className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
                         <Share2 size={14} />
                       </button>
                     </div>
@@ -931,7 +931,7 @@ const ZuuFood = () => {
                         </span>
                       )}
                     </div>
-                    <button className="w-10 h-10 rounded-full bg-emerald-500 text-card flex items-center justify-center shadow shrink-0">
+                    <button onClick={handleChatWithStore} className="w-10 h-10 rounded-full bg-emerald-500 text-card flex items-center justify-center shadow shrink-0" title="Chat com a loja">
                       <Phone size={18} />
                     </button>
                   </div>
