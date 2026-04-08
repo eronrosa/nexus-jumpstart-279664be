@@ -853,6 +853,7 @@ const PainelPage = () => {
       title: null,
       items: [
         { id: "cardapio", icon: UtensilsCrossed, label: "Cardápio" },
+        { id: "reservas", icon: CalendarDays, label: "Reservas" },
         { id: "horario", icon: Clock, label: "Horários" },
         { id: "areas_entrega", icon: MapPinned, label: "Áreas de entrega" },
         { id: "pagamento", icon: CreditCard, label: "Formas de pagamento" },
@@ -1433,6 +1434,8 @@ const PainelPage = () => {
         return <PerfilTab />;
       case "recomendacoes":
         return <RecomendacoesTab store={store} menuItemsCount={menuItemsCount} ordersCount={orders.length} />;
+      case "reservas":
+        return <ReservasTab storeId={store.id} />;
 
       default:
         return null;
