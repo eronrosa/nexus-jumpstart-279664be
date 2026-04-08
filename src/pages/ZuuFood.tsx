@@ -904,15 +904,16 @@ const ZuuFood = () => {
               ))
             )}
           </div>
-        )}
-      </div>
+        </div>
+        </>
+      )}
 
       <AnimatePresence>
-        {count > 0 && !cartOpen && (
+        {count > 0 && !cartOpen && !selectedRestaurant && (
           <motion.button initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 80, opacity: 0 }}
             whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
             onClick={() => setCartOpen(true)}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl font-bold text-sm z-30">
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl font-bold text-sm z-30">
             <span className="bg-primary-foreground/20 text-primary-foreground text-xs font-extrabold w-5 h-5 rounded-full flex items-center justify-center">{count}</span>
             Ver carrinho
             <ShoppingCart size={16} />
