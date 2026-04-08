@@ -562,7 +562,6 @@ const ZuuFood = () => {
     : {};
 
   const dynamicCategories = [...new Set(allRestaurants.map(r => r.category))];
-  const allCategories = ["Todos", ...new Set([...CATEGORIES.slice(1), ...dynamicCategories])];
 
   return (
     <div className="min-h-screen bg-background">
