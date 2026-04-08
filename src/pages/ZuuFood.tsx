@@ -5,7 +5,7 @@ import {
   ArrowLeft, Search, Star, Clock, ShoppingCart, Plus, Minus,
   Trash2, ChevronRight, X, MapPin, Bike, CheckCircle, Store as StoreIcon,
   CreditCard, Banknote, Smartphone, Tag, Home, Building, Mic,
-  SlidersHorizontal, Heart, ChevronLeft
+  SlidersHorizontal, Heart
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,6 +58,41 @@ const FOOD_BANNERS = [
   { image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80&fit=crop", tag: "Novidade", title: "Pizza Artesanal", subtitle: "A partir de R$ 29,90", cta: "Ver cardápio" },
   { image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&q=80&fit=crop", tag: "Promo", title: "Combo Japonês", subtitle: "30 peças + Bebida", cta: "Aproveitar" },
 ];
+
+function FoodBannerCarousel() {
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setCurrent(c => (c + 1) % FOOD_BANNERS.length), 4000);
+    return () => clearInterval(id);
+  }, []);
+
+  const b = FOOD_BANNERS[current];
+
+  return (
+    <div className="relative rounded-2xl overflow-hidden h-44">
+      <AnimatePresence mode="wait">
+        <motion.div key={current} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }} className="absolute inset-0">
+          <img src={b.image} alt={b.title} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
+          <div className="absolute inset-0 flex flex-col justify-center px-5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-primary-foreground bg-primary/80 px-2 py-0.5 rounded-md w-fit mb-1.5">{b.tag}</span>
+            <p className="text-xs text-white/80">{b.subtitle}</p>
+            <h3 className="text-xl font-extrabold text-white leading-tight">{b.title}</h3>
+            <button className="mt-2 bg-primary text-primary-foreground text-xs font-bold px-4 py-1.5 rounded-full w-fit hover:opacity-90 transition-opacity">{b.cta}</button>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+      {/* Dots */}
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+        {FOOD_BANNERS.map((_, i) => (
+          <button key={i} onClick={() => setCurrent(i)}
+            className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-white w-5" : "bg-white/50"}`} />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 const STATIC_RESTAURANTS: RestaurantData[] = [
   {
