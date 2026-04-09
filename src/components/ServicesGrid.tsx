@@ -9,10 +9,10 @@ import { useNavigate } from "react-router-dom";
 const services = [
   { icon: Utensils, label: "ZuuFood", color: "bg-orange-50 text-orange-500", path: "/zuufood" },
   { icon: Car, label: "ZuuMob", color: "bg-blue-50 text-blue-500", path: "/zuumob" },
-  { icon: Sparkles, label: "ZUZU", color: "bg-purple-50 text-purple-500", path: "/" },
+  { icon: Ticket, label: "ZuuPass", color: "bg-pink-50 text-pink-500", path: "/zuupass" },
   { icon: Briefcase, label: "ZuuPro", color: "bg-yellow-50 text-yellow-600", path: "/" },
   { icon: Wrench, label: "ZuuWork", color: "bg-gray-100 text-gray-500", path: "/" },
-  { icon: Ticket, label: "ZuuPass", color: "bg-pink-50 text-pink-500", path: "/zuupass" },
+  { icon: Sparkles, label: "ZUZU", color: "bg-purple-50 text-purple-500", path: "/" },
   { icon: BookOpen, label: "ZuuBook", color: "bg-teal-50 text-teal-500", path: "/" },
   { icon: MessageCircle, label: "ZuuChat", color: "bg-green-50 text-green-500", path: "/" },
   { icon: ShoppingBag, label: "ZuuShop", color: "bg-red-50 text-red-500", path: "/" },
