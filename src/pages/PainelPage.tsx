@@ -1438,6 +1438,8 @@ const PainelPage = () => {
         return <RecomendacoesTab store={store} menuItemsCount={menuItemsCount} ordersCount={orders.length} />;
       case "reservas":
         return <ReservasTab storeId={store.id} />;
+      case "eventos":
+        return <EventosTab />;
 
       default:
         return null;
