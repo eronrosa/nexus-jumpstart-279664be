@@ -11,7 +11,7 @@ import {
   Menu as MenuIcon, Activity, Zap, Search,
   Star, TrendingUp, CreditCard,
   DollarSign, CircleDot,
-  Gift, MapPinned, UserCircle, Award, Sparkles, CalendarDays
+  Gift, MapPinned, UserCircle, Award, Sparkles, CalendarDays, Ticket
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardTab from "@/components/DashboardTab";
@@ -23,6 +23,7 @@ import ServicosTab from "@/components/painel/ServicosTab";
 import PerfilTab from "@/components/painel/PerfilTab";
 import RecomendacoesTab from "@/components/painel/RecomendacoesTab";
 import ReservasTab from "@/components/painel/ReservasTab";
+import EventosTab from "@/components/painel/EventosTab";
 
 /* ─── Types ─── */
 interface OrderItem {
@@ -858,6 +859,7 @@ const PainelPage = () => {
         { id: "areas_entrega", icon: MapPinned, label: "Áreas de entrega" },
         { id: "pagamento", icon: CreditCard, label: "Formas de pagamento" },
         { id: "promocoes", icon: Gift, label: "Promoções" },
+        { id: "eventos", icon: Ticket, label: "Eventos", badgeText: "NOVO!" },
       ],
     },
     {
@@ -1436,6 +1438,8 @@ const PainelPage = () => {
         return <RecomendacoesTab store={store} menuItemsCount={menuItemsCount} ordersCount={orders.length} />;
       case "reservas":
         return <ReservasTab storeId={store.id} />;
+      case "eventos":
+        return <EventosTab />;
 
       default:
         return null;
