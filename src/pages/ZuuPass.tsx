@@ -221,28 +221,27 @@ const HeroCarousel = ({ onSelectEvent }: { onSelectEvent: (id: string) => void }
   const ev = featured[current];
 
   return (
-    <div className="relative w-full overflow-hidden rounded-2xl cursor-pointer" style={{ aspectRatio: "16/7" }} onClick={() => onSelectEvent(ev.id)}>
+    <div className="relative w-full overflow-hidden rounded-xl sm:rounded-2xl cursor-pointer aspect-[16/9] sm:aspect-[16/7]" onClick={() => onSelectEvent(ev.id)}>
       <AnimatePresence mode="wait" custom={direction}>
         <motion.div key={current} custom={direction} initial={{ x: direction > 0 ? 300 : -300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: direction > 0 ? -300 : 300, opacity: 0 }} transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }} className="absolute inset-0">
           <img src={ev.image} alt={ev.title} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-          <div className="absolute bottom-4 left-4 md:bottom-8 md:left-8 pr-4">
-            <Badge className="mb-2 bg-primary/90 text-primary-foreground border-none">{ev.category}</Badge>
-            <h2 className="text-xl md:text-3xl font-bold text-white drop-shadow-lg">{ev.title}</h2>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-white/80 text-sm">
-              <span className="flex items-center gap-1"><MapPin size={14} />{ev.location}</span>
-              <span className="flex items-center gap-1"><Calendar size={14} />{ev.dayOfWeek} · {ev.date} {ev.month}</span>
-              <span className="flex items-center gap-1"><Clock size={14} />{ev.time}</span>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+          <div className="absolute bottom-3 left-3 right-12 sm:bottom-6 sm:left-6">
+            <Badge className="mb-1.5 bg-primary/90 text-primary-foreground border-none text-[10px] sm:text-xs">{ev.category}</Badge>
+            <h2 className="text-base sm:text-xl md:text-3xl font-bold text-white drop-shadow-lg leading-tight">{ev.title}</h2>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1 text-white/80 text-[11px] sm:text-sm">
+              <span className="flex items-center gap-1"><MapPin size={12} />{ev.location}</span>
+              <span className="flex items-center gap-1"><Calendar size={12} />{ev.dayOfWeek} · {ev.date} {ev.month}</span>
             </div>
-            <span className="inline-block mt-2 text-lg font-bold text-white">A partir de {fmt(ev.price)}</span>
+            <span className="inline-block mt-1.5 text-sm sm:text-lg font-bold text-white">A partir de {fmt(ev.price)}</span>
           </div>
         </motion.div>
       </AnimatePresence>
-      <button onClick={e => { e.stopPropagation(); go(-1); }} className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/40 transition"><ChevronLeft size={20} /></button>
-      <button onClick={e => { e.stopPropagation(); go(1); }} className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/40 transition"><ChevronRight size={20} /></button>
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+      <button onClick={e => { e.stopPropagation(); go(-1); }} className="absolute left-1.5 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/40 transition"><ChevronLeft size={18} /></button>
+      <button onClick={e => { e.stopPropagation(); go(1); }} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/40 transition"><ChevronRight size={18} /></button>
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
         {featured.map((_, i) => (
-          <button key={i} onClick={e => { e.stopPropagation(); setDirection(i > current ? 1 : -1); setCurrent(i); }} className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-white w-5" : "bg-white/50"}`} />
+          <button key={i} onClick={e => { e.stopPropagation(); setDirection(i > current ? 1 : -1); setCurrent(i); }} className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all ${i === current ? "bg-white w-4 sm:w-5" : "bg-white/50"}`} />
         ))}
       </div>
     </div>
@@ -254,19 +253,19 @@ const EventCard = ({ ev, onClick }: { ev: EventData; onClick: () => void }) => (
   <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} whileHover={{ y: -4, transition: { duration: 0.2 } }} onClick={onClick} className="rounded-xl overflow-hidden bg-card border border-border shadow-sm cursor-pointer group">
     <div className="relative aspect-[4/3] overflow-hidden">
       <img src={ev.image} alt={ev.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-      <div className="absolute top-2 left-2 bg-white/95 backdrop-blur-sm rounded-lg px-2 py-1 text-center shadow-sm min-w-[44px]">
-        <span className="text-[9px] font-bold text-muted-foreground uppercase block leading-tight">{ev.dayOfWeek}</span>
-        <span className="text-lg font-bold text-foreground leading-none">{ev.date}</span>
-        <span className="text-[9px] font-bold text-primary uppercase block leading-tight">{ev.month}</span>
+      <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 bg-white/95 backdrop-blur-sm rounded-lg px-1.5 py-0.5 sm:px-2 sm:py-1 text-center shadow-sm min-w-[36px] sm:min-w-[44px]">
+        <span className="text-[8px] sm:text-[9px] font-bold text-muted-foreground uppercase block leading-tight">{ev.dayOfWeek}</span>
+        <span className="text-sm sm:text-lg font-bold text-foreground leading-none">{ev.date}</span>
+        <span className="text-[8px] sm:text-[9px] font-bold text-primary uppercase block leading-tight">{ev.month}</span>
       </div>
-      <Badge className="absolute top-2 right-2 bg-primary/90 text-primary-foreground border-none text-[10px]">{ev.category}</Badge>
+      <Badge className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-primary/90 text-primary-foreground border-none text-[9px] sm:text-[10px] px-1.5 py-0.5">{ev.category}</Badge>
     </div>
-    <div className="p-3">
-      <h3 className="font-semibold text-sm text-foreground truncate">{ev.title}</h3>
-      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1"><MapPin size={12} />{ev.location}</p>
-      <div className="flex items-center justify-between mt-2">
-        <span className="text-sm font-bold text-primary">{fmt(ev.price)}</span>
-        <Button size="sm" className="h-7 text-xs rounded-full px-4">Comprar</Button>
+    <div className="p-2 sm:p-3">
+      <h3 className="font-semibold text-xs sm:text-sm text-foreground truncate">{ev.title}</h3>
+      <p className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1 mt-0.5 sm:mt-1 truncate"><MapPin size={10} className="shrink-0" />{ev.location}</p>
+      <div className="flex items-center justify-between mt-1.5 sm:mt-2">
+        <span className="text-xs sm:text-sm font-bold text-primary">{fmt(ev.price)}</span>
+        <Button size="sm" className="h-6 sm:h-7 text-[10px] sm:text-xs rounded-full px-2.5 sm:px-4">Comprar</Button>
       </div>
     </div>
   </motion.div>
@@ -279,29 +278,29 @@ const EventDetail = ({ event, onClose, onBuy }: { event: EventData; onClose: () 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[60] bg-background overflow-y-auto">
       {/* Hero */}
-      <div className="relative w-full" style={{ aspectRatio: "16/7", minHeight: 220, maxHeight: 420 }}>
+      <div className="relative w-full aspect-[16/9] sm:aspect-[16/7]" style={{ minHeight: 180, maxHeight: 420 }}>
         <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-black/30" />
-        <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
-          <button onClick={onClose} className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition"><ArrowLeft size={20} /></button>
+        <div className="absolute top-3 left-3 right-3 sm:top-4 sm:left-4 sm:right-4 flex items-center justify-between">
+          <button onClick={onClose} className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition"><ArrowLeft size={18} /></button>
           <div className="flex gap-2">
-            <button onClick={() => setLiked(!liked)} className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition"><Heart size={20} fill={liked ? "currentColor" : "none"} className={liked ? "text-red-500" : ""} /></button>
-            <button onClick={() => { navigator.clipboard.writeText(window.location.href); toast.success("Link copiado!"); }} className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition"><Share2 size={20} /></button>
+            <button onClick={() => setLiked(!liked)} className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition"><Heart size={18} fill={liked ? "currentColor" : "none"} className={liked ? "text-red-500" : ""} /></button>
+            <button onClick={() => { navigator.clipboard.writeText(window.location.href); toast.success("Link copiado!"); }} className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition"><Share2 size={18} /></button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 pb-28 -mt-10 relative z-10">
-        <div className="flex items-start gap-4">
-          <div className="bg-card border border-border rounded-xl px-3 py-2 text-center shadow-lg shrink-0">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase block">{event.dayOfWeek}</span>
-            <span className="text-3xl font-bold text-foreground leading-none">{event.date}</span>
-            <span className="text-xs font-bold text-primary uppercase block">{event.month}</span>
+      <div className="max-w-3xl mx-auto px-3 sm:px-4 pb-24 sm:pb-28 -mt-8 sm:-mt-10 relative z-10">
+        <div className="flex items-start gap-3">
+          <div className="bg-card border border-border rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 text-center shadow-lg shrink-0">
+            <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase block">{event.dayOfWeek}</span>
+            <span className="text-2xl sm:text-3xl font-bold text-foreground leading-none">{event.date}</span>
+            <span className="text-[10px] sm:text-xs font-bold text-primary uppercase block">{event.month}</span>
           </div>
-          <div className="flex-1 min-w-0 pt-2">
-            <Badge className="mb-1 bg-primary/10 text-primary border border-primary/20">{event.category}</Badge>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">{event.title}</h1>
-            <p className="text-sm text-muted-foreground mt-1">por {event.organizer}</p>
+          <div className="flex-1 min-w-0 pt-1">
+            <Badge className="mb-1 bg-primary/10 text-primary border border-primary/20 text-[10px] sm:text-xs">{event.category}</Badge>
+            <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-foreground leading-tight">{event.title}</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">por {event.organizer}</p>
           </div>
         </div>
 
@@ -366,14 +365,14 @@ const EventDetail = ({ event, onClose, onBuy }: { event: EventData; onClose: () 
       </div>
 
       {/* Fixed bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 z-[61] bg-card/95 backdrop-blur-md border-t border-border px-4 py-3">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
+      <div className="fixed bottom-0 left-0 right-0 z-[61] bg-card/95 backdrop-blur-md border-t border-border px-3 sm:px-4 py-2.5 sm:py-3">
+        <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs text-muted-foreground">A partir de</p>
-            <p className="text-xl font-bold text-primary">{fmt(event.price)}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">A partir de</p>
+            <p className="text-lg sm:text-xl font-bold text-primary">{fmt(event.price)}</p>
           </div>
-          <Button size="lg" className="rounded-full px-8 font-semibold" onClick={() => onBuy(event)}>
-            <Ticket size={18} className="mr-2" /> Comprar Ingresso
+          <Button size="default" className="rounded-full px-5 sm:px-8 font-semibold text-sm sm:text-base h-10 sm:h-11" onClick={() => onBuy(event)}>
+            <Ticket size={16} className="mr-1.5" /> Comprar
           </Button>
         </div>
       </div>
@@ -623,15 +622,15 @@ const ZuuPass = () => {
     <div className="min-h-screen bg-background">
       {/* Top Bar */}
       <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center gap-3">
-          <button onClick={() => navigate("/")} className="text-foreground hover:text-primary transition-colors shrink-0"><ArrowLeft size={22} /></button>
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center"><Ticket size={18} className="text-primary" /></div>
-            <span className="font-bold text-foreground text-lg hidden sm:inline">ZuuPass</span>
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 h-12 sm:h-14 flex items-center gap-2 sm:gap-3">
+          <button onClick={() => navigate("/")} className="text-foreground hover:text-primary transition-colors shrink-0"><ArrowLeft size={20} /></button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary/10 flex items-center justify-center"><Ticket size={16} className="text-primary" /></div>
+            <span className="font-bold text-foreground text-base sm:text-lg hidden sm:inline">ZuuPass</span>
           </div>
           <div className="flex-1 max-w-md mx-auto relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={15} />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar evento" className="w-full bg-secondary/60 border-none rounded-full pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar evento" className="w-full bg-secondary/60 border-none rounded-full pl-8 pr-3 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
           </div>
           <div className="hidden md:flex items-center gap-2 shrink-0">
             <Button variant="outline" size="sm" className="rounded-full" onClick={() => navigate(user ? "/perfil" : "/auth")}>{user ? "Minha conta" : "Entrar"}</Button>
@@ -640,17 +639,17 @@ const ZuuPass = () => {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-6 space-y-8">
+      <main className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-5 sm:space-y-8">
         <HeroCarousel onSelectEvent={openEvent} />
 
         {/* Category quick-scroll */}
-        <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
+        <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 -mx-3 px-3 sm:-mx-4 sm:px-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
           {CATEGORIES.map(cat => {
             const Icon = CATEGORY_ICONS[cat] || Ticket;
             const active = selectedCategory === cat;
             return (
-              <button key={cat} onClick={() => setSelectedCategory(active ? "" : cat)} className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors shrink-0 border ${active ? "bg-primary text-primary-foreground border-primary" : "bg-card text-foreground border-border hover:bg-secondary"}`}>
-                <Icon size={14} />{cat}
+              <button key={cat} onClick={() => setSelectedCategory(active ? "" : cat)} className={`flex items-center gap-1 sm:gap-1.5 whitespace-nowrap rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-colors shrink-0 border ${active ? "bg-primary text-primary-foreground border-primary" : "bg-card text-foreground border-border hover:bg-secondary"}`}>
+                <Icon size={12} />{cat}
               </button>
             );
           })}
@@ -663,12 +662,12 @@ const ZuuPass = () => {
             <span className="text-sm text-muted-foreground">{filtered.length} eventos</span>
           </div>
           {filtered.length === 0 ? (
-            <div className="text-center py-16">
-              <Ticket size={48} className="mx-auto text-muted-foreground/30 mb-3" />
-              <p className="text-muted-foreground">Nenhum evento encontrado</p>
+            <div className="text-center py-12 sm:py-16">
+              <Ticket size={40} className="mx-auto text-muted-foreground/30 mb-3" />
+              <p className="text-sm text-muted-foreground">Nenhum evento encontrado</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
               {filtered.map(ev => <EventCard key={ev.id} ev={ev} onClick={() => openEvent(ev.id)} />)}
             </div>
           )}
