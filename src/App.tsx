@@ -20,7 +20,7 @@ import RideHistoryPage from "./pages/RideHistoryPage";
 import NotFound from "./pages/NotFound";
 import AdminPage from "./pages/AdminPage";
 import ZuuChat from "./pages/ZuuChat";
-import FloatingChatButton from "./components/FloatingChatButton";
+import ZuuPass from "./pages/ZuuPass";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +52,7 @@ const AnimatedRoutes = () => {
         <Route path="/zuumob/historico" element={<ProtectedRoute><PageTransition><RideHistoryPage /></PageTransition></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute><PageTransition><AdminPage /></PageTransition></ProtectedRoute>} />
         <Route path="/zuuchat" element={<ProtectedRoute><PageTransition><ZuuChat /></PageTransition></ProtectedRoute>} />
+        <Route path="/zuupass" element={<PageTransition><ZuuPass /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
