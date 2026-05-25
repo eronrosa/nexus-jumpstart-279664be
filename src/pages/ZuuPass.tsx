@@ -10,7 +10,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+/* Deterministic UUID-shaped id from any string (so mock ids satisfy uuid columns) */
+const toUuid = (s: string) => {
+  let h = "";
+  for (let i = 0; i < 32; i++) {
+    const c = (s.charCodeAt(i % s.length) * 31 + i * 17) & 0xff;
+    h += c.toString(16).padStart(2, "0").slice(-1);
+  }
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-8${h.slice(17, 20)}-${h.slice(20, 32)}`;
+};
 
 /* ── Types ── */
 interface TicketType {
