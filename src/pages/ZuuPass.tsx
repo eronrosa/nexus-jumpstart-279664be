@@ -5,13 +5,20 @@ import {
   Search, ChevronLeft, ChevronRight, MapPin, Calendar, Filter,
   Ticket, Heart, Share2, Clock, Users, Star, ArrowLeft, Music,
   Zap, PartyPopper, Trophy, Theater, Palette, X, Minus, Plus,
-  CreditCard, ShieldCheck, CheckCircle2, ChevronDown, QrCode
+  CreditCard, ShieldCheck, CheckCircle2, ChevronDown, QrCode, Map
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
 
 /* Deterministic UUID-shaped id from any string (so mock ids satisfy uuid columns) */
 const toUuid = (s: string) => {
@@ -24,6 +31,8 @@ const toUuid = (s: string) => {
 };
 
 const DEFAULT_LOCATION = "Palmitinho - RS";
+const AVAILABLE_CITIES = ["Palmitinho - RS", "Porto Alegre - RS", "São Paulo - SP", "Rio de Janeiro - RJ"];
+
 
 
 /* ── Types ── */
@@ -687,11 +696,24 @@ const ZuuPass = () => {
           </div>
 
           <div className="flex-1 flex items-center gap-2 max-w-xl">
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-secondary/50 rounded-full border border-border text-xs text-muted-foreground hover:bg-secondary transition-colors cursor-pointer shrink-0">
-              <MapPin size={14} className="text-primary" />
-              <span className="font-medium text-foreground">{currentLocation}</span>
-              <ChevronDown size={14} />
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-secondary/50 rounded-full border border-border text-xs text-muted-foreground hover:bg-secondary transition-colors cursor-pointer shrink-0">
+                  <MapPin size={14} className="text-primary" />
+                  <span className="font-medium text-foreground">{currentLocation}</span>
+                  <ChevronDown size={14} />
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                {AVAILABLE_CITIES.map(city => (
+                  <DropdownMenuItem key={city} onClick={() => setCurrentLocation(city)} className="text-xs cursor-pointer">
+                    <MapPin size={12} className="mr-2 text-muted-foreground" />
+                    {city}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
 
             <div className="flex-1 relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
