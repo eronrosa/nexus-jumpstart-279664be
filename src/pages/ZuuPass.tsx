@@ -10,7 +10,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+/* Deterministic UUID-shaped id from any string (so mock ids satisfy uuid columns) */
+const toUuid = (s: string) => {
+  let h = "";
+  for (let i = 0; i < 32; i++) {
+    const c = (s.charCodeAt(i % s.length) * 31 + i * 17) & 0xff;
+    h += c.toString(16).padStart(2, "0").slice(-1);
+  }
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-8${h.slice(17, 20)}-${h.slice(20, 32)}`;
+};
 
 /* ── Types ── */
 interface TicketType {
@@ -404,9 +415,45 @@ const CheckoutFlow = ({ event, onClose }: { event: EventData; onClose: () => voi
   const handleConfirm = async () => {
     if (!user) { toast.error("Faça login para comprar ingressos"); navigate("/auth"); return; }
     setProcessing(true);
-    await new Promise(r => setTimeout(r, 2000));
-    setProcessing(false);
-    setStep("confirmation");
+    try {
+      const eventUuid = /^[0-9a-f-]{36}$/i.test(event.id) ? event.id : toUuid(event.id);
+      const selected = event.tickets.filter(t => (quantities[t.id] || 0) > 0);
+
+      const rows = selected.map(t => {
+        const ticketUuid = /^[0-9a-f-]{36}$/i.test(t.id) ? t.id : toUuid(t.id);
+        const qty = quantities[t.id];
+        const subtotal = qty * t.price * 1.1; // inclui taxa
+        return {
+          user_id: user.id,
+          event_id: eventUuid,
+          ticket_id: ticketUuid,
+          quantity: qty,
+          unit_price: t.price,
+          total_paid: Number(subtotal.toFixed(2)),
+          payment_method: paymentMethod,
+          status: "confirmed",
+        };
+      });
+
+      const { error } = await supabase.from("ticket_purchases").insert(rows);
+      if (error) throw error;
+
+      // Atualiza estoque no banco (afeta apenas eventos reais) e localmente
+      await Promise.all(selected.map(async t => {
+        const ticketUuid = /^[0-9a-f-]{36}$/i.test(t.id) ? t.id : toUuid(t.id);
+        const newAvailable = Math.max(0, t.available - quantities[t.id]);
+        await supabase.from("event_tickets").update({ available: newAvailable }).eq("id", ticketUuid);
+        t.available = newAvailable;
+      }));
+
+      toast.success("Compra confirmada!");
+      setStep("confirmation");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Erro ao processar compra");
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
