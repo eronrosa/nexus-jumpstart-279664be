@@ -154,28 +154,43 @@ const ProfilePage = () => {
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col items-center gap-3"
         >
-          <div className="relative">
+          <div className="relative group cursor-pointer" onClick={() => fileRef.current?.click()}>
             {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-primary/20" />
+              <img src={profile.avatar_url} alt="Avatar" className="w-28 h-28 rounded-full object-cover border-4 border-primary/20 group-hover:border-primary/50 transition-all" />
             ) : (
-              <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-3xl font-bold text-primary border-4 border-primary/20">
+              <div className="w-28 h-28 rounded-full bg-primary/10 flex items-center justify-center text-4xl font-bold text-primary border-4 border-primary/20 group-hover:border-primary/50 transition-all">
                 {initials}
               </div>
             )}
+            {/* Hover overlay */}
+            <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <Camera size={24} className="text-white" />
+            </div>
             <button
-              onClick={() => fileRef.current?.click()}
+              type="button"
+              onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
               disabled={avatarLoading}
-              className="absolute bottom-0 right-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-md hover:opacity-90 transition-opacity"
+              className="absolute bottom-0 right-0 w-9 h-9 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-lg ring-4 ring-background hover:scale-110 transition-transform"
+              aria-label="Editar foto de perfil"
             >
-              {avatarLoading ? <span className="w-3 h-3 border-2 border-primary-foreground/40 border-t-primary-foreground rounded-full animate-spin" /> : <Camera size={14} />}
+              {avatarLoading ? <span className="w-3.5 h-3.5 border-2 border-primary-foreground/40 border-t-primary-foreground rounded-full animate-spin" /> : <Camera size={15} />}
             </button>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
           </div>
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={avatarLoading}
+            className="text-xs font-semibold text-primary hover:underline disabled:opacity-50"
+          >
+            {avatarLoading ? "Enviando..." : profile?.avatar_url ? "Trocar foto" : "Adicionar foto"}
+          </button>
           <div className="text-center">
             <p className="font-bold text-foreground text-lg">{profile?.display_name ?? "Usuário"}</p>
             <p className="text-sm text-muted-foreground">{user?.email}</p>
           </div>
         </motion.div>
+
 
         {/* Info Card */}
         <motion.div
