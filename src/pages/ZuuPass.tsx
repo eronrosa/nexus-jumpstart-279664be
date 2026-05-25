@@ -23,6 +23,9 @@ const toUuid = (s: string) => {
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-8${h.slice(17, 20)}-${h.slice(20, 32)}`;
 };
 
+const DEFAULT_LOCATION = "Palmitinho - RS";
+
+
 /* ── Types ── */
 interface TicketType {
   id: string;
@@ -650,9 +653,11 @@ const ZuuPass = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [search, setSearch] = useState("");
+  const [currentLocation, setCurrentLocation] = useState(DEFAULT_LOCATION);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedEvent, setSelectedEvent] = useState<EventData | null>(null);
   const [checkoutEvent, setCheckoutEvent] = useState<EventData | null>(null);
+
 
   const filtered = useMemo(() => EVENTS.filter(ev => {
     if (search && !ev.title.toLowerCase().includes(search.toLowerCase()) && !ev.location.toLowerCase().includes(search.toLowerCase())) return false;
@@ -675,10 +680,20 @@ const ZuuPass = () => {
             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary/10 flex items-center justify-center"><Ticket size={16} className="text-primary" /></div>
             <span className="font-bold text-foreground text-base sm:text-lg hidden sm:inline">ZuuPass</span>
           </div>
-          <div className="flex-1 max-w-md mx-auto relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar evento" className="w-full bg-secondary/60 border-none rounded-full pl-8 pr-3 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+
+          <div className="flex-1 flex items-center gap-2 max-w-xl">
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-secondary/50 rounded-full border border-border text-xs text-muted-foreground hover:bg-secondary transition-colors cursor-pointer shrink-0">
+              <MapPin size={14} className="text-primary" />
+              <span className="font-medium text-foreground">{currentLocation}</span>
+              <ChevronDown size={14} />
+            </div>
+
+            <div className="flex-1 relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar evento" className="w-full bg-secondary/60 border-none rounded-full pl-8 pr-3 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+            </div>
           </div>
+
           <div className="hidden md:flex items-center gap-2 shrink-0">
             <Button variant="outline" size="sm" className="rounded-full" onClick={() => navigate(user ? "/perfil" : "/auth")}>{user ? "Minha conta" : "Entrar"}</Button>
             <Button size="sm" className="rounded-full">Crie seu evento</Button>
