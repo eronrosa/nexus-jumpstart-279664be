@@ -1,34 +1,69 @@
-import { useState, useRef } from "react";
-import { motion } from "framer-motion";
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Camera, User, Mail, Phone, MapPin,
-  Tag, LogOut, ChevronRight, Edit3, Check, X
+  Tag, LogOut, ChevronRight, Edit3, Check, X,
+  AlertCircle, ShieldCheck
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+
 
 const ProfilePage = () => {
   const navigate = useNavigate();
   const { user, profile, signOut, refreshProfile } = useAuth();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [displayName, setDisplayName] = useState(profile?.display_name ?? "");
-  const [phone, setPhone] = useState(profile?.phone ?? "");
+  const [displayName, setDisplayName] = useState("");
+  const [phone, setPhone] = useState("");
   const [avatarLoading, setAvatarLoading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (profile) {
+      setDisplayName(profile.display_name ?? "");
+      setPhone(profile.phone ?? "");
+      
+      // Auto-open editing if data is missing
+      if (!profile.display_name || !profile.phone) {
+        setEditing(true);
+      }
+    }
+  }, [profile]);
+
+  const isProfileComplete = profile?.display_name && profile?.phone;
+
+
   const handleSave = async () => {
     if (!user) return;
+    
+    if (!displayName.trim() || !phone.trim()) {
+      toast.error("Por favor, preencha todos os campos obrigatórios");
+      return;
+    }
+
     setSaving(true);
-    await supabase
-      .from("profiles")
-      .update({ display_name: displayName, phone })
-      .eq("user_id", user.id);
-    await refreshProfile();
-    setSaving(false);
-    setEditing(false);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ display_name: displayName, phone })
+        .eq("user_id", user.id);
+      
+      if (error) throw error;
+      
+      await refreshProfile();
+      toast.success("Perfil atualizado com sucesso!");
+      setEditing(false);
+    } catch (error: any) {
+      toast.error("Erro ao salvar: " + error.message);
+    } finally {
+      setSaving(false);
+    }
   };
+
 
   const handleCancel = () => {
     setDisplayName(profile?.display_name ?? "");
@@ -76,7 +111,42 @@ const ProfilePage = () => {
         )}
       </div>
 
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
+      <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
+        {/* Profile Completion Warning */}
+        <AnimatePresence>
+          {!isProfileComplete && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-start gap-3"
+            >
+              <AlertCircle className="text-primary shrink-0 mt-0.5" size={20} />
+              <div>
+                <p className="text-sm font-bold text-primary">Perfil Incompleto</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Complete seus dados para ter acesso total a todas as funcionalidades do app.
+                </p>
+              </div>
+            </motion.div>
+          )}
+          {isProfileComplete && !editing && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4 flex items-start gap-3"
+            >
+              <ShieldCheck className="text-green-500 shrink-0 mt-0.5" size={20} />
+              <div>
+                <p className="text-sm font-bold text-green-600">Perfil Completo</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Seus dados estão atualizados e seguros.
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
 
         {/* Avatar */}
         <motion.div
@@ -112,7 +182,8 @@ const ProfilePage = () => {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-card rounded-2xl border border-border divide-y divide-border"
+          className="bg-card rounded-2xl border border-border divide-y divide-border overflow-hidden"
+
         >
           {/* Nome */}
           <div className="flex items-center gap-3 px-4 py-3.5">
@@ -157,7 +228,23 @@ const ProfilePage = () => {
               )}
             </div>
           </div>
+          
+          {editing && (
+            <div className="p-4 bg-secondary/30">
+              <Button 
+                onClick={handleSave} 
+                disabled={saving} 
+                className="w-full rounded-xl font-bold"
+              >
+                {saving ? "Salvando..." : "Salvar Alterações"}
+              </Button>
+              <p className="text-[10px] text-center text-muted-foreground mt-2 italic">
+                * Nome e telefone são obrigatórios
+              </p>
+            </div>
+          )}
         </motion.div>
+
 
         {/* Menu items */}
         <motion.div

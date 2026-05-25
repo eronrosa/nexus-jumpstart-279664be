@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Profile {
   id: string;
@@ -9,6 +9,7 @@ interface Profile {
   avatar_url: string | null;
   phone: string | null;
 }
+
 
 interface AuthContextType {
   user: User | null;
