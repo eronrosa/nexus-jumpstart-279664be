@@ -5,13 +5,20 @@ import {
   Search, ChevronLeft, ChevronRight, MapPin, Calendar, Filter,
   Ticket, Heart, Share2, Clock, Users, Star, ArrowLeft, Music,
   Zap, PartyPopper, Trophy, Theater, Palette, X, Minus, Plus,
-  CreditCard, ShieldCheck, CheckCircle2, ChevronDown, QrCode
+  CreditCard, ShieldCheck, CheckCircle2, ChevronDown, QrCode, Map
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
 
 /* Deterministic UUID-shaped id from any string (so mock ids satisfy uuid columns) */
 const toUuid = (s: string) => {
@@ -22,6 +29,11 @@ const toUuid = (s: string) => {
   }
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-8${h.slice(17, 20)}-${h.slice(20, 32)}`;
 };
+
+const DEFAULT_LOCATION = "Palmitinho - RS";
+const AVAILABLE_CITIES = ["Palmitinho - RS", "Porto Alegre - RS", "São Paulo - SP", "Rio de Janeiro - RJ"];
+
+
 
 /* ── Types ── */
 interface TicketType {
@@ -57,18 +69,19 @@ interface EventData {
 /* ── Static Data ── */
 const EVENTS: EventData[] = [
   {
-    id: "e1", title: "Festival Sertanejo 2026",
+    id: "e1", title: "Festival Sertanejo Palmitinho 2026",
     image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=900&h=500&fit=crop",
     date: "12", month: "ABR", dayOfWeek: "SÁB", fullDate: "12 de Abril de 2026", time: "16:00",
-    location: "São Paulo - SP", venue: "Allianz Parque", category: "Sertanejo",
-    price: 89.9, description: "O maior festival sertanejo do Brasil! Com shows de Jorge & Mateus, Henrique & Juliano, Marília Mendonça Tributo e muito mais. Uma noite inesquecível com o melhor do sertanejo universitário.",
+    location: "Palmitinho - RS", venue: "Parque de Exposições", category: "Sertanejo",
+    price: 89.9, description: "O maior festival sertanejo da região! Shows ao vivo, praça de alimentação e muita diversão em Palmitinho.",
     organizer: "ZuuPass Eventos", rating: 4.8, totalReviews: 1240, ageRating: "16+",
     tickets: [
       { id: "t1", name: "Pista", price: 89.9, description: "Acesso à área de pista", available: 500, maxPerPurchase: 5 },
       { id: "t2", name: "Front Stage", price: 179.9, description: "Acesso à área frontal do palco", available: 200, maxPerPurchase: 4 },
-      { id: "t3", name: "Camarote", price: 349.9, description: "Área VIP com open bar e vista privilegiada", available: 50, maxPerPurchase: 2 },
+      { id: "t3", name: "Camarote", price: 349.9, description: "Área VIP com open bar", available: 50, maxPerPurchase: 2 },
     ],
   },
+
   {
     id: "e2", title: "Pagode na Praça",
     image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=900&h=500&fit=crop",
@@ -650,15 +663,21 @@ const ZuuPass = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [search, setSearch] = useState("");
+  const [currentLocation, setCurrentLocation] = useState(DEFAULT_LOCATION);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedEvent, setSelectedEvent] = useState<EventData | null>(null);
   const [checkoutEvent, setCheckoutEvent] = useState<EventData | null>(null);
 
+
   const filtered = useMemo(() => EVENTS.filter(ev => {
+    // Filtragem por localização
+    if (currentLocation && ev.location !== currentLocation) return false;
+    
     if (search && !ev.title.toLowerCase().includes(search.toLowerCase()) && !ev.location.toLowerCase().includes(search.toLowerCase())) return false;
     if (selectedCategory && ev.category !== selectedCategory) return false;
     return true;
-  }), [search, selectedCategory]);
+  }), [search, selectedCategory, currentLocation]);
+
 
   const openEvent = (id: string) => {
     const ev = EVENTS.find(e => e.id === id);
@@ -675,10 +694,34 @@ const ZuuPass = () => {
             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary/10 flex items-center justify-center"><Ticket size={16} className="text-primary" /></div>
             <span className="font-bold text-foreground text-base sm:text-lg hidden sm:inline">ZuuPass</span>
           </div>
-          <div className="flex-1 max-w-md mx-auto relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar evento" className="w-full bg-secondary/60 border-none rounded-full pl-8 pr-3 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+
+          <div className="flex-1 flex items-center gap-2 max-w-xl">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 bg-secondary/50 rounded-full border border-border text-[10px] sm:text-xs text-muted-foreground hover:bg-secondary transition-colors cursor-pointer shrink-0">
+                  <MapPin size={14} className="text-primary" />
+                  <span className="font-medium text-foreground truncate max-w-[60px] sm:max-w-none">{currentLocation}</span>
+                  <ChevronDown size={14} />
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                {AVAILABLE_CITIES.map(city => (
+                  <DropdownMenuItem key={city} onClick={() => setCurrentLocation(city)} className="text-xs cursor-pointer">
+                    <MapPin size={12} className="mr-2 text-muted-foreground" />
+                    {city}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+
+
+            <div className="flex-1 relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar evento" className="w-full bg-secondary/60 border-none rounded-full pl-8 pr-3 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+            </div>
           </div>
+
           <div className="hidden md:flex items-center gap-2 shrink-0">
             <Button variant="outline" size="sm" className="rounded-full" onClick={() => navigate(user ? "/perfil" : "/auth")}>{user ? "Minha conta" : "Entrar"}</Button>
             <Button size="sm" className="rounded-full">Crie seu evento</Button>
