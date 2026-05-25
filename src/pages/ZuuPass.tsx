@@ -60,18 +60,19 @@ interface EventData {
 /* ── Static Data ── */
 const EVENTS: EventData[] = [
   {
-    id: "e1", title: "Festival Sertanejo 2026",
+    id: "e1", title: "Festival Sertanejo Palmitinho 2026",
     image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=900&h=500&fit=crop",
     date: "12", month: "ABR", dayOfWeek: "SÁB", fullDate: "12 de Abril de 2026", time: "16:00",
-    location: "São Paulo - SP", venue: "Allianz Parque", category: "Sertanejo",
-    price: 89.9, description: "O maior festival sertanejo do Brasil! Com shows de Jorge & Mateus, Henrique & Juliano, Marília Mendonça Tributo e muito mais. Uma noite inesquecível com o melhor do sertanejo universitário.",
+    location: "Palmitinho - RS", venue: "Parque de Exposições", category: "Sertanejo",
+    price: 89.9, description: "O maior festival sertanejo da região! Shows ao vivo, praça de alimentação e muita diversão em Palmitinho.",
     organizer: "ZuuPass Eventos", rating: 4.8, totalReviews: 1240, ageRating: "16+",
     tickets: [
       { id: "t1", name: "Pista", price: 89.9, description: "Acesso à área de pista", available: 500, maxPerPurchase: 5 },
       { id: "t2", name: "Front Stage", price: 179.9, description: "Acesso à área frontal do palco", available: 200, maxPerPurchase: 4 },
-      { id: "t3", name: "Camarote", price: 349.9, description: "Área VIP com open bar e vista privilegiada", available: 50, maxPerPurchase: 2 },
+      { id: "t3", name: "Camarote", price: 349.9, description: "Área VIP com open bar", available: 50, maxPerPurchase: 2 },
     ],
   },
+
   {
     id: "e2", title: "Pagode na Praça",
     image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=900&h=500&fit=crop",
@@ -660,10 +661,14 @@ const ZuuPass = () => {
 
 
   const filtered = useMemo(() => EVENTS.filter(ev => {
+    // Filtragem por localização
+    if (currentLocation && ev.location !== currentLocation) return false;
+    
     if (search && !ev.title.toLowerCase().includes(search.toLowerCase()) && !ev.location.toLowerCase().includes(search.toLowerCase())) return false;
     if (selectedCategory && ev.category !== selectedCategory) return false;
     return true;
-  }), [search, selectedCategory]);
+  }), [search, selectedCategory, currentLocation]);
+
 
   const openEvent = (id: string) => {
     const ev = EVENTS.find(e => e.id === id);
