@@ -698,9 +698,9 @@ const ZuuPass = () => {
           <div className="flex-1 flex items-center gap-2 max-w-xl">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-secondary/50 rounded-full border border-border text-xs text-muted-foreground hover:bg-secondary transition-colors cursor-pointer shrink-0">
+                <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 bg-secondary/50 rounded-full border border-border text-[10px] sm:text-xs text-muted-foreground hover:bg-secondary transition-colors cursor-pointer shrink-0">
                   <MapPin size={14} className="text-primary" />
-                  <span className="font-medium text-foreground">{currentLocation}</span>
+                  <span className="font-medium text-foreground truncate max-w-[60px] sm:max-w-none">{currentLocation}</span>
                   <ChevronDown size={14} />
                 </div>
               </DropdownMenuTrigger>
@@ -713,6 +713,7 @@ const ZuuPass = () => {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+
 
 
             <div className="flex-1 relative">
