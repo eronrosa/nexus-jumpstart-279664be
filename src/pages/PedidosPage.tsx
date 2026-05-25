@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ShoppingBag, Clock, ChevronDown, ChevronUp, Package, Star, Send, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
 
