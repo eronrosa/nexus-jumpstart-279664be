@@ -112,7 +112,11 @@ const MotoristaPage = () => {
 
   const loadDriver = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase.from("drivers").select("*").eq("user_id", user.id).single();
+    const { data, error } = await supabase.from("drivers").select("*").eq("user_id", user.id).maybeSingle();
+    if (error && error.code !== 'PGRST116') {
+      console.error("Error loading driver:", error);
+    }
+
     if (data) {
       setDriver(data);
       setIsOnline(data.status === "online");
