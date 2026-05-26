@@ -98,7 +98,7 @@ const ZuuMob = () => {
     const map = new mapboxgl.Map({
       container: mapContainer.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center: [-43.1729, -22.9068],
+      center: origin ? [origin.lng, origin.lat] : [-53.4146, -27.2831], // Palmitinho - RS default
       zoom: 14,
     });
     map.addControl(new mapboxgl.NavigationControl(), "top-right");
@@ -115,8 +115,9 @@ const ZuuMob = () => {
         addMockDriversToMap(latitude, longitude, map);
       },
       () => {
-        const lat = -22.9068, lng = -43.1729;
-        setOrigin({ lat, lng, address: "Rio de Janeiro, RJ" });
+        const lat = -27.2831, lng = -53.4146; // Palmitinho - RS
+        setOrigin({ lat, lng, address: "Palmitinho, RS" });
+
         addMockDriversToMap(lat, lng, map);
       }
     );
@@ -151,8 +152,9 @@ const ZuuMob = () => {
     setDestinationQuery(query);
     if (!query || query.length < 3 || !MAPBOX_TOKEN) { setSuggestions([]); return; }
     try {
-      const center = origin ? `${origin.lng},${origin.lat}` : "-43.1729,-22.9068";
-      const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&language=pt&country=BR&proximity=${center}&limit=5`);
+      // Prioritize proximity to current origin
+      const proximity = origin ? `&proximity=${origin.lng},${origin.lat}` : "";
+      const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&language=pt&country=BR&limit=5${proximity}`);
       const data = await res.json();
       setSuggestions(data.features || []);
     } catch { setSuggestions([]); }
@@ -213,11 +215,19 @@ const ZuuMob = () => {
 
     const price = getPrice(selectedRideType);
     const { data, error } = await supabase.from("rides").insert({
-      passenger_id: user.id, status: "searching",
-      origin_lat: origin.lat, origin_lng: origin.lng, origin_address: origin.address,
-      destination_lat: destination.lat, destination_lng: destination.lng, destination_address: destination.address,
-      estimated_price: price, distance_km: estimatedDistance, duration_minutes: estimatedDuration,
-      ride_type: selectedRideType, payment_method: selectedPayment,
+      passenger_id: user.id, 
+      status: "searching",
+      origin_lat: origin.lat, 
+      origin_lng: origin.lng, 
+      origin_address: origin.address,
+      destination_lat: destination.lat, 
+      destination_lng: destination.lng, 
+      destination_address: destination.address,
+      estimated_price: price, 
+      distance_km: estimatedDistance, 
+      duration_minutes: estimatedDuration,
+      ride_type: selectedRideType, 
+      payment_method: selectedPayment,
     }).select().single();
 
     if (error) {
@@ -442,13 +452,14 @@ const ZuuMob = () => {
       </div>
 
       {/* Sou Motorista button */}
+      {/* Botão de motorista flutuante */}
       {rideStatus === "idle" && (
         <button
-          className="absolute top-24 right-4 z-10 rounded-[14px] px-4 py-2 text-xs font-semibold flex items-center gap-1.5 backdrop-blur-md transition-all duration-200 hover:shadow-[0_0_24px_rgba(0,230,118,0.15)]"
-          style={{ backgroundColor: "rgba(22,27,34,0.9)", border: "1px solid rgba(240,246,252,0.06)", color: "#F0F6FC" }}
+          className="absolute top-24 right-4 z-10 px-4 py-2 rounded-full flex items-center gap-2 text-xs font-bold transition-all duration-200 shadow-lg hover:scale-105"
+          style={{ backgroundColor: "#00E676", color: "#000000" }}
           onClick={() => navigate("/motorista")}
         >
-          <Car className="h-3 w-3" style={{ color: "#00E676" }} /> Sou Motorista
+          <Car className="h-4 w-4" /> Painel do Motorista
         </button>
       )}
 
