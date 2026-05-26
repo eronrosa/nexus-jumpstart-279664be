@@ -98,7 +98,7 @@ const ZuuMob = () => {
     const map = new mapboxgl.Map({
       container: mapContainer.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center: [-43.1729, -22.9068],
+      center: origin ? [origin.lng, origin.lat] : [-53.4146, -27.2831], // Palmitinho - RS default
       zoom: 14,
     });
     map.addControl(new mapboxgl.NavigationControl(), "top-right");
@@ -115,8 +115,9 @@ const ZuuMob = () => {
         addMockDriversToMap(latitude, longitude, map);
       },
       () => {
-        const lat = -22.9068, lng = -43.1729;
-        setOrigin({ lat, lng, address: "Rio de Janeiro, RJ" });
+        const lat = -27.2831, lng = -53.4146; // Palmitinho - RS
+        setOrigin({ lat, lng, address: "Palmitinho, RS" });
+
         addMockDriversToMap(lat, lng, map);
       }
     );
@@ -151,8 +152,9 @@ const ZuuMob = () => {
     setDestinationQuery(query);
     if (!query || query.length < 3 || !MAPBOX_TOKEN) { setSuggestions([]); return; }
     try {
-      const center = origin ? `${origin.lng},${origin.lat}` : "-43.1729,-22.9068";
-      const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&language=pt&country=BR&proximity=${center}&limit=5`);
+      // Prioritize proximity to current origin
+      const proximity = origin ? `&proximity=${origin.lng},${origin.lat}` : "";
+      const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&language=pt&country=BR&limit=5${proximity}`);
       const data = await res.json();
       setSuggestions(data.features || []);
     } catch { setSuggestions([]); }
@@ -213,11 +215,19 @@ const ZuuMob = () => {
 
     const price = getPrice(selectedRideType);
     const { data, error } = await supabase.from("rides").insert({
-      passenger_id: user.id, status: "searching",
-      origin_lat: origin.lat, origin_lng: origin.lng, origin_address: origin.address,
-      destination_lat: destination.lat, destination_lng: destination.lng, destination_address: destination.address,
-      estimated_price: price, distance_km: estimatedDistance, duration_minutes: estimatedDuration,
-      ride_type: selectedRideType, payment_method: selectedPayment,
+      passenger_id: user.id, 
+      status: "searching",
+      origin_lat: origin.lat, 
+      origin_lng: origin.lng, 
+      origin_address: origin.address,
+      destination_lat: destination.lat, 
+      destination_lng: destination.lng, 
+      destination_address: destination.address,
+      estimated_price: price, 
+      distance_km: estimatedDistance, 
+      duration_minutes: estimatedDuration,
+      ride_type: selectedRideType, 
+      payment_method: selectedPayment,
     }).select().single();
 
     if (error) {
