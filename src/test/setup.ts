@@ -36,11 +36,11 @@ const mockGeolocation = {
   })),
   watchPosition: vi.fn(),
 };
-(global.navigator as any).geolocation = mockGeolocation;
+(globalThis.navigator as any).geolocation = mockGeolocation;
 
 // Mock fetch
-global.fetch = vi.fn().mockImplementation(() =>
+globalThis.fetch = vi.fn().mockImplementation(() =>
   Promise.resolve({
     json: () => Promise.resolve({ features: [] }),
   })
-);
+) as any;
