@@ -54,6 +54,7 @@ globalThis.fetch = vi.fn().mockImplementation((url: string) => {
 
 describe("ZuuMob Full Flow", () => {
   beforeEach(() => {
+    vi.stubEnv("VITE_MAPBOX_TOKEN", "mock-token");
     vi.clearAllMocks();
   });
 
