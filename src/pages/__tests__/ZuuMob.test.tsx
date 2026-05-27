@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { vi, describe, it, expect, beforeEach } from "vitest";
+import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import ZuuMob from "../ZuuMob";
 import { BrowserRouter } from "react-router-dom";
 
@@ -17,10 +17,12 @@ vi.mock("@/integrations/supabase/client", () => ({
     from: vi.fn().mockReturnValue({
       insert: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue({ data: { id: "ride-123" }, error: null }),
+          single: vi.fn().mockResolvedValue({ data: { id: "ride-123", status: "searching" }, error: null }),
         }),
       }),
-      update: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }),
+      update: vi.fn().mockReturnValue({ 
+        eq: vi.fn().mockResolvedValue({ error: null }) 
+      }),
     }),
     channel: vi.fn().mockReturnValue({
       on: vi.fn().mockReturnThis(),
@@ -29,7 +31,7 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-// Mock Directions API
+// Mock Mapbox and fetch
 globalThis.fetch = vi.fn().mockImplementation((url: string) => {
   if (url.includes("geocoding")) {
     return Promise.resolve({
@@ -41,20 +43,20 @@ globalThis.fetch = vi.fn().mockImplementation((url: string) => {
       }),
     });
   }
-  if (url.includes("directions")) {
-    return Promise.resolve({
-      ok: true,
-      json: () => Promise.resolve({
-        routes: [{ distance: 5000, duration: 600, geometry: {} }]
-      }),
-    });
-  }
-  return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+  return Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve({ routes: [{ distance: 5000, duration: 600, geometry: { type: "LineString", coordinates: [] } }] }),
+  });
 }) as any;
 
 describe("ZuuMob Full Flow", () => {
   beforeEach(() => {
     vi.stubEnv("VITE_MAPBOX_TOKEN", "mock-token");
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
     vi.clearAllMocks();
   });
 
@@ -65,50 +67,42 @@ describe("ZuuMob Full Flow", () => {
       </BrowserRouter>
     );
 
-    // 1. Initial State: Should show "Para onde?"
-    expect(screen.getByText(/Para onde\?/i)).toBeInTheDocument();
+    // Initial load: Wait for geolocation mock to trigger (it's immediate in setup.ts but let's be sure)
+    await waitFor(() => {
+      expect(screen.getByText(/Para onde\?/i)).toBeInTheDocument();
+    });
 
-    // 2. Click search input
-    const searchTrigger = screen.getByText(/Para onde\?/i);
-    fireEvent.click(searchTrigger);
+    // 1. Click search trigger
+    fireEvent.click(screen.getByText(/Para onde\?/i));
 
-    // 3. Search for destination
-    const input = screen.getByPlaceholderText(/Buscar destino\.\.\./i);
+    // 2. Search for destination
+    const input = await screen.findByPlaceholderText(/Buscar destino\.\.\./i);
     fireEvent.change(input, { target: { value: "Palmitinho" } });
 
-    // 4. Wait for and select suggestion
-    await waitFor(() => {
-      expect(screen.getByText("Palmitinho")).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByText("Palmitinho"));
+    // 3. Wait for suggestion and click it
+    const suggestion = await screen.findByText("Palmitinho");
+    fireEvent.click(suggestion);
 
-    // 5. Choose ride options should appear
-    await waitFor(() => {
-      expect(screen.getByText(/Solicitar ZuuMob/i)).toBeInTheDocument();
-    });
+    // 4. Ride options should appear
+    const requestBtn = await screen.findByText(/Solicitar ZuuMob/i);
+    expect(requestBtn).toBeInTheDocument();
 
-    // 6. Click "Solicitar ZuuMob"
-    const requestButton = screen.getByText(/Solicitar ZuuMob/i);
-    fireEvent.click(requestButton);
+    // 5. Click "Solicitar ZuuMob"
+    fireEvent.click(requestBtn);
 
-    // 7. Should enter searching state
+    // 6. Should enter searching state
     await waitFor(() => {
       expect(screen.getByText(/Procurando seu motorista\.\.\./i)).toBeInTheDocument();
     });
 
-    // 8. Wait for mock driver acceptance (this happens after 5s + random in the code)
-    // For testing, we might want to speed up timers
-    vi.useFakeTimers();
-    // Advance timers to trigger driver found
+    // 7. Advance timers to find driver
     vi.advanceTimersByTime(10000);
 
-    // 9. Should show driver info
-    // (Note: in the actual component, this state transition is triggered by a setTimeout)
-    // After re-rendering with fake timers
+    // 8. Driver info should appear
     await waitFor(() => {
       expect(screen.getByText(/Motorista a caminho/i)).toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
-    vi.useRealTimers();
+    expect(screen.getByText(/Carlos Silva/i)).toBeInTheDocument();
   });
 });
