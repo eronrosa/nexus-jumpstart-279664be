@@ -185,7 +185,14 @@ const ZuuMob = () => {
   };
 
   const calculateRoute = async (orig: Location, dest: Location) => {
-    if (!MAPBOX_TOKEN || !mapRef.current) return;
+    if (!MAPBOX_TOKEN) {
+      // Mock route info
+      setEstimatedDistance(5.2);
+      setEstimatedDuration(12);
+      setEstimatedPrice(5 + 5.2 * 2.5 + 12 * 0.3);
+      return;
+    }
+    if (!mapRef.current) return;
     try {
       const res = await fetch(`https://api.mapbox.com/directions/v5/mapbox/driving/${orig.lng},${orig.lat};${dest.lng},${dest.lat}?geometries=geojson&access_token=${MAPBOX_TOKEN}`);
       const data = await res.json();
