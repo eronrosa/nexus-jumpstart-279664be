@@ -234,7 +234,7 @@ const HeroCarousel = ({ onSelectEvent }: { onSelectEvent: (id: string) => void }
   const featured = EVENTS.slice(0, 4);
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
-  const timerRef = useRef<ReturnType<typeof setInterval>>();
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     timerRef.current = setInterval(() => { setDirection(1); setCurrent(p => (p + 1) % featured.length); }, 5000);
