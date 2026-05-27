@@ -12,16 +12,14 @@ vi.mock("@/contexts/AuthContext", () => ({
 }));
 
 // Mock Supabase
-const mockInsert = vi.fn().mockReturnValue({
-  select: vi.fn().mockReturnValue({
-    single: vi.fn().mockResolvedValue({ data: { id: "ride-123" }, error: null }),
-  }),
-});
-
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     from: vi.fn().mockReturnValue({
-      insert: mockInsert,
+      insert: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: { id: "ride-123" }, error: null }),
+        }),
+      }),
       update: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }),
     }),
     channel: vi.fn().mockReturnValue({
