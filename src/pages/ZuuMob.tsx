@@ -97,7 +97,7 @@ const ZuuMob = () => {
     mapboxgl.accessToken = MAPBOX_TOKEN;
     const map = new mapboxgl.Map({
       container: mapContainer.current,
-      style: "mapbox://styles/mapbox/dark-v11",
+      style: "mapbox://styles/mapbox/light-v11",
       center: origin ? [origin.lng, origin.lat] : [-53.4146, -27.2831], // Palmitinho - RS default
       zoom: 14,
     });
@@ -133,7 +133,7 @@ const ZuuMob = () => {
       const icon = d.type === "moto"
         ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M4 16l1-3h5l1 3"/><circle cx="5" cy="18" r="2"/><circle cx="17" cy="18" r="2"/><path d="M12 16l2-5h4l2 5"/></svg>`
         : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M5 17h14v-5l-2-4H7L5 12z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/></svg>`;
-      el.innerHTML = `<div style="width:32px;height:32px;background:#161B22;border:1px solid rgba(240,246,252,0.06);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(0,230,118,0.15);animation:zm-float 3s ease-in-out infinite">${icon}</div>`;
+      el.innerHTML = `<div style="width:32px;height:32px;background:#161B22;border:1px solid rgba(10,10,10,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(0,230,118,0.15);animation:zm-float 3s ease-in-out infinite">${icon}</div>`;
       const marker = new mapboxgl.Marker(el).setLngLat([d.lng, d.lat]).addTo(map);
       driverMarkersRef.current.push(marker);
     });
@@ -260,8 +260,8 @@ const ZuuMob = () => {
       if (mapRef.current && origin) {
         const el = document.createElement("div");
         const icon = chosen.type === "moto"
-          ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2.5"><path d="M4 16l1-3h5l1 3"/><circle cx="5" cy="18" r="2"/><circle cx="17" cy="18" r="2"/><path d="M12 16l2-5h4l2 5"/></svg>`
-          : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2.5"><path d="M5 17h14v-5l-2-4H7L5 12z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/></svg>`;
+          ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F7F8FA" stroke-width="2.5"><path d="M4 16l1-3h5l1 3"/><circle cx="5" cy="18" r="2"/><circle cx="17" cy="18" r="2"/><path d="M12 16l2-5h4l2 5"/></svg>`
+          : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F7F8FA" stroke-width="2.5"><path d="M5 17h14v-5l-2-4H7L5 12z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/></svg>`;
         el.innerHTML = `<div style="width:40px;height:40px;background:#00E676;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(0,230,118,0.3);border:2px solid rgba(0,230,118,0.5)">${icon}</div>`;
         mockDriverMarkerRef.current = new mapboxgl.Marker(el).setLngLat([chosen.lng, chosen.lat]).addTo(mapRef.current);
         animateDriverToUser(chosen, origin);
@@ -380,7 +380,7 @@ const ZuuMob = () => {
   })) : [];
 
   return (
-    <div className="zuumob-dark relative h-screen w-full overflow-hidden font-dm" style={{ backgroundColor: "#0A0A0A" }}>
+    <div className="zuumob-dark relative h-screen w-full overflow-hidden font-dm" style={{ backgroundColor: "#F7F8FA" }}>
       <style>{`
         @keyframes zm-pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(0,230,118,0.4); } 70% { box-shadow: 0 0 0 15px rgba(0,230,118,0); } 100% { box-shadow: 0 0 0 0 rgba(0,230,118,0); } }
         @keyframes zm-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
@@ -400,11 +400,11 @@ const ZuuMob = () => {
       {/* Map */}
       <div ref={mapContainer} className="absolute inset-0 z-0" />
       {!MAPBOX_TOKEN && (
-        <div className="absolute inset-0 z-0 flex items-center justify-center" style={{ backgroundColor: "#111318" }}>
+        <div className="absolute inset-0 z-0 flex items-center justify-center" style={{ backgroundColor: "#FFFFFF" }}>
           <div className="text-center p-6">
             <Car className="h-16 w-16 mx-auto mb-4" style={{ color: "#00E676" }} />
-            <p className="text-sm" style={{ color: "#8B949E" }}>Configure VITE_MAPBOX_TOKEN para exibir o mapa</p>
-            <p className="text-xs mt-2" style={{ color: "#484F58" }}>A interface funciona normalmente sem o mapa</p>
+            <p className="text-sm" style={{ color: "#6B7280" }}>Configure VITE_MAPBOX_TOKEN para exibir o mapa</p>
+            <p className="text-xs mt-2" style={{ color: "#9CA3AF" }}>A interface funciona normalmente sem o mapa</p>
           </div>
         </div>
       )}
@@ -414,26 +414,26 @@ const ZuuMob = () => {
         <div className="flex items-center gap-3">
           <button
             className="w-10 h-10 rounded-[14px] flex items-center justify-center backdrop-blur-md transition-all duration-200 hover:border-zm-green/30"
-            style={{ backgroundColor: "rgba(22,27,34,0.9)", border: "1px solid rgba(240,246,252,0.06)" }}
+            style={{ backgroundColor: "rgba(255,255,255,0.92)", border: "1px solid rgba(10,10,10,0.08)" }}
             onClick={() => navigate("/")}
           >
-            <ArrowLeft className="h-5 w-5" style={{ color: "#F0F6FC" }} />
+            <ArrowLeft className="h-5 w-5" style={{ color: "#0A0A0A" }} />
           </button>
           <div
             className="flex-1 rounded-[14px] px-4 py-2.5 flex items-center gap-2 cursor-pointer backdrop-blur-md transition-all duration-200 hover:border-zm-green/30"
-            style={{ backgroundColor: "rgba(22,27,34,0.9)", border: "1px solid rgba(240,246,252,0.06)" }}
+            style={{ backgroundColor: "rgba(255,255,255,0.92)", border: "1px solid rgba(10,10,10,0.08)" }}
             onClick={() => { if (rideStatus === "idle") { setRideStatus("selecting_destination"); } }}
           >
-            <Search className="h-4 w-4" style={{ color: "#8B949E" }} />
-            <span className="text-sm font-medium" style={{ color: "#8B949E" }}>{destination ? destination.address.substring(0, 30) + "..." : "Para onde?"}</span>
+            <Search className="h-4 w-4" style={{ color: "#6B7280" }} />
+            <span className="text-sm font-medium" style={{ color: "#6B7280" }}>{destination ? destination.address.substring(0, 30) + "..." : "Para onde?"}</span>
           </div>
           <div className="flex gap-2">
             <button
               className="w-10 h-10 rounded-[14px] flex items-center justify-center backdrop-blur-md transition-all duration-200 hover:border-zm-green/30"
-              style={{ backgroundColor: "rgba(22,27,34,0.9)", border: "1px solid rgba(240,246,252,0.06)" }}
+              style={{ backgroundColor: "rgba(255,255,255,0.92)", border: "1px solid rgba(10,10,10,0.08)" }}
               onClick={() => navigate("/zuumob/historico")}
             >
-              <History className="h-4 w-4" style={{ color: "#F0F6FC" }} />
+              <History className="h-4 w-4" style={{ color: "#0A0A0A" }} />
             </button>
             <Avatar
               className="h-9 w-9 cursor-pointer"
@@ -466,7 +466,7 @@ const ZuuMob = () => {
       {/* Center button */}
       <button
         className="absolute bottom-[320px] right-4 z-10 w-10 h-10 rounded-[14px] flex items-center justify-center backdrop-blur-md transition-all duration-200 hover:shadow-[0_0_24px_rgba(0,230,118,0.15)]"
-        style={{ backgroundColor: "rgba(22,27,34,0.9)", border: "1px solid rgba(240,246,252,0.06)" }}
+        style={{ backgroundColor: "rgba(255,255,255,0.92)", border: "1px solid rgba(10,10,10,0.08)" }}
         onClick={centerOnUser}
       >
         <Locate className="h-5 w-5" style={{ color: "#00E676" }} />
@@ -487,37 +487,37 @@ const ZuuMob = () => {
         {(rideStatus === "idle" || rideStatus === "selecting_destination") && (
           <motion.div key="dest" initial={{ y: 300 }} animate={{ y: 0 }} exit={{ y: 300 }} transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="absolute bottom-0 left-0 right-0 z-20 rounded-t-[28px] shadow-2xl"
-            style={{ backgroundColor: "#111318" }}>
-            <div className="w-12 h-1.5 rounded-full mx-auto mt-3" style={{ backgroundColor: "#484F58" }} />
+            style={{ backgroundColor: "#FFFFFF" }}>
+            <div className="w-12 h-1.5 rounded-full mx-auto mt-3" style={{ backgroundColor: "#9CA3AF" }} />
             <div className="p-5 space-y-4">
-              <h3 className="font-syne text-lg font-bold" style={{ color: "#F0F6FC" }}>Para onde você vai?</h3>
-              <div className="flex items-center gap-3 rounded-xl p-3" style={{ backgroundColor: "#1C2128" }}>
+              <h3 className="font-syne text-lg font-bold" style={{ color: "#0A0A0A" }}>Para onde você vai?</h3>
+              <div className="flex items-center gap-3 rounded-xl p-3" style={{ backgroundColor: "#F1F3F5" }}>
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#00E676" }} />
-                <span className="text-sm truncate flex-1" style={{ color: "#F0F6FC" }}>{origin?.address || "Obtendo localização..."}</span>
+                <span className="text-sm truncate flex-1" style={{ color: "#0A0A0A" }}>{origin?.address || "Obtendo localização..."}</span>
               </div>
-              <div className="flex items-center gap-3 rounded-xl p-3" style={{ backgroundColor: "#1C2128" }}>
+              <div className="flex items-center gap-3 rounded-xl p-3" style={{ backgroundColor: "#F1F3F5" }}>
                 <MapPin className="h-4 w-4 flex-shrink-0" style={{ color: "#FF4757" }} />
                 <input
                   placeholder="Buscar destino..."
                   value={destinationQuery}
                   onChange={(e) => searchDestination(e.target.value)}
-                  className="flex-1 bg-transparent border-0 outline-none text-sm font-dm placeholder:text-[#484F58]"
-                  style={{ color: "#F0F6FC" }}
+                  className="flex-1 bg-transparent border-0 outline-none text-sm font-dm placeholder:text-[#9CA3AF]"
+                  style={{ color: "#0A0A0A" }}
                 />
-                {destinationQuery && <X className="h-4 w-4 cursor-pointer" style={{ color: "#8B949E" }} onClick={() => { setDestinationQuery(""); setSuggestions([]); }} />}
+                {destinationQuery && <X className="h-4 w-4 cursor-pointer" style={{ color: "#6B7280" }} onClick={() => { setDestinationQuery(""); setSuggestions([]); }} />}
               </div>
               {suggestions.length > 0 && (
                 <div className="space-y-1 max-h-48 overflow-y-auto">
                   {suggestions.map((s: any) => (
                     <button key={s.id} className="w-full text-left px-3 py-2.5 rounded-xl flex items-center gap-3 transition-all duration-200 hover:border-[rgba(0,230,118,0.3)]"
                       style={{ border: "1px solid transparent" }}
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#1C2128"; e.currentTarget.style.borderColor = "rgba(0,230,118,0.3)"; }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#F1F3F5"; e.currentTarget.style.borderColor = "rgba(0,230,118,0.3)"; }}
                       onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.borderColor = "transparent"; }}
                       onClick={() => selectDestination(s)}>
-                      <MapPin className="h-4 w-4 flex-shrink-0" style={{ color: "#8B949E" }} />
+                      <MapPin className="h-4 w-4 flex-shrink-0" style={{ color: "#6B7280" }} />
                       <div className="truncate">
-                        <p className="text-sm font-medium truncate" style={{ color: "#F0F6FC" }}>{s.text}</p>
-                        <p className="text-xs truncate" style={{ color: "#8B949E" }}>{s.place_name}</p>
+                        <p className="text-sm font-medium truncate" style={{ color: "#0A0A0A" }}>{s.text}</p>
+                        <p className="text-xs truncate" style={{ color: "#6B7280" }}>{s.place_name}</p>
                       </div>
                     </button>
                   ))}
@@ -525,19 +525,19 @@ const ZuuMob = () => {
               )}
               {suggestions.length === 0 && !destinationQuery && (
                 <div className="space-y-3 pt-2">
-                  <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#484F58" }}>Favoritos</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#9CA3AF" }}>Favoritos</p>
                   {[{ icon: Navigation, label: "Casa" }, { icon: MapPin, label: "Trabalho" }].map((f) => (
                     <button key={f.label} className="w-full text-left px-3 py-2.5 rounded-xl flex items-center gap-3 transition-all duration-200"
                       style={{ border: "1px solid transparent" }}
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#1C2128"; e.currentTarget.style.borderColor = "rgba(0,230,118,0.3)"; }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#F1F3F5"; e.currentTarget.style.borderColor = "rgba(0,230,118,0.3)"; }}
                       onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.borderColor = "transparent"; }}
                     >
                       <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(0,230,118,0.1)" }}>
                         <f.icon className="h-4 w-4" style={{ color: "#00E676" }} />
                       </div>
                       <div>
-                        <p className="text-sm font-medium" style={{ color: "#F0F6FC" }}>{f.label}</p>
-                        <p className="text-xs" style={{ color: "#8B949E" }}>Adicionar endereço</p>
+                        <p className="text-sm font-medium" style={{ color: "#0A0A0A" }}>{f.label}</p>
+                        <p className="text-xs" style={{ color: "#6B7280" }}>Adicionar endereço</p>
                       </div>
                     </button>
                   ))}
@@ -551,17 +551,17 @@ const ZuuMob = () => {
         {rideStatus === "choosing_ride" && destination && (
           <motion.div key="choose" initial={{ y: 400 }} animate={{ y: 0 }} exit={{ y: 400 }} transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="absolute bottom-0 left-0 right-0 z-20 rounded-t-[28px] shadow-2xl"
-            style={{ backgroundColor: "#111318" }}>
-            <div className="w-12 h-1.5 rounded-full mx-auto mt-3" style={{ backgroundColor: "#484F58" }} />
+            style={{ backgroundColor: "#FFFFFF" }}>
+            <div className="w-12 h-1.5 rounded-full mx-auto mt-3" style={{ backgroundColor: "#9CA3AF" }} />
             <div className="p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: "#8B949E" }}>Distância</p>
-                  <p className="font-syne font-bold" style={{ color: "#F0F6FC" }}><span className="font-mono-jb">{estimatedDistance.toFixed(1)}</span> km</p>
+                  <p className="text-sm" style={{ color: "#6B7280" }}>Distância</p>
+                  <p className="font-syne font-bold" style={{ color: "#0A0A0A" }}><span className="font-mono-jb">{estimatedDistance.toFixed(1)}</span> km</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm" style={{ color: "#8B949E" }}>Tempo estimado</p>
-                  <p className="font-syne font-bold" style={{ color: "#F0F6FC" }}><span className="font-mono-jb">{estimatedDuration}</span> min</p>
+                  <p className="text-sm" style={{ color: "#6B7280" }}>Tempo estimado</p>
+                  <p className="font-syne font-bold" style={{ color: "#0A0A0A" }}><span className="font-mono-jb">{estimatedDuration}</span> min</p>
                 </div>
               </div>
               <div className="space-y-2">
@@ -569,20 +569,20 @@ const ZuuMob = () => {
                   <button key={rt.id} onClick={() => setSelectedRideType(rt.id)}
                     className="w-full flex items-center gap-4 p-3.5 rounded-xl transition-all duration-200"
                     style={{
-                      backgroundColor: selectedRideType === rt.id ? "rgba(0,230,118,0.05)" : "#1C2128",
+                      backgroundColor: selectedRideType === rt.id ? "rgba(0,230,118,0.05)" : "#F1F3F5",
                       border: `2px solid ${selectedRideType === rt.id ? "rgba(0,230,118,0.3)" : "transparent"}`,
                       boxShadow: selectedRideType === rt.id ? "0 0 24px rgba(0,230,118,0.15)" : "none",
                     }}>
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center"
-                      style={{ backgroundColor: selectedRideType === rt.id ? "#00E676" : "#161B22", color: selectedRideType === rt.id ? "#000000" : "#F0F6FC" }}>{rt.icon}</div>
+                      style={{ backgroundColor: selectedRideType === rt.id ? "#00E676" : "#FFFFFF", color: selectedRideType === rt.id ? "#000000" : "#0A0A0A" }}>{rt.icon}</div>
                     <div className="flex-1 text-left">
                       <div className="flex items-center gap-2">
-                        <p className="font-semibold text-sm" style={{ color: "#F0F6FC" }}>{rt.name}</p>
+                        <p className="font-semibold text-sm" style={{ color: "#0A0A0A" }}>{rt.name}</p>
                         {"badge" in rt && <span className="text-[10px] px-1.5 py-0.5 rounded-md font-medium" style={{ backgroundColor: "rgba(0,230,118,0.1)", color: "#00E676" }}>{(rt as any).badge}</span>}
                       </div>
-                      <p className="text-xs" style={{ color: "#8B949E" }}>{rt.description} · <Clock className="inline h-3 w-3" /> <span className="font-mono-jb">{rt.eta}</span></p>
+                      <p className="text-xs" style={{ color: "#6B7280" }}>{rt.description} · <Clock className="inline h-3 w-3" /> <span className="font-mono-jb">{rt.eta}</span></p>
                     </div>
-                    <p className="font-mono-jb font-semibold" style={{ color: selectedRideType === rt.id ? "#00E676" : "#F0F6FC" }}>{formatPrice(getPrice(rt.id))}</p>
+                    <p className="font-mono-jb font-semibold" style={{ color: selectedRideType === rt.id ? "#00E676" : "#0A0A0A" }}>{formatPrice(getPrice(rt.id))}</p>
                   </button>
                 ))}
               </div>
@@ -591,9 +591,9 @@ const ZuuMob = () => {
                   <button key={pm.id} onClick={() => setSelectedPayment(pm.id)}
                     className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200"
                     style={{
-                      backgroundColor: selectedPayment === pm.id ? "#00E676" : "#1C2128",
-                      color: selectedPayment === pm.id ? "#000000" : "#8B949E",
-                      border: `1px solid ${selectedPayment === pm.id ? "#00E676" : "rgba(240,246,252,0.06)"}`,
+                      backgroundColor: selectedPayment === pm.id ? "#00E676" : "#F1F3F5",
+                      color: selectedPayment === pm.id ? "#000000" : "#6B7280",
+                      border: `1px solid ${selectedPayment === pm.id ? "#00E676" : "rgba(10,10,10,0.08)"}`,
                     }}>
                     {pm.icon}{pm.label}
                   </button>
@@ -602,7 +602,7 @@ const ZuuMob = () => {
               <div className="flex gap-2">
                 <button
                   className="w-12 h-12 rounded-[14px] flex items-center justify-center transition-all duration-200"
-                  style={{ backgroundColor: "#1C2128", border: "1px solid rgba(240,246,252,0.06)", color: "#F0F6FC" }}
+                  style={{ backgroundColor: "#F1F3F5", border: "1px solid rgba(10,10,10,0.08)", color: "#0A0A0A" }}
                   onClick={() => { setRideStatus("idle"); setDestination(null); setDestinationQuery(""); }}
                 >
                   <X className="h-5 w-5" />
@@ -613,7 +613,7 @@ const ZuuMob = () => {
                   onClick={requestRide}
                   disabled={isRequesting}
                 >
-                  {isRequesting ? <span className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" /> : `Solicitar ZuuMob · ${formatPrice(getPrice(selectedRideType))}`}
+                  {isRequesting ? <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : `Solicitar ZuuMob · ${formatPrice(getPrice(selectedRideType))}`}
                 </button>
               </div>
             </div>
@@ -624,8 +624,8 @@ const ZuuMob = () => {
         {rideStatus === "searching" && (
           <motion.div key="search" initial={{ y: 300 }} animate={{ y: 0 }} exit={{ y: 300 }} transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="absolute bottom-0 left-0 right-0 z-20 rounded-t-[28px] shadow-2xl"
-            style={{ backgroundColor: "#111318" }}>
-            <div className="w-12 h-1.5 rounded-full mx-auto mt-3" style={{ backgroundColor: "#484F58" }} />
+            style={{ backgroundColor: "#FFFFFF" }}>
+            <div className="w-12 h-1.5 rounded-full mx-auto mt-3" style={{ backgroundColor: "#9CA3AF" }} />
             <div className="p-6 text-center space-y-4">
               <div className="relative w-20 h-20 mx-auto">
                 <motion.div className="absolute inset-0 rounded-full" style={{ backgroundColor: "rgba(0,230,118,0.1)" }} animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }} transition={{ duration: 2, repeat: Infinity }} />
@@ -636,15 +636,15 @@ const ZuuMob = () => {
                 </div>
               </div>
               <div>
-                <h3 className="font-syne text-lg font-bold" style={{ color: "#F0F6FC" }}>Procurando seu motorista...</h3>
-                <p className="text-sm mt-1" style={{ color: "#8B949E" }}>Conectando você ao motorista mais próximo</p>
+                <h3 className="font-syne text-lg font-bold" style={{ color: "#0A0A0A" }}>Procurando seu motorista...</h3>
+                <p className="text-sm mt-1" style={{ color: "#6B7280" }}>Conectando você ao motorista mais próximo</p>
               </div>
-              <motion.div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: "#1C2128" }}>
+              <motion.div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: "#F1F3F5" }}>
                 <motion.div className="h-full rounded-full" style={{ width: "40%", backgroundColor: "#00E676" }} animate={{ x: ["-100%", "100%"] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }} />
               </motion.div>
               <button
                 className="w-full py-2.5 rounded-[14px] text-sm font-semibold font-dm transition-all duration-200"
-                style={{ backgroundColor: "#FF4757", color: "#F0F6FC" }}
+                style={{ backgroundColor: "#FF4757", color: "#0A0A0A" }}
                 onClick={cancelRide}
               >
                 Cancelar corrida
@@ -657,29 +657,29 @@ const ZuuMob = () => {
         {(rideStatus === "accepted" || rideStatus === "arriving") && mockDriver && (
           <motion.div key="found" initial={{ y: 300 }} animate={{ y: 0 }} exit={{ y: 300 }} transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="absolute bottom-0 left-0 right-0 z-20 rounded-t-[28px] shadow-2xl"
-            style={{ backgroundColor: "#111318" }}>
-            <div className="w-12 h-1.5 rounded-full mx-auto mt-3" style={{ backgroundColor: "#484F58" }} />
+            style={{ backgroundColor: "#FFFFFF" }}>
+            <div className="w-12 h-1.5 rounded-full mx-auto mt-3" style={{ backgroundColor: "#9CA3AF" }} />
             <div className="p-5 space-y-4">
               <div className="flex items-center justify-center gap-2">
                 <div className={`w-2 h-2 rounded-full ${rideStatus === "arriving" ? "animate-pulse" : ""}`} style={{ backgroundColor: "#00E676" }} />
-                <span className="text-sm font-semibold font-dm" style={{ color: "#F0F6FC" }}>
+                <span className="text-sm font-semibold font-dm" style={{ color: "#0A0A0A" }}>
                   {rideStatus === "accepted" ? `Motorista a caminho · ${driverEta} min` : "Motorista chegando!"}
                 </span>
               </div>
 
               {/* Driver card */}
-              <div className="flex items-center gap-4 rounded-xl p-4" style={{ backgroundColor: "#1C2128", border: "1px solid rgba(240,246,252,0.06)" }}>
+              <div className="flex items-center gap-4 rounded-xl p-4" style={{ backgroundColor: "#F1F3F5", border: "1px solid rgba(10,10,10,0.08)" }}>
                 <Avatar className="h-14 w-14" style={{ border: "2px solid #00E676" }}>
                   <AvatarImage src={mockDriver.photo} />
                   <AvatarFallback style={{ backgroundColor: "#00E676", color: "#000" }}>{mockDriver.name[0]}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <p className="font-bold font-dm" style={{ color: "#F0F6FC" }}>{mockDriver.name}</p>
-                  <p className="text-xs" style={{ color: "#8B949E" }}>{mockDriver.vehicle} {mockDriver.color}</p>
+                  <p className="font-bold font-dm" style={{ color: "#0A0A0A" }}>{mockDriver.name}</p>
+                  <p className="text-xs" style={{ color: "#6B7280" }}>{mockDriver.vehicle} {mockDriver.color}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <div className="flex items-center gap-0.5"><Star className="h-3 w-3 fill-yellow-500 text-yellow-500" /><span className="text-xs font-mono-jb font-semibold" style={{ color: "#F0F6FC" }}>{mockDriver.rating}</span></div>
-                    <span className="text-xs" style={{ color: "#484F58" }}>·</span>
-                    <span className="text-xs font-mono-jb" style={{ color: "#8B949E" }}>{mockDriver.totalRides} corridas</span>
+                    <div className="flex items-center gap-0.5"><Star className="h-3 w-3 fill-yellow-500 text-yellow-500" /><span className="text-xs font-mono-jb font-semibold" style={{ color: "#0A0A0A" }}>{mockDriver.rating}</span></div>
+                    <span className="text-xs" style={{ color: "#9CA3AF" }}>·</span>
+                    <span className="text-xs font-mono-jb" style={{ color: "#6B7280" }}>{mockDriver.totalRides} corridas</span>
                   </div>
                 </div>
                 <div className="px-3 py-1.5 rounded-lg" style={{ backgroundColor: "rgba(0,230,118,0.1)", border: "1px solid rgba(0,230,118,0.2)" }}>
@@ -690,12 +690,12 @@ const ZuuMob = () => {
               {/* Actions */}
               <div className="flex gap-2">
                 <button className="flex-1 py-2.5 rounded-[14px] flex items-center justify-center gap-1.5 text-sm font-semibold transition-all duration-200"
-                  style={{ backgroundColor: "#1C2128", border: "1px solid rgba(240,246,252,0.06)", color: "#F0F6FC" }}
+                  style={{ backgroundColor: "#F1F3F5", border: "1px solid rgba(10,10,10,0.08)", color: "#0A0A0A" }}
                   onClick={() => toast({ title: "Ligando para motorista..." })}>
                   <Phone className="h-4 w-4" style={{ color: "#00E676" }} /> Ligar
                 </button>
                 <button className="flex-1 py-2.5 rounded-[14px] flex items-center justify-center gap-1.5 text-sm font-semibold transition-all duration-200"
-                  style={{ backgroundColor: "#1C2128", border: "1px solid rgba(240,246,252,0.06)", color: "#F0F6FC" }}
+                  style={{ backgroundColor: "#F1F3F5", border: "1px solid rgba(10,10,10,0.08)", color: "#0A0A0A" }}
                   onClick={() => setShowChat(!showChat)}>
                   <MessageCircle className="h-4 w-4" style={{ color: "#00E676" }} /> Chat
                 </button>
@@ -708,7 +708,7 @@ const ZuuMob = () => {
                     <div className="max-h-24 overflow-y-auto space-y-1">
                       {chatMessages.map((m, i) => (
                         <div key={i} className={`text-xs px-3 py-1.5 rounded-lg max-w-[70%] font-dm ${m.from === "you" ? "ml-auto" : ""}`}
-                          style={{ backgroundColor: m.from === "you" ? "#00E676" : "#1C2128", color: m.from === "you" ? "#000000" : "#F0F6FC" }}>{m.text}</div>
+                          style={{ backgroundColor: m.from === "you" ? "#00E676" : "#F1F3F5", color: m.from === "you" ? "#000000" : "#0A0A0A" }}>{m.text}</div>
                       ))}
                     </div>
                   )}
@@ -716,9 +716,9 @@ const ZuuMob = () => {
                     {quickMessages.map((msg) => (
                       <button key={msg} onClick={() => sendQuickMessage(msg)}
                         className="text-xs px-3 py-1.5 rounded-full transition-all duration-200"
-                        style={{ backgroundColor: "#1C2128", color: "#F0F6FC", border: "1px solid rgba(240,246,252,0.06)" }}
+                        style={{ backgroundColor: "#F1F3F5", color: "#0A0A0A", border: "1px solid rgba(10,10,10,0.08)" }}
                         onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(0,230,118,0.3)"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(240,246,252,0.06)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(10,10,10,0.08)"; }}
                       >{msg}</button>
                     ))}
                   </div>
@@ -727,9 +727,9 @@ const ZuuMob = () => {
 
               {/* Route summary */}
               <div className="space-y-2">
-                <div className="flex items-center gap-3"><div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#00E676" }} /><span className="text-sm truncate" style={{ color: "#F0F6FC" }}>{origin?.address}</span></div>
+                <div className="flex items-center gap-3"><div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#00E676" }} /><span className="text-sm truncate" style={{ color: "#0A0A0A" }}>{origin?.address}</span></div>
                 <div className="ml-1.5 h-4" style={{ borderLeft: "2px dashed #484F58" }} />
-                <div className="flex items-center gap-3"><MapPin className="h-3 w-3" style={{ color: "#FF4757" }} /><span className="text-sm truncate" style={{ color: "#F0F6FC" }}>{destination?.address}</span></div>
+                <div className="flex items-center gap-3"><MapPin className="h-3 w-3" style={{ color: "#FF4757" }} /><span className="text-sm truncate" style={{ color: "#0A0A0A" }}>{destination?.address}</span></div>
               </div>
 
               <div className="flex gap-2">
@@ -752,15 +752,15 @@ const ZuuMob = () => {
         {rideStatus === "in_progress" && (
           <motion.div key="trip" initial={{ y: 300 }} animate={{ y: 0 }} exit={{ y: 300 }} transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="absolute bottom-0 left-0 right-0 z-20 rounded-t-[28px] shadow-2xl"
-            style={{ backgroundColor: "#111318" }}>
-            <div className="w-12 h-1.5 rounded-full mx-auto mt-3" style={{ backgroundColor: "#484F58" }} />
+            style={{ backgroundColor: "#FFFFFF" }}>
+            <div className="w-12 h-1.5 rounded-full mx-auto mt-3" style={{ backgroundColor: "#9CA3AF" }} />
             <div className="p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: "#00E676" }} />
-                  <span className="text-sm font-syne font-bold" style={{ color: "#F0F6FC" }}>Em viagem</span>
+                  <span className="text-sm font-syne font-bold" style={{ color: "#0A0A0A" }}>Em viagem</span>
                 </div>
-                <div className="flex items-center gap-3 text-xs" style={{ color: "#8B949E" }}>
+                <div className="flex items-center gap-3 text-xs" style={{ color: "#6B7280" }}>
                   <span className="flex items-center gap-1 font-mono-jb"><Gauge className="h-3 w-3" /> {mockSpeed} km/h</span>
                   <span className="flex items-center gap-1 font-mono-jb"><Clock className="h-3 w-3" /> {tripTimeLeft} min</span>
                 </div>
@@ -768,10 +768,10 @@ const ZuuMob = () => {
 
               {/* Progress bar */}
               <div className="space-y-1.5">
-                <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: "#1C2128" }}>
+                <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: "#F1F3F5" }}>
                   <div className="h-full rounded-full transition-all duration-200" style={{ width: `${tripProgress}%`, backgroundColor: "#00E676", boxShadow: "0 0 12px rgba(0,230,118,0.3)" }} />
                 </div>
-                <div className="flex justify-between text-xs font-mono-jb" style={{ color: "#8B949E" }}>
+                <div className="flex justify-between text-xs font-mono-jb" style={{ color: "#6B7280" }}>
                   <span>Origem</span>
                   <span>{Math.round(tripProgress)}%</span>
                   <span>Destino</span>
@@ -779,9 +779,9 @@ const ZuuMob = () => {
               </div>
 
               {/* Destination */}
-              <div className="flex items-center gap-3 rounded-xl p-3" style={{ backgroundColor: "#1C2128", border: "1px solid rgba(240,246,252,0.06)" }}>
+              <div className="flex items-center gap-3 rounded-xl p-3" style={{ backgroundColor: "#F1F3F5", border: "1px solid rgba(10,10,10,0.08)" }}>
                 <MapPin className="h-4 w-4" style={{ color: "#00E676" }} />
-                <span className="text-sm truncate" style={{ color: "#F0F6FC" }}>{destination?.address}</span>
+                <span className="text-sm truncate" style={{ color: "#0A0A0A" }}>{destination?.address}</span>
               </div>
 
               {/* Driver + SOS */}
@@ -793,15 +793,15 @@ const ZuuMob = () => {
                       <AvatarFallback style={{ backgroundColor: "#00E676", color: "#000" }}>{mockDriver.name[0]}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="text-sm font-semibold" style={{ color: "#F0F6FC" }}>{mockDriver.name}</p>
-                      <p className="text-xs font-mono-jb" style={{ color: "#8B949E" }}>{mockDriver.plate}</p>
+                      <p className="text-sm font-semibold" style={{ color: "#0A0A0A" }}>{mockDriver.name}</p>
+                      <p className="text-xs font-mono-jb" style={{ color: "#6B7280" }}>{mockDriver.plate}</p>
                     </div>
                   </div>
                   <div className="flex gap-2">
                     <button className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200"
-                      style={{ backgroundColor: "#1C2128", border: "1px solid rgba(240,246,252,0.06)" }}
+                      style={{ backgroundColor: "#F1F3F5", border: "1px solid rgba(10,10,10,0.08)" }}
                       onClick={() => setShowChat(!showChat)}>
-                      <MessageCircle className="h-4 w-4" style={{ color: "#F0F6FC" }} />
+                      <MessageCircle className="h-4 w-4" style={{ color: "#0A0A0A" }} />
                     </button>
                     <button className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200"
                       style={{ backgroundColor: "rgba(255,71,87,0.1)", border: "1px solid rgba(255,71,87,0.2)" }}>
@@ -817,7 +817,7 @@ const ZuuMob = () => {
                     {quickMessages.map((msg) => (
                       <button key={msg} onClick={() => sendQuickMessage(msg)}
                         className="text-xs px-3 py-1.5 rounded-full transition-all duration-200"
-                        style={{ backgroundColor: "#1C2128", color: "#F0F6FC", border: "1px solid rgba(240,246,252,0.06)" }}>{msg}</button>
+                        style={{ backgroundColor: "#F1F3F5", color: "#0A0A0A", border: "1px solid rgba(10,10,10,0.08)" }}>{msg}</button>
                     ))}
                   </div>
                 </motion.div>
@@ -830,8 +830,8 @@ const ZuuMob = () => {
         {rideStatus === "completed" && (
           <motion.div key="done" initial={{ y: 400 }} animate={{ y: 0 }} exit={{ y: 400 }} transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="absolute bottom-0 left-0 right-0 z-20 rounded-t-[28px] shadow-2xl max-h-[85vh] overflow-y-auto"
-            style={{ backgroundColor: "#111318" }}>
-            <div className="w-12 h-1.5 rounded-full mx-auto mt-3" style={{ backgroundColor: "#484F58" }} />
+            style={{ backgroundColor: "#FFFFFF" }}>
+            <div className="w-12 h-1.5 rounded-full mx-auto mt-3" style={{ backgroundColor: "#9CA3AF" }} />
             <div className="p-6 space-y-5">
               <div className="text-center">
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }}
@@ -839,28 +839,28 @@ const ZuuMob = () => {
                   style={{ backgroundColor: "rgba(0,230,118,0.1)" }}>
                   <Star className="h-8 w-8" style={{ color: "#00E676" }} />
                 </motion.div>
-                <h3 className="font-syne text-xl font-bold" style={{ color: "#F0F6FC" }}>Corrida finalizada!</h3>
+                <h3 className="font-syne text-xl font-bold" style={{ color: "#0A0A0A" }}>Corrida finalizada!</h3>
               </div>
 
               {/* Summary */}
-              <div className="rounded-xl p-4 space-y-2" style={{ backgroundColor: "#1C2128", border: "1px solid rgba(240,246,252,0.06)" }}>
-                <div className="flex justify-between text-sm"><span style={{ color: "#8B949E" }}>Origem</span><span className="truncate ml-4 max-w-[60%] text-right" style={{ color: "#F0F6FC" }}>{origin?.address}</span></div>
-                <div className="flex justify-between text-sm"><span style={{ color: "#8B949E" }}>Destino</span><span className="truncate ml-4 max-w-[60%] text-right" style={{ color: "#F0F6FC" }}>{destination?.address}</span></div>
-                <div className="my-2" style={{ borderTop: "1px solid rgba(240,246,252,0.06)" }} />
-                <div className="flex justify-between text-sm"><span style={{ color: "#8B949E" }}>Distância</span><span className="font-mono-jb" style={{ color: "#F0F6FC" }}>{estimatedDistance.toFixed(1)} km</span></div>
-                <div className="flex justify-between text-sm"><span style={{ color: "#8B949E" }}>Duração</span><span className="font-mono-jb" style={{ color: "#F0F6FC" }}>{estimatedDuration} min</span></div>
-                <div className="flex justify-between text-sm"><span style={{ color: "#8B949E" }}>Pagamento</span><span style={{ color: "#F0F6FC" }}>{paymentMethods.find((p) => p.id === selectedPayment)?.label}</span></div>
-                <div className="my-2" style={{ borderTop: "1px solid rgba(240,246,252,0.06)" }} />
-                <div className="flex justify-between text-base font-bold"><span style={{ color: "#F0F6FC" }}>Total</span><span className="font-mono-jb" style={{ color: "#00E676" }}>{formatPrice(currentRide?.final_price || getPrice(selectedRideType))}</span></div>
+              <div className="rounded-xl p-4 space-y-2" style={{ backgroundColor: "#F1F3F5", border: "1px solid rgba(10,10,10,0.08)" }}>
+                <div className="flex justify-between text-sm"><span style={{ color: "#6B7280" }}>Origem</span><span className="truncate ml-4 max-w-[60%] text-right" style={{ color: "#0A0A0A" }}>{origin?.address}</span></div>
+                <div className="flex justify-between text-sm"><span style={{ color: "#6B7280" }}>Destino</span><span className="truncate ml-4 max-w-[60%] text-right" style={{ color: "#0A0A0A" }}>{destination?.address}</span></div>
+                <div className="my-2" style={{ borderTop: "1px solid rgba(10,10,10,0.08)" }} />
+                <div className="flex justify-between text-sm"><span style={{ color: "#6B7280" }}>Distância</span><span className="font-mono-jb" style={{ color: "#0A0A0A" }}>{estimatedDistance.toFixed(1)} km</span></div>
+                <div className="flex justify-between text-sm"><span style={{ color: "#6B7280" }}>Duração</span><span className="font-mono-jb" style={{ color: "#0A0A0A" }}>{estimatedDuration} min</span></div>
+                <div className="flex justify-between text-sm"><span style={{ color: "#6B7280" }}>Pagamento</span><span style={{ color: "#0A0A0A" }}>{paymentMethods.find((p) => p.id === selectedPayment)?.label}</span></div>
+                <div className="my-2" style={{ borderTop: "1px solid rgba(10,10,10,0.08)" }} />
+                <div className="flex justify-between text-base font-bold"><span style={{ color: "#0A0A0A" }}>Total</span><span className="font-mono-jb" style={{ color: "#00E676" }}>{formatPrice(currentRide?.final_price || getPrice(selectedRideType))}</span></div>
               </div>
 
               {/* Rating */}
               <div className="text-center space-y-3">
-                <p className="text-sm font-semibold" style={{ color: "#F0F6FC" }}>Avalie seu motorista{mockDriver ? ` - ${mockDriver.name}` : ""}</p>
+                <p className="text-sm font-semibold" style={{ color: "#0A0A0A" }}>Avalie seu motorista{mockDriver ? ` - ${mockDriver.name}` : ""}</p>
                 <div className="flex justify-center gap-1">
                   {[1, 2, 3, 4, 5].map((s) => (
                     <button key={s} onClick={() => setRating(s)} className="p-1 transition-transform hover:scale-110">
-                      <Star className={`h-9 w-9 ${s <= rating ? "fill-yellow-500 text-yellow-500" : ""}`} style={s > rating ? { color: "#484F58" } : {}} />
+                      <Star className={`h-9 w-9 ${s <= rating ? "fill-yellow-500 text-yellow-500" : ""}`} style={s > rating ? { color: "#9CA3AF" } : {}} />
                     </button>
                   ))}
                 </div>
@@ -868,8 +868,8 @@ const ZuuMob = () => {
                   placeholder="Deixe um comentário (opcional)"
                   value={ratingComment}
                   onChange={(e) => setRatingComment(e.target.value)}
-                  className="w-full text-sm resize-none h-20 rounded-xl p-3 outline-none focus:shadow-[0_0_0_1px_rgba(0,230,118,0.3)] font-dm placeholder:text-[#484F58]"
-                  style={{ backgroundColor: "#1C2128", border: "1px solid rgba(240,246,252,0.06)", color: "#F0F6FC" }}
+                  className="w-full text-sm resize-none h-20 rounded-xl p-3 outline-none focus:shadow-[0_0_0_1px_rgba(0,230,118,0.3)] font-dm placeholder:text-[#9CA3AF]"
+                  style={{ backgroundColor: "#F1F3F5", border: "1px solid rgba(10,10,10,0.08)", color: "#0A0A0A" }}
                 />
               </div>
 
