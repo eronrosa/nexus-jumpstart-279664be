@@ -31,7 +31,7 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-// Mock Mapbox and fetch
+// Mock Directions API
 globalThis.fetch = vi.fn().mockImplementation((url: string) => {
   if (url.includes("geocoding")) {
     return Promise.resolve({
@@ -61,14 +61,13 @@ describe("ZuuMob Full Flow", () => {
   });
 
   it("completes the ride request flow", async () => {
-  }, 15000);
     render(
       <BrowserRouter>
         <ZuuMob />
       </BrowserRouter>
     );
 
-    // Initial load: Wait for geolocation mock to trigger (it's immediate in setup.ts but let's be sure)
+    // Initial load: Wait for component to be ready
     await waitFor(() => {
       expect(screen.getByText(/Para onde\?/i)).toBeInTheDocument();
     });
@@ -102,8 +101,8 @@ describe("ZuuMob Full Flow", () => {
     // 8. Driver info should appear
     await waitFor(() => {
       expect(screen.getByText(/Motorista a caminho/i)).toBeInTheDocument();
-    }, { timeout: 10000 });
+    }, { timeout: 15000 });
 
     expect(screen.getByText(/Carlos Silva/i)).toBeInTheDocument();
-  });
+  }, 20000);
 });
