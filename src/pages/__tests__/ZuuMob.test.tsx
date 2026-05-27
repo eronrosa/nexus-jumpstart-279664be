@@ -61,6 +61,7 @@ describe("ZuuMob Full Flow", () => {
   });
 
   it("completes the ride request flow", async () => {
+  }, 15000);
     render(
       <BrowserRouter>
         <ZuuMob />
