@@ -823,28 +823,34 @@ const ZuuFood = () => {
       toast.error("Este estabelecimento está fechado no momento");
       return;
     }
-    navigate(`/zuufood/r/${r.id}`, { replace: false });
+    setSelectedRestaurant(r);
+    // Update URL for shareability without remounting the route
+    window.history.replaceState(null, "", `/zuufood/r/${r.id}`);
     if (r.isDynamic && r.menu.length === 0) {
       setLoadingMenu(true);
-      setSelectedRestaurant(r);
-      const { data: menuItems } = await supabase
-        .from("menu_items").select("*").eq("store_id", r.id).eq("is_available", true)
-        .order("sort_order", { ascending: true }).order("created_at", { ascending: true });
+      try {
+        const { data: menuItems } = await supabase
+          .from("menu_items").select("*").eq("store_id", r.id).eq("is_available", true)
+          .order("sort_order", { ascending: true }).order("created_at", { ascending: true });
 
-      if (menuItems && menuItems.length > 0) {
-        const mappedMenu: MenuItemData[] = menuItems.map(mi => ({
-          id: mi.id, category: mi.category, name: mi.name,
-          price: Number(mi.price), image: mi.image_url || "", description: mi.description || "",
-        }));
-        const updated = { ...r, menu: mappedMenu };
-        setSelectedRestaurant(updated);
-        setAllRestaurants(prev => prev.map(rest => rest.id === r.id ? updated : rest));
+        if (menuItems && menuItems.length > 0) {
+          const mappedMenu: MenuItemData[] = menuItems.map(mi => ({
+            id: mi.id, category: mi.category, name: mi.name,
+            price: Number(mi.price), image: mi.image_url || "", description: mi.description || "",
+          }));
+          const updated = { ...r, menu: mappedMenu };
+          setSelectedRestaurant(updated);
+          setAllRestaurants(prev => prev.map(rest => rest.id === r.id ? updated : rest));
+        }
+      } catch (err) {
+        console.error("Erro ao carregar menu:", err);
+        toast.error("Erro ao carregar cardápio");
+      } finally {
+        setLoadingMenu(false);
       }
-      setLoadingMenu(false);
-    } else {
-      setSelectedRestaurant(r);
     }
   };
+
 
   const closeRestaurant = () => {
     setSelectedRestaurant(null);
