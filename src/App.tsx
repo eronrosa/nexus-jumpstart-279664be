@@ -41,7 +41,8 @@ const AnimatedRoutes = () => {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<PageTransition><Index /></PageTransition>} />
+        <Route path="/" element={<PageTransition><Welcome /></PageTransition>} />
+        <Route path="/home" element={<PageTransition><Index /></PageTransition>} />
         <Route path="/coupondetail" element={<PageTransition><CouponDetail /></PageTransition>} />
         <Route path="/zuufood" element={<PageTransition><ZuuFood /></PageTransition>} />
         <Route path="/zuufood/r/:restaurantId" element={<PageTransition><ZuuFood /></PageTransition>} />
