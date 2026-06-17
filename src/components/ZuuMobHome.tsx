@@ -34,7 +34,7 @@ const services: ServiceCard[] = [
   { icon: Bike, label: "Moto" },
 ];
 
-export default function ZuuMobHome({ onSearchOpen }: { onSearchOpen: () => void }) {
+export default function ZuuMobHome({ onSearchOpen, onOpenRides }: { onSearchOpen: () => void; onOpenRides?: () => void }) {
   const navigate = useNavigate();
   const [tab, setTab] = useState<"home" | "conta">("home");
 
