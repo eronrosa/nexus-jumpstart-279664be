@@ -641,6 +641,7 @@ function Row({ label, value, muted, accent }: { label: string; value: string; mu
 /* ─── Main page ─── */
 const ZuuFood = () => {
   const navigate = useNavigate();
+  const { restaurantId: urlRestaurantId } = useParams<{ restaurantId?: string }>();
   const { add, count, items } = useCart();
   const { user, profile } = useAuth();
   const [search, setSearch] = useState("");
