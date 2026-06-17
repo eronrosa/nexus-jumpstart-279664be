@@ -13,7 +13,7 @@ export interface CartItem {
 
 interface CartContextType {
   items: CartItem[];
-  add: (item: Omit<CartItem, "qty">) => void;
+  add: (item: Omit<CartItem, "qty">, qty?: number) => void;
   remove: (id: string) => void;
   increment: (id: string) => void;
   decrement: (id: string) => void;
@@ -37,14 +37,19 @@ const CartContext = createContext<CartContextType>({
 
 export const useCart = () => useContext(CartContext);
 
+// Build a unique key so the same product with different notes counts as a separate line
+const lineKey = (id: string, notes?: string) =>
+  notes && notes.trim() ? `${id}::${notes.trim()}` : id;
+
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
 
-  const add = (item: Omit<CartItem, "qty">) => {
+  const add = (item: Omit<CartItem, "qty">, qty: number = 1) => {
+    const key = lineKey(item.id, item.notes);
     setItems(prev => {
-      const existing = prev.find(i => i.id === item.id);
-      if (existing) return prev.map(i => i.id === item.id ? { ...i, qty: i.qty + 1 } : i);
-      return [...prev, { ...item, qty: 1 }];
+      const existing = prev.find(i => i.id === key);
+      if (existing) return prev.map(i => i.id === key ? { ...i, qty: i.qty + qty } : i);
+      return [...prev, { ...item, id: key, qty }];
     });
   };
 
