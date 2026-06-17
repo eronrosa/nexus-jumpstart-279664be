@@ -351,173 +351,237 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
 
   const handleClose = () => { setStep("cart"); onClose(); };
 
+  const ORANGE = "hsl(14_90%_55%)";
+
   return (
     <AnimatePresence>
       {open && (
         <>
           <motion.div key="backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 z-40" onClick={handleClose} />
+            className="fixed inset-0 bg-black/50 z-40" onClick={handleClose} />
           <motion.div key="drawer" initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 320, damping: 32 }}
-            className="fixed right-0 top-0 h-full w-full max-w-sm bg-card shadow-2xl z-50 flex flex-col">
-            <div className="flex items-center justify-between px-4 py-4 border-b border-border">
-              <div className="flex items-center gap-2">
-                {step === "checkout" ? (
-                  <button onClick={() => setStep("cart")} className="p-1 text-muted-foreground hover:text-foreground"><ArrowLeft size={18} /></button>
+            className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col">
+            {/* ── Top bar ── */}
+            <div className="relative flex items-center justify-center px-5 pt-5 pb-3 shrink-0">
+              <button onClick={() => step === "checkout" ? setStep("cart") : handleClose()}
+                className="absolute left-5 top-5 w-9 h-9 rounded-full bg-white border border-border shadow-sm flex items-center justify-center">
+                <ArrowLeft size={18} className="text-foreground" />
+              </button>
+              <h2 className="text-lg font-extrabold text-foreground">
+                {ordered ? "Pedido" : step === "checkout" ? "Checkout" : "Carrinho"}
+              </h2>
+              <button onClick={handleClose}
+                className="absolute right-5 top-5 w-9 h-9 rounded-full bg-white border border-border shadow-sm flex items-center justify-center">
+                {count > 0 && !ordered ? (
+                  <span className="relative">
+                    <ShoppingCart size={16} className="text-foreground" />
+                    <span className="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-[hsl(14_90%_55%)] text-white text-[9px] font-bold flex items-center justify-center">{count}</span>
+                  </span>
                 ) : (
-                  <ShoppingCart size={18} className="text-primary" />
+                  <X size={18} className="text-foreground" />
                 )}
-                <span className="font-bold text-foreground">{step === "checkout" ? "Finalizar Pedido" : "Carrinho"}</span>
-                {count > 0 && step === "cart" && <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full">{count}</span>}
-              </div>
-              <button onClick={handleClose} className="p-1 text-muted-foreground hover:text-foreground"><X size={18} /></button>
+              </button>
             </div>
-            <div className="flex-1 overflow-y-auto">
+
+            <div className="flex-1 overflow-y-auto px-5 pb-5">
               <AnimatePresence mode="wait">
                 {ordered ? (
-                  <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                    className="flex flex-col items-center justify-center h-full gap-4 p-8">
-                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 400, damping: 15, delay: 0.1 }}>
-                      <CheckCircle size={64} className="text-emerald-500" />
+                  /* ── Success ── */
+                  <motion.div key="success" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                    className="flex flex-col items-center justify-center min-h-full gap-3 py-12 text-center">
+                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 380, damping: 16, delay: 0.1 }}
+                      className="w-20 h-20 rounded-2xl bg-[hsl(14_90%_55%)]/10 flex items-center justify-center mb-2">
+                      <CheckCircle size={44} className="text-[hsl(14_90%_55%)]" strokeWidth={2.2} />
                     </motion.div>
-                    <p className="font-bold text-xl text-foreground text-center">Pedido realizado!</p>
-                    <p className="text-sm text-muted-foreground text-center">Seu pedido foi enviado e chegará em breve</p>
+                    <h3 className="text-2xl font-extrabold text-foreground">Pedido confirmado!</h3>
+                    <p className="text-sm text-muted-foreground max-w-xs">
+                      Seu pedido está sendo preparado e logo estará a caminho.
+                    </p>
+                    {orderRef && (
+                      <p className="text-xs font-semibold text-muted-foreground tracking-wider mt-1">
+                        Pedido #{orderRef.slice(0, 8).toUpperCase()}
+                      </p>
+                    )}
                   </motion.div>
                 ) : items.length === 0 ? (
-                  <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center h-full gap-3 p-8 text-center">
-                    <ShoppingCart size={48} className="text-muted-foreground/30" />
-                    <p className="font-semibold text-muted-foreground">Carrinho vazio</p>
-                    <p className="text-xs text-muted-foreground">Adicione itens de um restaurante para começar</p>
+                  /* ── Empty state ── */
+                  <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    className="flex flex-col items-center justify-center min-h-full gap-3 py-16 text-center">
+                    <div className="relative w-28 h-28 rounded-full bg-muted/40 flex items-center justify-center mb-2">
+                      <ShoppingCart size={48} className="text-muted-foreground/50" />
+                      <span className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-foreground text-white text-xs font-bold flex items-center justify-center">0</span>
+                    </div>
+                    <h3 className="text-xl font-extrabold text-foreground">Seu carrinho está vazio</h3>
+                    <p className="text-sm text-muted-foreground max-w-xs">
+                      Explore restaurantes deliciosos e adicione itens ao seu carrinho.
+                    </p>
+                    <button onClick={handleClose}
+                      className="mt-4 w-full max-w-xs bg-[hsl(14_90%_55%)] text-white font-bold py-3.5 rounded-full shadow-lg shadow-[hsl(14_90%_55%)]/30 hover:opacity-90 transition-opacity">
+                      Explorar restaurantes
+                    </button>
                   </motion.div>
                 ) : step === "cart" ? (
-                  <motion.div key="items" className="p-4 space-y-3">
-                    <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide flex items-center gap-1.5">
-                      <MapPin size={12} /> {items[0]?.restaurantName}
-                    </p>
+                  /* ── Cart items ── */
+                  <motion.div key="items" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 pt-2">
                     {items.map(item => (
-                      <motion.div key={item.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: 40 }}
-                        className="bg-secondary/50 rounded-xl p-2.5 space-y-2">
-                        <div className="flex items-center gap-3">
-                          {item.image ? (
-                            <img src={item.image} alt={item.name} className="w-12 h-12 rounded-lg object-cover shrink-0" />
-                          ) : (
-                            <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                              <StoreIcon size={16} className="text-muted-foreground" />
-                            </div>
+                      <motion.div key={item.id} layout
+                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: 40 }}
+                        className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-border/40 p-3 flex items-center gap-3">
+                        {item.image ? (
+                          <img src={item.image} alt={item.name} className="w-16 h-16 rounded-xl object-cover shrink-0" />
+                        ) : (
+                          <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                            <StoreIcon size={20} className="text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-extrabold text-foreground truncate">{item.name}</p>
+                          {item.notes && (
+                            <p className="text-[11px] text-muted-foreground truncate mt-0.5">+ {item.notes}</p>
                           )}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-foreground leading-tight truncate">{item.name}</p>
-                            <p className="text-xs text-primary font-bold mt-0.5">{fmt(item.price)}</p>
-                          </div>
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <button onClick={() => decrement(item.id)} className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center hover:bg-border transition-colors"><Minus size={12} /></button>
-                            <span className="text-sm font-bold w-4 text-center">{item.qty}</span>
-                            <button onClick={() => increment(item.id)} className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:opacity-90 transition-opacity"><Plus size={12} /></button>
-                            <button onClick={() => remove(item.id)} className="w-6 h-6 rounded-full bg-destructive/10 text-destructive flex items-center justify-center ml-1 hover:bg-destructive/20 transition-colors"><Trash2 size={12} /></button>
-                          </div>
+                          <p className="text-base font-extrabold text-foreground mt-1">{fmt(item.price * item.qty)}</p>
                         </div>
-                        <input
-                          value={item.notes ?? ""}
-                          onChange={e => updateNotes(item.id, e.target.value)}
-                          placeholder="Ex: sem cebola, sem tomate, ao ponto..."
-                          maxLength={200}
-                          className="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
-                        />
+                        <div className="flex items-center gap-2 shrink-0 bg-[hsl(14_90%_55%)]/5 border border-[hsl(14_90%_55%)]/20 rounded-full p-1">
+                          <button onClick={() => item.qty > 1 ? decrement(item.id) : remove(item.id)}
+                            className="w-7 h-7 rounded-full bg-white border border-border flex items-center justify-center text-foreground">
+                            <Minus size={12} />
+                          </button>
+                          <span className="text-sm font-bold w-4 text-center">{item.qty}</span>
+                          <button onClick={() => increment(item.id)}
+                            className="w-7 h-7 rounded-full bg-[hsl(14_90%_55%)] text-white flex items-center justify-center">
+                            <Plus size={12} />
+                          </button>
+                        </div>
                       </motion.div>
                     ))}
-                  </motion.div>
-                ) : (
-                  /* ── Checkout step ── */
-                  <motion.div key="checkout" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="p-4 space-y-5">
-                    {/* Address */}
-                    <div>
-                      <p className="text-xs font-bold text-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5"><MapPin size={13} /> Endereço de entrega</p>
-                      {addresses.length === 0 ? (
-                        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-center">
-                          <p className="text-xs text-amber-700 mb-2">Nenhum endereço cadastrado</p>
-                          <button onClick={() => { handleClose(); navigate("/perfil"); }} className="text-xs font-bold text-primary">Cadastrar endereço</button>
-                        </div>
+
+                    {/* Promo code */}
+                    <div className="flex items-center gap-2 bg-white border border-border rounded-full p-1.5 pl-4 shadow-sm">
+                      <Tag size={14} className="text-muted-foreground shrink-0" />
+                      {appliedCoupon ? (
+                        <>
+                          <span className="flex-1 text-sm font-semibold text-foreground truncate">{appliedCoupon.title}</span>
+                          <button onClick={() => { setAppliedCoupon(null); setCouponInput(""); }}
+                            className="text-xs font-bold text-destructive px-3">Remover</button>
+                        </>
                       ) : (
-                        <div className="space-y-2">
-                          {addresses.map(addr => (
-                            <button key={addr.id} onClick={() => setSelectedAddress(addr.id)}
-                              className={`w-full text-left p-3 rounded-xl border transition-all ${selectedAddress === addr.id ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "border-border bg-card hover:border-primary/30"}`}>
-                              <div className="flex items-center gap-2">
-                                {addr.label === "Casa" ? <Home size={14} className="text-primary shrink-0" /> : <Building size={14} className="text-primary shrink-0" />}
-                                <span className="text-sm font-bold text-foreground">{addr.label}</span>
-                                {addr.is_default && <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-bold">Padrão</span>}
-                              </div>
-                              <p className="text-xs text-muted-foreground mt-1">{addr.street}, {addr.number} - {addr.neighborhood}</p>
-                            </button>
-                          ))}
-                        </div>
+                        <>
+                          <input value={couponInput} onChange={e => setCouponInput(e.target.value.toUpperCase())}
+                            placeholder="Código promocional" maxLength={30}
+                            className="flex-1 bg-transparent text-sm focus:outline-none placeholder:text-muted-foreground/60" />
+                          <button onClick={applyCoupon} disabled={validatingCoupon || !couponInput.trim()}
+                            className="bg-[hsl(14_90%_55%)] text-white font-bold text-xs px-5 py-2 rounded-full disabled:opacity-50">
+                            {validatingCoupon ? "..." : "Aplicar"}
+                          </button>
+                        </>
                       )}
                     </div>
 
-                    {/* Payment */}
-                    <div>
-                      <p className="text-xs font-bold text-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5"><CreditCard size={13} /> Forma de pagamento</p>
-                      <div className="grid grid-cols-2 gap-2">
-                        {PAYMENT_METHODS.map(pm => (
-                          <button key={pm.id} onClick={() => setSelectedPayment(pm.id)}
-                            className={`flex items-center gap-2 p-3 rounded-xl border text-sm font-semibold transition-all ${selectedPayment === pm.id ? "border-primary bg-primary/5 text-primary ring-1 ring-primary/30" : "border-border text-muted-foreground hover:border-primary/30"}`}>
-                            <pm.icon size={16} />
-                            {pm.label}
-                          </button>
-                        ))}
+                    {/* Order Summary */}
+                    <div className="bg-white rounded-2xl border border-border/40 shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-4 mt-2 space-y-2.5">
+                      <p className="text-sm font-extrabold text-foreground mb-1">Resumo do pedido</p>
+                      <Row label="Subtotal" value={fmt(total)} />
+                      {discount > 0 && <Row label="Desconto" value={`-${fmt(discount)}`} accent />}
+                      <Row label="Taxa de entrega" value={deliveryFee ? fmt(deliveryFee) : "—"} muted />
+                      <Row label="Impostos (5%)" value={fmt(tax)} muted />
+                      <div className="border-t border-border pt-2.5 flex items-center justify-between">
+                        <span className="text-base font-extrabold text-foreground">Total</span>
+                        <span className="text-base font-extrabold text-[hsl(14_90%_55%)]">{fmt(grandTotal)}</span>
                       </div>
                     </div>
-
-                    {/* Coupon */}
-                    <div>
-                      <p className="text-xs font-bold text-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5"><Tag size={13} /> Cupom de desconto</p>
-                      {appliedCoupon ? (
-                        <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">
-                          <div className="min-w-0">
-                            <p className="text-sm font-bold text-emerald-700 truncate">{appliedCoupon.title}</p>
-                            <p className="text-xs text-emerald-600">-{fmt(discount)}</p>
-                          </div>
-                          <button onClick={() => { setAppliedCoupon(null); setCouponInput(""); }}
-                            className="text-xs font-bold text-destructive">Remover</button>
-                        </div>
-                      ) : (
-                        <div className="flex gap-2">
-                          <input value={couponInput} onChange={e => setCouponInput(e.target.value.toUpperCase())}
-                            placeholder="Inserir código" maxLength={30}
-                            className="flex-1 rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
-                          <button onClick={applyCoupon} disabled={validatingCoupon || !couponInput.trim()}
-                            className="bg-primary text-primary-foreground font-bold px-4 rounded-xl text-sm disabled:opacity-50">
-                            {validatingCoupon ? "..." : "Aplicar"}
+                  </motion.div>
+                ) : (
+                  /* ── Checkout ── */
+                  <motion.div key="checkout" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4 pt-2">
+                    {/* Payment Methods */}
+                    <div className="bg-white rounded-2xl border border-border/40 shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-2">
+                      {PAYMENT_METHODS.map((pm, i) => {
+                        const active = selectedPayment === pm.id;
+                        return (
+                          <button key={pm.id} onClick={() => setSelectedPayment(pm.id)}
+                            className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${active ? "bg-[hsl(14_90%_55%)]/5" : "hover:bg-muted/40"} ${i > 0 ? "border-t border-border/40" : ""}`}>
+                            <span className="w-10 h-10 rounded-xl bg-muted/60 flex items-center justify-center">
+                              <pm.icon size={18} className="text-foreground" />
+                            </span>
+                            <div className="flex-1 text-left">
+                              <p className="text-sm font-bold text-foreground">{pm.label}</p>
+                              <p className="text-[11px] text-muted-foreground">Pagamento seguro</p>
+                            </div>
+                            <span className={`w-5 h-5 rounded-md border-2 flex items-center justify-center ${active ? "bg-[hsl(14_90%_55%)] border-[hsl(14_90%_55%)]" : "border-border"}`}>
+                              {active && <CheckCircle size={12} className="text-white" />}
+                            </span>
                           </button>
+                        );
+                      })}
+                      <button className="w-full flex items-center justify-center gap-2 p-3 border-t border-dashed border-border text-sm font-bold text-[hsl(14_90%_55%)]">
+                        <Plus size={14} /> Adicionar método de pagamento
+                      </button>
+                    </div>
+
+                    {/* Delivery address */}
+                    <div>
+                      <p className="text-sm font-extrabold text-foreground mb-2">Endereço de entrega</p>
+                      {addresses.length === 0 ? (
+                        <button onClick={() => { handleClose(); navigate("/perfil"); }}
+                          className="w-full bg-amber-50 border border-amber-200 rounded-2xl p-4 text-left">
+                          <p className="text-sm font-bold text-amber-800">Cadastre um endereço</p>
+                          <p className="text-xs text-amber-700 mt-0.5">Toque para adicionar no seu perfil</p>
+                        </button>
+                      ) : (
+                        <div className="space-y-2">
+                          {addresses.map(addr => {
+                            const active = selectedAddress === addr.id;
+                            return (
+                              <button key={addr.id} onClick={() => setSelectedAddress(addr.id)}
+                                className={`w-full flex items-center gap-3 bg-white rounded-2xl border shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-3.5 text-left transition-all ${active ? "border-[hsl(14_90%_55%)]" : "border-border/40"}`}>
+                                <span className="w-10 h-10 rounded-full bg-[hsl(14_90%_55%)]/10 flex items-center justify-center shrink-0">
+                                  <MapPin size={16} className="text-[hsl(14_90%_55%)]" />
+                                </span>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-1.5">
+                                    <p className="text-sm font-bold text-foreground">{addr.label}</p>
+                                    {addr.is_default && <span className="text-[9px] bg-foreground text-white px-1.5 py-0.5 rounded font-bold">PADRÃO</span>}
+                                  </div>
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    {addr.street}, {addr.number} · {addr.neighborhood}
+                                  </p>
+                                </div>
+                                <ChevronRight size={16} className="text-muted-foreground shrink-0" />
+                              </button>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
 
                     {/* Notes */}
-                    <div>
-                      <p className="text-xs font-bold text-foreground uppercase tracking-wide mb-2">Observações (opcional)</p>
-                      <textarea value={notes} onChange={e => setNotes(e.target.value)}
-                        placeholder="Ex: sem cebola, ponto da carne, troco para R$ 50..." rows={2} maxLength={300}
-                        className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none" />
-                    </div>
+                    <textarea value={notes} onChange={e => setNotes(e.target.value)}
+                      placeholder="Observações para o entregador (opcional)"
+                      rows={2} maxLength={300}
+                      className="w-full bg-muted/30 border border-border rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(14_90%_55%)]/30 resize-none" />
 
-                    {/* Order summary */}
-                    <div className="bg-secondary/50 rounded-xl p-3 space-y-2">
+                    {/* Order Summary */}
+                    <div className="bg-white rounded-2xl border border-border/40 shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-4 space-y-2.5">
                       <div className="flex items-center justify-between">
-                        <p className="text-xs font-bold text-foreground uppercase tracking-wide">Resumo</p>
+                        <p className="text-sm font-extrabold text-foreground">Resumo do pedido</p>
                         {estimatedTime && (
-                          <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock size={11} /> {estimatedTime}</span>
+                          <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-semibold">
+                            <Clock size={11} /> {estimatedTime}
+                          </span>
                         )}
                       </div>
-                      {items.map(item => (
-                        <div key={item.id} className="flex justify-between text-xs text-muted-foreground">
-                          <span>{item.qty}× {item.name}</span>
-                          <span>{fmt(item.price * item.qty)}</span>
-                        </div>
-                      ))}
+                      <Row label="Subtotal" value={fmt(total)} muted />
+                      <Row label="Taxa de entrega" value={deliveryFee === 0 ? "Grátis" : fmt(deliveryFee)} muted />
+                      <Row label="Impostos" value={fmt(tax)} muted />
+                      {discount > 0 && <Row label="Desconto" value={`-${fmt(discount)}`} accent />}
+                      <div className="border-t border-border pt-2.5 flex items-center justify-between">
+                        <span className="text-base font-extrabold text-foreground">Total</span>
+                        <span className="text-base font-extrabold text-[hsl(14_90%_55%)]">{fmt(grandTotal)}</span>
+                      </div>
                       {belowMin && (
-                        <p className="text-xs text-destructive font-semibold pt-1">
-                          Pedido mínimo: {fmt(minOrder)} (faltam {fmt(minOrder - total)})
+                        <p className="text-xs text-destructive font-semibold">
+                          Pedido mínimo {fmt(minOrder)} · faltam {fmt(minOrder - total)}
                         </p>
                       )}
                     </div>
@@ -525,41 +589,48 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                 )}
               </AnimatePresence>
             </div>
-            {items.length > 0 && !ordered && (
-              <div className="p-4 border-t border-border space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-bold text-foreground">{fmt(total)}</span>
+
+            {/* ── Footer CTA ── */}
+            <div className="px-5 pb-6 pt-3 shrink-0 bg-gradient-to-t from-white via-white to-white/0">
+              {ordered ? (
+                <div className="space-y-2">
+                  <button onClick={() => { handleClose(); navigate("/pedidos"); }}
+                    className="w-full bg-[hsl(14_90%_55%)] text-white font-bold py-3.5 rounded-full shadow-lg shadow-[hsl(14_90%_55%)]/30 hover:opacity-90 transition-opacity">
+                    Acompanhar pedido
+                  </button>
+                  <button onClick={handleClose}
+                    className="w-full bg-white border border-border text-foreground font-bold py-3.5 rounded-full">
+                    Voltar ao início
+                  </button>
                 </div>
-                {step === "checkout" && discount > 0 && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground flex items-center gap-1"><Tag size={13} /> Desconto</span>
-                    <span className="font-semibold text-emerald-600">-{fmt(discount)}</span>
-                  </div>
-                )}
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground flex items-center gap-1"><Bike size={13} /> Entrega</span>
-                  <span className={`font-semibold ${deliveryFee === 0 && step === "checkout" ? "text-emerald-600" : "text-foreground"}`}>
-                    {step === "checkout" ? (deliveryFee === 0 ? "Grátis" : fmt(deliveryFee)) : "Calculado no checkout"}
-                  </span>
-                </div>
-                {step === "checkout" && (
-                  <div className="flex items-center justify-between font-bold text-base border-t border-border pt-2">
-                    <span>Total</span>
-                    <span className="text-primary">{fmt(grandTotal)}</span>
-                  </div>
-                )}
-                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={handleOrder}
+              ) : items.length > 0 ? (
+                <motion.button whileTap={{ scale: 0.97 }} onClick={handleOrder}
                   disabled={saving || (step === "checkout" && (belowMin || addresses.length === 0))}
-                  className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
-                  {saving ? "Finalizando..." : step === "cart" ? `Continuar · ${fmt(total)}` : belowMin ? `Mínimo ${fmt(minOrder)}` : `Confirmar pedido · ${fmt(grandTotal)}`}
+                  className="w-full bg-[hsl(14_90%_55%)] text-white font-bold py-4 rounded-full shadow-lg shadow-[hsl(14_90%_55%)]/30 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
+                  {saving
+                    ? "Finalizando..."
+                    : step === "cart"
+                      ? `Checkout · ${fmt(total)}`
+                      : belowMin
+                        ? `Mínimo ${fmt(minOrder)}`
+                        : `Finalizar pedido · ${fmt(grandTotal)}`}
                 </motion.button>
-              </div>
-            )}
+              ) : null}
+            </div>
           </motion.div>
         </>
       )}
     </AnimatePresence>
+  );
+}
+
+/* Reusable summary row */
+function Row({ label, value, muted, accent }: { label: string; value: string; muted?: boolean; accent?: boolean }) {
+  return (
+    <div className="flex items-center justify-between text-sm">
+      <span className={muted ? "text-muted-foreground" : "text-foreground"}>{label}</span>
+      <span className={`font-bold ${accent ? "text-emerald-600" : "text-foreground"}`}>{value}</span>
+    </div>
   );
 }
 
