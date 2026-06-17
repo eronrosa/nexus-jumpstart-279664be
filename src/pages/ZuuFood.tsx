@@ -349,7 +349,11 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
     }
   };
 
-  const handleClose = () => { setStep("cart"); onClose(); };
+  const handleClose = () => {
+    setStep("cart"); setOrdered(false); setOrderRef(null);
+    setNotes(""); setCouponInput(""); setAppliedCoupon(null);
+    onClose();
+  };
 
   const ORANGE = "hsl(14_90%_55%)";
 
