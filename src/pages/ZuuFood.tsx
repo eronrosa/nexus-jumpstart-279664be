@@ -947,6 +947,50 @@ const ZuuFood = () => {
     setShowPreview(false);
   };
 
+  if (urlRestaurantId && !selectedRestaurant) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <div className="sticky top-0 z-20 bg-background px-4 pt-4 pb-3">
+          <div className="max-w-5xl mx-auto flex items-center gap-3">
+            <button onClick={() => navigate("/zuufood")}
+              className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center shadow-sm">
+              <ArrowLeft size={18} className="text-foreground" />
+            </button>
+            <div>
+              <p className="text-base font-extrabold text-foreground">ZuuFood</p>
+              <p className="text-xs text-muted-foreground">
+                {storesLoaded ? "Restaurante não encontrado" : "Carregando restaurante..."}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
+          {!storesLoaded ? (
+            <>
+              <div className="h-56 rounded-2xl bg-muted animate-pulse" />
+              <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
+                <div className="h-5 w-2/3 rounded bg-muted animate-pulse" />
+                <div className="h-4 w-1/2 rounded bg-muted animate-pulse" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {[1, 2, 3, 4].map(i => <div key={i} className="h-44 rounded-2xl bg-muted animate-pulse" />)}
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-16">
+              <StoreIcon size={48} className="text-muted-foreground/30 mx-auto mb-3" />
+              <p className="font-semibold text-muted-foreground">Restaurante não encontrado</p>
+              <button onClick={() => navigate("/zuufood")}
+                className="mt-4 bg-[hsl(84_90%_42%)] text-white font-bold px-5 py-3 rounded-full">
+                Ver restaurantes
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background pb-20">
       {showPreview && !selectedRestaurant && !urlRestaurantId && <FoodPreview onEnter={dismissPreview} />}
