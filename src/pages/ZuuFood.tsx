@@ -1236,7 +1236,8 @@ const ZuuFood = () => {
                       <div className="space-y-2 md:grid md:grid-cols-2 xl:grid-cols-3 md:gap-3 md:space-y-0">
                         {menuItems.map(item => (
                           <motion.div key={item.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                            className="bg-card rounded-2xl border border-border p-3 flex gap-3 items-center">
+                            onClick={() => openItem(item)}
+                            className="bg-card rounded-2xl border border-border p-3 flex gap-3 items-center cursor-pointer hover:border-primary/40 transition-colors">
                             {item.image ? (
                               <img src={item.image} alt={item.name} className="w-16 h-16 rounded-xl object-cover shrink-0" />
                             ) : (
@@ -1250,7 +1251,7 @@ const ZuuFood = () => {
                               <p className="text-sm font-bold text-primary mt-1">{fmt(item.price)}</p>
                             </div>
                             <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                              onClick={() => handleAdd(item, selectedRestaurant)}
+                              onClick={(e) => { e.stopPropagation(); handleAdd(item, selectedRestaurant); }}
                               animate={addedId === item.id ? { scale: [1, 1.3, 1] } : {}}
                               className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-colors ${
                                 addedId === item.id ? "bg-emerald-500 text-card" : "bg-primary text-primary-foreground hover:opacity-90"
