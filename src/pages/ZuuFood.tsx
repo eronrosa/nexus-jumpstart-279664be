@@ -244,7 +244,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
     supabase.from("addresses").select("*").eq("user_id", user.id).then(({ data }) => {
       if (data && data.length > 0) {
         setAddresses(data as AddressData[]);
-        const def = data.find((a: any) => a.is_default);
+        const def = (data as AddressData[]).find(a => a.is_default);
         setSelectedAddress(prev => prev ?? (def?.id || data[0].id));
       }
     });
@@ -717,7 +717,7 @@ const ZuuFood = () => {
     if (!user) { setFavoriteIds(new Set()); return; }
     supabase.from("favorite_stores").select("store_id").eq("user_id", user.id)
       .then(({ data }) => {
-        if (data) setFavoriteIds(new Set(data.map((f: any) => f.store_id)));
+        if (data) setFavoriteIds(new Set(data.map(f => f.store_id)));
       });
   }, [user]);
 
@@ -757,7 +757,7 @@ const ZuuFood = () => {
         .from("reviews").select("store_id, rating").in("store_id", storeIds);
 
       const ratingMap: Record<string, { sum: number; count: number }> = {};
-      reviewsData?.forEach((r: any) => {
+      reviewsData?.forEach(r => {
         if (!ratingMap[r.store_id]) ratingMap[r.store_id] = { sum: 0, count: 0 };
         ratingMap[r.store_id].sum += r.rating;
         ratingMap[r.store_id].count += 1;
@@ -770,7 +770,7 @@ const ZuuFood = () => {
         .order("radius_km", { ascending: true });
 
       const zoneMap: Record<string, { fee: number; time: string }> = {};
-      zonesData?.forEach((z: any) => {
+      zonesData?.forEach(z => {
         if (!zoneMap[z.store_id]) zoneMap[z.store_id] = { fee: Number(z.delivery_fee), time: z.estimated_time };
       });
 
@@ -780,7 +780,7 @@ const ZuuFood = () => {
         .in("store_id", storeIds).eq("is_active", true);
 
       const promoMap: Record<string, PromotionData[]> = {};
-      promosData?.forEach((p: any) => {
+      promosData?.forEach(p => {
         if (!promoMap[p.store_id]) promoMap[p.store_id] = [];
         promoMap[p.store_id].push(p);
       });
