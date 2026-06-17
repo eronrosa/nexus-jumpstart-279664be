@@ -14,6 +14,10 @@ import FoodPreview from "@/components/FoodPreview";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import logoMitsuba from "@/assets/logo-mitsuba.png";
+import logoLeMax from "@/assets/logo-lemax.png";
+import logoPizzaPalace from "@/assets/logo-pizzapalace.png";
+import logoBondinho from "@/assets/logo-bondinho.png";
 
 /* ─── Types ─── */
 interface MenuItemData {
