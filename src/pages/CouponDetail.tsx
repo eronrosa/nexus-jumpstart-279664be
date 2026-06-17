@@ -122,7 +122,7 @@ const CouponDetail = () => {
         </button>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
+      <div className="max-w-lg lg:max-w-2xl mx-auto px-4 py-6 space-y-5">
 
         {/* Hero image */}
         <motion.div

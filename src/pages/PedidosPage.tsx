@@ -176,7 +176,7 @@ const PedidosPage = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="sticky top-0 bg-card border-b border-border z-10">
-        <div className="max-w-xl mx-auto px-4 py-4 flex items-center gap-3">
+        <div className="max-w-xl lg:max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft size={20} />
           </button>
@@ -184,7 +184,7 @@ const PedidosPage = () => {
         </div>
       </div>
 
-      <div className="max-w-xl mx-auto px-4 py-6">
+      <div className="max-w-xl lg:max-w-3xl mx-auto px-4 py-6">
         {loading ? (
           <div className="flex flex-col gap-3">
             {[1, 2, 3].map(i => (

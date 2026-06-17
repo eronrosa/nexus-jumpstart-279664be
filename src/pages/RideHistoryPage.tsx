@@ -43,7 +43,7 @@ const RideHistoryPage = () => {
   if (selectedRide) {
     return (
       <div className="min-h-screen bg-background p-4">
-        <div className="max-w-lg mx-auto space-y-4">
+        <div className="max-w-lg lg:max-w-2xl mx-auto space-y-4">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => setSelectedRide(null)}><ArrowLeft className="h-5 w-5" /></Button>
             <h1 className="text-lg font-bold text-foreground">Detalhes da corrida</h1>
@@ -84,7 +84,7 @@ const RideHistoryPage = () => {
 
   return (
     <div className="min-h-screen bg-background p-4">
-      <div className="max-w-lg mx-auto space-y-4">
+      <div className="max-w-lg lg:max-w-2xl mx-auto space-y-4">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/zuumob")}><ArrowLeft className="h-5 w-5" /></Button>
           <h1 className="text-lg font-bold text-foreground">Histórico de corridas</h1>

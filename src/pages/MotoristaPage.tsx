@@ -251,7 +251,7 @@ const MotoristaPage = () => {
     return (
       <div className="zuumob-dark min-h-screen font-dm" style={{ backgroundColor: ZM.bg }}>
         <div className="p-4" style={{ backgroundColor: ZM.bgSec, borderBottom: `1px solid ${ZM.border}` }}>
-          <div className="max-w-lg mx-auto flex items-center gap-3">
+          <div className="max-w-lg lg:max-w-2xl mx-auto flex items-center gap-3">
             <button className="w-10 h-10 rounded-[14px] flex items-center justify-center transition-all duration-200"
               style={{ backgroundColor: ZM.bgElev, border: `1px solid ${ZM.border}` }}
               onClick={() => regStep > 0 ? setRegStep(regStep - 1) : navigate("/")}>
@@ -265,7 +265,7 @@ const MotoristaPage = () => {
         </div>
 
         {/* Progress */}
-        <div className="max-w-lg mx-auto px-4 pt-4">
+        <div className="max-w-lg lg:max-w-2xl mx-auto px-4 pt-4">
           <div className="flex items-center gap-1 mb-6">
             {stepTitles.map((_, i) => {
               const Icon = stepIcons[i];
@@ -282,7 +282,7 @@ const MotoristaPage = () => {
           </div>
         </div>
 
-        <div className="max-w-lg mx-auto px-4 pb-8">
+        <div className="max-w-lg lg:max-w-2xl mx-auto px-4 pb-8">
           <AnimatePresence mode="wait">
             <motion.div key={regStep} initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -50, opacity: 0 }} transition={{ duration: 0.2 }}>
               {/* Step 1: Personal */}
@@ -484,7 +484,7 @@ const MotoristaPage = () => {
           <motion.div initial={{ opacity: 0, y: -50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -50 }}
             className="fixed inset-x-0 top-0 z-50 backdrop-blur-md p-4 shadow-2xl"
             style={{ backgroundColor: "rgba(17,19,24,0.95)", borderBottom: `2px solid ${ZM.green}` }}>
-            <div className="max-w-lg mx-auto space-y-3">
+            <div className="max-w-lg lg:max-w-2xl mx-auto space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="font-syne text-lg font-bold" style={{ color: ZM.textPri }}>Nova corrida!</h3>
                 <div className="flex items-center gap-2">

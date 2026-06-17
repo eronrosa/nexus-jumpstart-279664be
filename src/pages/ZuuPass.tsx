@@ -314,7 +314,7 @@ const EventDetail = ({ event, onClose, onBuy }: { event: EventData; onClose: () 
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-3 sm:px-4 pb-24 sm:pb-28 -mt-8 sm:-mt-10 relative z-10">
+      <div className="max-w-3xl lg:max-w-5xl mx-auto px-3 sm:px-4 pb-24 sm:pb-28 -mt-8 sm:-mt-10 relative z-10">
         <div className="flex items-start gap-3">
           <div className="bg-card border border-border rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 text-center shadow-lg shrink-0">
             <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase block">{event.dayOfWeek}</span>
@@ -390,7 +390,7 @@ const EventDetail = ({ event, onClose, onBuy }: { event: EventData; onClose: () 
 
       {/* Fixed bottom CTA */}
       <div className="fixed bottom-0 left-0 right-0 z-[61] bg-card/95 backdrop-blur-md border-t border-border px-3 sm:px-4 py-2.5 sm:py-3">
-        <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
+        <div className="max-w-3xl lg:max-w-5xl mx-auto flex items-center justify-between gap-3">
           <div>
             <p className="text-[10px] sm:text-xs text-muted-foreground">A partir de</p>
             <p className="text-lg sm:text-xl font-bold text-primary">{fmt(event.price)}</p>
