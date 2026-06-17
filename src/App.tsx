@@ -10,6 +10,7 @@ import PageTransition from "./components/PageTransition";
 import Index from "./pages/Index";
 import Welcome from "./pages/Welcome";
 import PhoneAuthPage from "./pages/PhoneAuthPage";
+import VerifyCodePage from "./pages/VerifyCodePage";
 import CouponDetail from "./pages/CouponDetail";
 import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/ProfilePage";
