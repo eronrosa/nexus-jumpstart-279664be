@@ -917,6 +917,16 @@ const ZuuMob = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <TripDetailsSheet
+        open={tripDetailsOpen}
+        onClose={() => setTripDetailsOpen(false)}
+        origin={origin?.address}
+        destination={destination?.address}
+        destinationTime={estimatedDuration ? `${estimatedDuration} min` : "20:30"}
+        fare={currentRide?.final_price ? formatPrice(currentRide.final_price) : formatPrice(getPrice(selectedRideType))}
+        paymentMethod={paymentMethods.find((p) => p.id === selectedPayment)?.label || "Dinheiro"}
+      />
     </div>
   );
 };
