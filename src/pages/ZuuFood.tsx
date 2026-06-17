@@ -254,7 +254,8 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
     return Math.min(total, v);
   })();
 
-  const grandTotal = Math.max(0, total - discount) + deliveryFee;
+  const tax = Math.max(0, total - discount) * 0.05;
+  const grandTotal = Math.max(0, total - discount) + deliveryFee + tax;
   const belowMin = minOrder > 0 && total < minOrder;
 
   const applyCoupon = async () => {
