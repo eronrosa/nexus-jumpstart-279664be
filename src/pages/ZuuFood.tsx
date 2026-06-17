@@ -7,7 +7,8 @@ import {
   CreditCard, Banknote, Smartphone, Tag, Home, Building, Mic,
   SlidersHorizontal, Heart, User, Phone, Share2, Wifi, ParkingCircle,
   Music, UtensilsCrossed, Package, Users, ChevronDown, ShieldCheck,
-  CalendarDays, ChefHat, Flame, Sparkles, BadgePercent, Trophy
+  CalendarDays, ChefHat, Flame, Sparkles, BadgePercent, Trophy,
+  Drumstick, Salad, EggFried, Beef, Cookie, GlassWater, type LucideIcon
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import FoodPreview from "@/components/FoodPreview";
