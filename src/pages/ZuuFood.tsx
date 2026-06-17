@@ -792,6 +792,7 @@ const ZuuFood = () => {
       toast.error("Este estabelecimento está fechado no momento");
       return;
     }
+    navigate(`/zuufood/r/${r.id}`, { replace: false });
     if (r.isDynamic && r.menu.length === 0) {
       setLoadingMenu(true);
       setSelectedRestaurant(r);
@@ -813,6 +814,21 @@ const ZuuFood = () => {
       setSelectedRestaurant(r);
     }
   };
+
+  const closeRestaurant = () => {
+    setSelectedRestaurant(null);
+    navigate("/zuufood");
+  };
+
+  // Deep-link: open restaurant from URL when allRestaurants is ready
+  useEffect(() => {
+    if (!urlRestaurantId) return;
+    if (selectedRestaurant?.id === urlRestaurantId) return;
+    const r = allRestaurants.find(x => x.id === urlRestaurantId);
+    if (r) handleSelectRestaurant(r);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlRestaurantId, allRestaurants]);
+
 
   const filtered = allRestaurants.filter(r => {
     const matchCat = activeCategory === "Todos" || r.category === activeCategory;
