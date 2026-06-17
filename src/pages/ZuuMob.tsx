@@ -30,9 +30,10 @@ interface MockDriver {
 }
 
 const rideTypes = [
-  { id: "standard", name: "ZuuMob Standard", icon: <Car className="h-6 w-6" />, multiplier: 1, eta: "5 min", description: "Viagem acessível" },
-  { id: "comfort", name: "ZuuMob Comfort", icon: <Crown className="h-6 w-6" />, multiplier: 1.3, eta: "8 min", description: "Conforto premium", badge: "Premium" },
-  { id: "moto", name: "ZuuMob Moto", icon: <Bike className="h-6 w-6" />, multiplier: 0.6, eta: "3 min", description: "Rápido e econômico", badge: "Mais rápido" },
+  { id: "standard", name: "ZUUMOB Go", icon: <Car className="h-6 w-6" />, multiplier: 1, eta: "2 min", description: "Mais econômico" },
+  { id: "black", name: "ZUUMOB Black", icon: <Crown className="h-6 w-6" />, multiplier: 1.37, eta: "1 min", description: "Mais conforto", badge: "Mais rápido" },
+  { id: "comfort", name: "ZUUMOB Comfort", icon: <Car className="h-6 w-6" />, multiplier: 1.21, eta: "2 min", description: "Carros maiores" },
+  { id: "moto", name: "Moto", icon: <Bike className="h-6 w-6" />, multiplier: 0.52, eta: "2 min", description: "Mais barato" },
 ];
 
 const paymentMethods = [
