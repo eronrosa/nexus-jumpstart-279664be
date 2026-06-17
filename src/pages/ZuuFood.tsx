@@ -10,6 +10,7 @@ import {
   CalendarDays, ChefHat, Flame, Sparkles, BadgePercent, Trophy
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import FoodPreview from "@/components/FoodPreview";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -809,8 +810,18 @@ const ZuuFood = () => {
     setReserveNotes("");
   };
 
+  const [showPreview, setShowPreview] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return sessionStorage.getItem("zuufood:preview-seen") !== "1";
+  });
+  const dismissPreview = () => {
+    sessionStorage.setItem("zuufood:preview-seen", "1");
+    setShowPreview(false);
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
+      {showPreview && <FoodPreview onEnter={dismissPreview} />}
       {!selectedRestaurant ? (
         <>
           {/* ── HEADER (Mirqab-style) ── */}
