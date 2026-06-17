@@ -24,11 +24,14 @@ import logoBondinho from "@/assets/logo-bondinho.png";
 interface MenuItemData {
   id: string; category: string; name: string; price: number; image: string; description: string;
 }
+interface OpeningHourData {
+  day: string; enabled: boolean; open: string; close: string;
+}
 interface RestaurantData {
   id: string; name: string; category: string; rating: number; reviewCount: number;
   deliveryTime: string; minOrder: number; deliveryFee: number; promo: string;
   image: string; logo: string; menu: MenuItemData[]; isDynamic?: boolean;
-  openingHours?: any[]; isOpen?: boolean; promotions?: PromotionData[];
+  openingHours?: OpeningHourData[]; isOpen?: boolean; promotions?: PromotionData[];
 }
 interface PromotionData {
   id: string; title: string; description: string | null; discount_type: string;
@@ -190,11 +193,24 @@ const DAY_NAMES = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", 
 /* ─── Helpers ─── */
 const fmt = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
-function isStoreOpen(openingHours: any[] | null | undefined): boolean {
-  if (!openingHours || openingHours.length === 0) return true; // assume open if no hours set
+function normalizeOpeningHours(openingHours: unknown): OpeningHourData[] {
+  if (!Array.isArray(openingHours)) return [];
+  return openingHours.filter((hour): hour is OpeningHourData => {
+    if (typeof hour !== "object" || hour === null) return false;
+    const candidate = hour as Record<string, unknown>;
+    return typeof candidate.day === "string"
+      && typeof candidate.enabled === "boolean"
+      && typeof candidate.open === "string"
+      && typeof candidate.close === "string";
+  });
+}
+
+function isStoreOpen(openingHours: unknown): boolean {
+  const hours = normalizeOpeningHours(openingHours);
+  if (hours.length === 0) return true; // assume open if no hours set
   const now = new Date();
   const dayName = DAY_NAMES[now.getDay()];
-  const todayHours = openingHours.find((h: any) => h.day === dayName);
+  const todayHours = hours.find(h => h.day === dayName);
   if (!todayHours || !todayHours.enabled) return false;
   const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
   return currentTime >= todayHours.open && currentTime <= todayHours.close;
@@ -228,7 +244,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
     supabase.from("addresses").select("*").eq("user_id", user.id).then(({ data }) => {
       if (data && data.length > 0) {
         setAddresses(data as AddressData[]);
-        const def = data.find((a: any) => a.is_default);
+        const def = (data as AddressData[]).find(a => a.is_default);
         setSelectedAddress(prev => prev ?? (def?.id || data[0].id));
       }
     });
@@ -655,6 +671,7 @@ const ZuuFood = () => {
   const [cartOpen, setCartOpen] = useState(false);
   const [addedId, setAddedId] = useState<string | null>(null);
   const [allRestaurants, setAllRestaurants] = useState<RestaurantData[]>(STATIC_RESTAURANTS);
+  const [storesLoaded, setStoresLoaded] = useState(false);
   const [loadingMenu, setLoadingMenu] = useState(false);
   const [reserveOpen, setReserveOpen] = useState(false);
   const [reserveDate, setReserveDate] = useState("");
@@ -700,7 +717,7 @@ const ZuuFood = () => {
     if (!user) { setFavoriteIds(new Set()); return; }
     supabase.from("favorite_stores").select("store_id").eq("user_id", user.id)
       .then(({ data }) => {
-        if (data) setFavoriteIds(new Set(data.map((f: any) => f.store_id)));
+        if (data) setFavoriteIds(new Set(data.map(f => f.store_id)));
       });
   }, [user]);
 
@@ -721,13 +738,18 @@ const ZuuFood = () => {
 
   // Load dynamic stores + real ratings + delivery zones + promotions
   useEffect(() => {
+    let isMounted = true;
+
     const loadStores = async () => {
-      const { data: stores } = await supabase
+      const { data: stores, error } = await supabase
         .from("stores")
         .select("id, name, category, logo_url, cover_url, description, is_active, opening_hours")
         .eq("is_active", true);
 
-      if (!stores || stores.length === 0) return;
+      if (error || !stores || stores.length === 0) {
+        if (isMounted) setStoresLoaded(true);
+        return;
+      }
 
       // Fetch real ratings
       const storeIds = stores.map(s => s.id);
@@ -735,7 +757,7 @@ const ZuuFood = () => {
         .from("reviews").select("store_id, rating").in("store_id", storeIds);
 
       const ratingMap: Record<string, { sum: number; count: number }> = {};
-      reviewsData?.forEach((r: any) => {
+      reviewsData?.forEach(r => {
         if (!ratingMap[r.store_id]) ratingMap[r.store_id] = { sum: 0, count: 0 };
         ratingMap[r.store_id].sum += r.rating;
         ratingMap[r.store_id].count += 1;
@@ -748,7 +770,7 @@ const ZuuFood = () => {
         .order("radius_km", { ascending: true });
 
       const zoneMap: Record<string, { fee: number; time: string }> = {};
-      zonesData?.forEach((z: any) => {
+      zonesData?.forEach(z => {
         if (!zoneMap[z.store_id]) zoneMap[z.store_id] = { fee: Number(z.delivery_fee), time: z.estimated_time };
       });
 
@@ -758,7 +780,7 @@ const ZuuFood = () => {
         .in("store_id", storeIds).eq("is_active", true);
 
       const promoMap: Record<string, PromotionData[]> = {};
-      promosData?.forEach((p: any) => {
+      promosData?.forEach(p => {
         if (!promoMap[p.store_id]) promoMap[p.store_id] = [];
         promoMap[p.store_id].push(p);
       });
@@ -766,7 +788,7 @@ const ZuuFood = () => {
       const dynamicRestaurants: RestaurantData[] = stores.map(store => {
         const r = ratingMap[store.id];
         const z = zoneMap[store.id];
-        const openHours = store.opening_hours as any[] | null;
+        const openHours = normalizeOpeningHours(store.opening_hours);
         return {
           id: store.id,
           name: store.name,
@@ -787,9 +809,13 @@ const ZuuFood = () => {
         };
       });
 
+      if (!isMounted) return;
       setAllRestaurants([...dynamicRestaurants, ...STATIC_RESTAURANTS]);
+      setStoresLoaded(true);
     };
     loadStores();
+
+    return () => { isMounted = false; };
   }, []);
 
   const handleSelectRestaurant = async (r: RestaurantData) => {
@@ -869,7 +895,9 @@ const ZuuFood = () => {
     const url = window.location.href;
     const text = `Confira ${selectedRestaurant.name} no ZuuFood!`;
     if (navigator.share) {
-      try { await navigator.share({ title: selectedRestaurant.name, text, url }); } catch {}
+      try { await navigator.share({ title: selectedRestaurant.name, text, url }); } catch {
+        return;
+      }
     } else {
       await navigator.clipboard.writeText(`${text} ${url}`);
       toast.success("Link copiado!");
@@ -931,6 +959,50 @@ const ZuuFood = () => {
     sessionStorage.setItem("zuufood:preview-seen", "1");
     setShowPreview(false);
   };
+
+  if (urlRestaurantId && !selectedRestaurant) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <div className="sticky top-0 z-20 bg-background px-4 pt-4 pb-3">
+          <div className="max-w-5xl mx-auto flex items-center gap-3">
+            <button onClick={() => navigate("/zuufood")}
+              className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center shadow-sm">
+              <ArrowLeft size={18} className="text-foreground" />
+            </button>
+            <div>
+              <p className="text-base font-extrabold text-foreground">ZuuFood</p>
+              <p className="text-xs text-muted-foreground">
+                {storesLoaded ? "Restaurante não encontrado" : "Carregando restaurante..."}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
+          {!storesLoaded ? (
+            <>
+              <div className="h-56 rounded-2xl bg-muted animate-pulse" />
+              <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
+                <div className="h-5 w-2/3 rounded bg-muted animate-pulse" />
+                <div className="h-4 w-1/2 rounded bg-muted animate-pulse" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {[1, 2, 3, 4].map(i => <div key={i} className="h-44 rounded-2xl bg-muted animate-pulse" />)}
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-16">
+              <StoreIcon size={48} className="text-muted-foreground/30 mx-auto mb-3" />
+              <p className="font-semibold text-muted-foreground">Restaurante não encontrado</p>
+              <button onClick={() => navigate("/zuufood")}
+                className="mt-4 bg-[hsl(84_90%_42%)] text-white font-bold px-5 py-3 rounded-full">
+                Ver restaurantes
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20">
