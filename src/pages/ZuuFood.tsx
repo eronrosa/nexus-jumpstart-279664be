@@ -201,6 +201,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [ordered, setOrdered] = useState(false);
+  const [orderRef, setOrderRef] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [step, setStep] = useState<"cart" | "checkout">("cart");
   const [addresses, setAddresses] = useState<AddressData[]>([]);
