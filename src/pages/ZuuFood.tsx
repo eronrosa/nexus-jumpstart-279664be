@@ -1391,31 +1391,40 @@ const ZuuFood = () => {
                   Object.entries(menuGroups).map(([category, menuItems]) => (
                     <section key={category}>
                       <h2 className="text-sm font-extrabold text-foreground mb-3 uppercase tracking-wide">{category}</h2>
-                      <div className="space-y-2 md:grid md:grid-cols-2 xl:grid-cols-3 md:gap-3 md:space-y-0">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                         {menuItems.map(item => (
                           <motion.div key={item.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                             onClick={() => openItem(item)}
-                            className="bg-card rounded-2xl border border-border p-3 flex gap-3 items-center cursor-pointer hover:border-primary/40 transition-colors">
-                            {item.image ? (
-                              <img src={item.image} alt={item.name} className="w-16 h-16 rounded-xl object-cover shrink-0" />
-                            ) : (
-                              <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center shrink-0">
-                                <StoreIcon size={20} className="text-muted-foreground/30" />
-                              </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-sm text-foreground leading-tight">{item.name}</p>
-                              {item.description && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.description}</p>}
-                              <p className="text-sm font-bold text-primary mt-1">{fmt(item.price)}</p>
+                            className="relative bg-card rounded-2xl border border-border p-3 flex flex-col cursor-pointer hover:border-primary/40 transition-colors">
+                            <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-muted mb-2">
+                              {item.image ? (
+                                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <StoreIcon size={24} className="text-muted-foreground/30" />
+                                </div>
+                              )}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); }}
+                                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-card/90 backdrop-blur flex items-center justify-center shadow-sm">
+                                <Heart size={14} className="text-foreground" />
+                              </button>
                             </div>
-                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                              onClick={(e) => { e.stopPropagation(); handleAdd(item, selectedRestaurant); }}
-                              animate={addedId === item.id ? { scale: [1, 1.3, 1] } : {}}
-                              className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-colors ${
-                                addedId === item.id ? "bg-emerald-500 text-card" : "bg-primary text-primary-foreground hover:opacity-90"
-                              }`}>
-                              {addedId === item.id ? <CheckCircle size={18} /> : <Plus size={18} />}
-                            </motion.button>
+                            <p className="font-semibold text-sm text-foreground leading-tight line-clamp-1">{item.name}</p>
+                            <div className="flex items-end justify-between mt-1">
+                              <div>
+                                <p className="text-[10px] text-muted-foreground leading-none">A partir de</p>
+                                <p className="text-sm font-bold text-primary">{fmt(item.price)}</p>
+                              </div>
+                              <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                                onClick={(e) => { e.stopPropagation(); handleAdd(item, selectedRestaurant); }}
+                                animate={addedId === item.id ? { scale: [1, 1.3, 1] } : {}}
+                                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors shadow-md ${
+                                  addedId === item.id ? "bg-emerald-500 text-card" : "bg-primary text-primary-foreground hover:opacity-90"
+                                }`}>
+                                {addedId === item.id ? <CheckCircle size={16} /> : <Plus size={16} />}
+                              </motion.button>
+                            </div>
                           </motion.div>
                         ))}
                       </div>
