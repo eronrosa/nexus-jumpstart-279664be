@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import PageTransition from "./components/PageTransition";
 import Index from "./pages/Index";
+import Welcome from "./pages/Welcome";
 import CouponDetail from "./pages/CouponDetail";
 import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/ProfilePage";
