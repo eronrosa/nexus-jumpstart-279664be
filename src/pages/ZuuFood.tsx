@@ -196,7 +196,7 @@ function isStoreOpen(openingHours: any[] | null | undefined): boolean {
 
 /* ─── Cart Drawer with Checkout ─── */
 function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { items, increment, decrement, remove, total, count, clear } = useCart();
+  const { items, increment, decrement, remove, updateNotes, total, count, clear } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [ordered, setOrdered] = useState(false);
