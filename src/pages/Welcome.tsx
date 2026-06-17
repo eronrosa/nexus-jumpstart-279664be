@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Apple, Phone, Pizza, Coffee, IceCream, Cookie, Soup, Sandwich, Salad, Beef } from "lucide-react";
-import { lovable } from "@/integrations/lovable";
+import { supabase } from "@/integrations/supabase/client";
 
 const tiles = [
   { Icon: Soup, filled: true, dashed: false },
