@@ -821,12 +821,11 @@ const ZuuFood = () => {
                   className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center shadow-sm">
                   <ArrowLeft size={18} className="text-foreground" />
                 </button>
-                <div className="text-center leading-tight">
-                  <p className="text-[11px] text-muted-foreground">Entregar em</p>
-                  <p className="text-sm font-extrabold text-foreground flex items-center justify-center gap-1">
-                    {profile?.display_name?.split(" ")[0] ?? "Sua localização"}
-                    <ChevronDown size={14} />
-                  </p>
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-xl bg-[hsl(14_90%_55%)]/10 flex items-center justify-center">
+                    <UtensilsCrossed size={16} className="text-[hsl(14_90%_55%)]" />
+                  </div>
+                  <p className="text-base font-extrabold text-foreground">ZuuFood</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button onClick={() => navigate(user ? "/perfil" : "/auth")}
