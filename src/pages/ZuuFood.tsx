@@ -206,63 +206,142 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
   const [selectedPayment, setSelectedPayment] = useState("pix");
   const [deliveryFee, setDeliveryFee] = useState(0);
+  const [minOrder, setMinOrder] = useState(0);
+  const [estimatedTime, setEstimatedTime] = useState<string>("");
+  const [notes, setNotes] = useState("");
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<PromotionData | null>(null);
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
 
-  // Load addresses when checkout
+  const restaurantId = items[0]?.restaurantId;
+
+  // Load addresses + delivery info when entering checkout
   useEffect(() => {
-    if (step === "checkout" && user) {
-      supabase.from("addresses").select("*").eq("user_id", user.id).then(({ data }) => {
-        if (data && data.length > 0) {
-          setAddresses(data as AddressData[]);
-          const def = data.find((a: any) => a.is_default);
-          setSelectedAddress(def?.id || data[0].id);
-        }
-      });
-      // Load delivery fee for this restaurant
-      if (items.length > 0) {
-        supabase.from("delivery_zones").select("*")
-          .eq("store_id", items[0].restaurantId).eq("is_active", true)
-          .order("radius_km", { ascending: true }).limit(1)
-          .then(({ data }) => {
-            if (data && data.length > 0) setDeliveryFee(Number(data[0].delivery_fee));
-            else setDeliveryFee(0);
-          });
+    if (step !== "checkout" || !user) return;
+    supabase.from("addresses").select("*").eq("user_id", user.id).then(({ data }) => {
+      if (data && data.length > 0) {
+        setAddresses(data as AddressData[]);
+        const def = data.find((a: any) => a.is_default);
+        setSelectedAddress(prev => prev ?? (def?.id || data[0].id));
       }
+    });
+    if (restaurantId) {
+      supabase.from("delivery_zones").select("delivery_fee, min_order, estimated_time")
+        .eq("store_id", restaurantId).eq("is_active", true)
+        .order("radius_km", { ascending: true }).limit(1)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) {
+            setDeliveryFee(Number(data.delivery_fee));
+            setMinOrder(Number(data.min_order));
+            setEstimatedTime(data.estimated_time ?? "");
+          } else {
+            setDeliveryFee(0); setMinOrder(0); setEstimatedTime("");
+          }
+        });
     }
-  }, [step, user, items]);
+  }, [step, user, restaurantId]);
 
-  const grandTotal = total + deliveryFee;
+  // Compute discount
+  const discount = (() => {
+    if (!appliedCoupon) return 0;
+    if (total < Number(appliedCoupon.min_order || 0)) return 0;
+    const v = Number(appliedCoupon.discount_value);
+    if (appliedCoupon.discount_type === "percent" || appliedCoupon.discount_type === "percentage") {
+      return Math.min(total, (total * v) / 100);
+    }
+    return Math.min(total, v);
+  })();
+
+  const grandTotal = Math.max(0, total - discount) + deliveryFee;
+  const belowMin = minOrder > 0 && total < minOrder;
+
+  const applyCoupon = async () => {
+    const code = couponInput.trim();
+    if (!code || !restaurantId) return;
+    setValidatingCoupon(true);
+    const { data, error } = await supabase
+      .from("store_promotions")
+      .select("id, title, description, discount_type, discount_value, min_order, coupon_code")
+      .eq("store_id", restaurantId)
+      .eq("is_active", true)
+      .ilike("coupon_code", code)
+      .maybeSingle();
+    setValidatingCoupon(false);
+    if (error || !data) { toast.error("Cupom inválido"); return; }
+    if (total < Number(data.min_order || 0)) {
+      toast.error(`Pedido mínimo de ${fmt(Number(data.min_order))} para este cupom`);
+      return;
+    }
+    setAppliedCoupon(data as PromotionData);
+    toast.success(`Cupom "${data.title}" aplicado!`);
+  };
 
   const handleOrder = async () => {
     if (items.length === 0) return;
     if (!user) { onClose(); navigate("/auth"); return; }
     if (step === "cart") { setStep("checkout"); return; }
-    if (!selectedAddress && addresses.length > 0) {
+    if (addresses.length === 0) {
+      toast.error("Cadastre um endereço para continuar");
+      return;
+    }
+    if (!selectedAddress) {
       toast.error("Selecione um endereço de entrega");
       return;
     }
+    if (belowMin) {
+      toast.error(`Pedido mínimo de ${fmt(minOrder)}`);
+      return;
+    }
     setSaving(true);
+    let createdOrderId: string | null = null;
     try {
       const restaurant = items[0];
+      const addr = addresses.find(a => a.id === selectedAddress);
+      const addressSnapshot = addr ? {
+        label: addr.label, street: addr.street, number: addr.number,
+        neighborhood: addr.neighborhood, city: addr.city, state: addr.state,
+        complement: addr.complement, zip_code: addr.zip_code,
+      } : null;
+
       const { data: orderData, error: orderError } = await supabase
         .from("orders").insert({
-          user_id: user.id, restaurant_id: restaurant.restaurantId,
-          restaurant_name: restaurant.restaurantName, status: "pendente",
-          total: grandTotal, delivery_fee: deliveryFee,
-        }).select().single();
+          user_id: user.id,
+          restaurant_id: restaurant.restaurantId,
+          restaurant_name: restaurant.restaurantName,
+          status: "pendente",
+          total: grandTotal,
+          delivery_fee: deliveryFee,
+          payment_method: selectedPayment,
+          address_snapshot: addressSnapshot,
+          notes: notes.trim() || null,
+          coupon_code: appliedCoupon?.coupon_code ?? null,
+          discount,
+          estimated_time: estimatedTime || null,
+        }).select().maybeSingle();
       if (orderError) throw orderError;
-      if (orderData) {
-        const orderItems = items.map(item => ({
-          order_id: orderData.id, item_id: item.id, item_name: item.name,
-          item_price: item.price, quantity: item.qty, item_image: item.image,
-        }));
-        const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
-        if (itemsError) throw itemsError;
-      }
+      if (!orderData) throw new Error("Falha ao criar pedido");
+      createdOrderId = orderData.id;
+
+      const orderItems = items.map(item => ({
+        order_id: orderData.id, item_id: item.id, item_name: item.name,
+        item_price: item.price, quantity: item.qty, item_image: item.image,
+      }));
+      const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
+      if (itemsError) throw itemsError;
+
       setSaving(false);
       setOrdered(true);
-      setTimeout(() => { setOrdered(false); setStep("cart"); clear(); onClose(); }, 2800);
+      setTimeout(() => {
+        setOrdered(false); setStep("cart"); clear(); onClose();
+        setNotes(""); setCouponInput(""); setAppliedCoupon(null);
+      }, 2800);
     } catch (err) {
       console.error("Erro ao salvar pedido:", err);
+      // Rollback: remove parent order if items failed
+      if (createdOrderId) {
+        await supabase.from("orders").delete().eq("id", createdOrderId);
+      }
       toast.error("Erro ao salvar pedido. Tente novamente.");
       setSaving(false);
     }
