@@ -36,7 +36,14 @@ const services: ServiceCard[] = [
 
 export default function ZuuMobHome({ onSearchOpen }: { onSearchOpen: () => void }) {
   const navigate = useNavigate();
+  const [tab, setTab] = useState<"home" | "conta">("home");
+
+  if (tab === "conta") {
+    return <ZuuMobConta onBack={() => setTab("home")} />;
+  }
+
   return (
+
     <div
       className="fixed inset-0 z-[55] overflow-hidden flex flex-col"
       style={{ background: BG, color: "#fff", fontFamily: FONT, letterSpacing: "-0.01em" }}
