@@ -395,24 +395,33 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                     </p>
                     {items.map(item => (
                       <motion.div key={item.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: 40 }}
-                        className="flex items-center gap-3 bg-secondary/50 rounded-xl p-2.5">
-                        {item.image ? (
-                          <img src={item.image} alt={item.name} className="w-12 h-12 rounded-lg object-cover shrink-0" />
-                        ) : (
-                          <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                            <StoreIcon size={16} className="text-muted-foreground" />
+                        className="bg-secondary/50 rounded-xl p-2.5 space-y-2">
+                        <div className="flex items-center gap-3">
+                          {item.image ? (
+                            <img src={item.image} alt={item.name} className="w-12 h-12 rounded-lg object-cover shrink-0" />
+                          ) : (
+                            <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                              <StoreIcon size={16} className="text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-foreground leading-tight truncate">{item.name}</p>
+                            <p className="text-xs text-primary font-bold mt-0.5">{fmt(item.price)}</p>
                           </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-foreground leading-tight truncate">{item.name}</p>
-                          <p className="text-xs text-primary font-bold mt-0.5">{fmt(item.price)}</p>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button onClick={() => decrement(item.id)} className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center hover:bg-border transition-colors"><Minus size={12} /></button>
+                            <span className="text-sm font-bold w-4 text-center">{item.qty}</span>
+                            <button onClick={() => increment(item.id)} className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:opacity-90 transition-opacity"><Plus size={12} /></button>
+                            <button onClick={() => remove(item.id)} className="w-6 h-6 rounded-full bg-destructive/10 text-destructive flex items-center justify-center ml-1 hover:bg-destructive/20 transition-colors"><Trash2 size={12} /></button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <button onClick={() => decrement(item.id)} className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center hover:bg-border transition-colors"><Minus size={12} /></button>
-                          <span className="text-sm font-bold w-4 text-center">{item.qty}</span>
-                          <button onClick={() => increment(item.id)} className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:opacity-90 transition-opacity"><Plus size={12} /></button>
-                          <button onClick={() => remove(item.id)} className="w-6 h-6 rounded-full bg-destructive/10 text-destructive flex items-center justify-center ml-1 hover:bg-destructive/20 transition-colors"><Trash2 size={12} /></button>
-                        </div>
+                        <input
+                          value={item.notes ?? ""}
+                          onChange={e => updateNotes(item.id, e.target.value)}
+                          placeholder="Ex: sem cebola, sem tomate, ao ponto..."
+                          maxLength={200}
+                          className="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
+                        />
                       </motion.div>
                     ))}
                   </motion.div>
