@@ -423,10 +423,10 @@ const ZuuMob = () => {
   })) : [];
 
   return (
-    <div className="zuumob-dark relative h-screen w-full overflow-hidden font-dm" style={{ backgroundColor: "#F7F8FA" }}>
+    <div className="zuumob-dark relative h-screen w-full overflow-hidden font-dm" style={{ backgroundColor: "#000000" }}>
       {showPreview && <ZuuMobHome onSearchOpen={dismissPreview} onOpenRides={openRides} />}
       <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes zm-pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(0,230,118,0.4); } 70% { box-shadow: 0 0 0 15px rgba(0,230,118,0); } 100% { box-shadow: 0 0 0 0 rgba(0,230,118,0); } }
+        @keyframes zm-pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(198,255,0,0.4); } 70% { box-shadow: 0 0 0 15px rgba(198,255,0,0); } 100% { box-shadow: 0 0 0 0 rgba(198,255,0,0); } }
         @keyframes zm-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
         @keyframes zm-radar { 0% { transform: scale(0); opacity: 0.8; } 100% { transform: scale(3); opacity: 0; } }
         @keyframes zm-confetti-fall { 0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
@@ -444,11 +444,17 @@ const ZuuMob = () => {
       {/* Map */}
       <div ref={mapContainer} className="absolute inset-0 z-0" />
       {!MAPBOX_TOKEN && (
-        <div className="absolute inset-0 z-0 flex items-center justify-center" style={{ backgroundColor: "#FFFFFF" }}>
+        <div
+          className="absolute inset-0 z-0 flex items-center justify-center"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 35%, #0E0E0E 0%, #000000 70%)",
+          }}
+        >
           <div className="text-center p-6">
-            <Car className="h-16 w-16 mx-auto mb-4" style={{ color: "#00E676" }} />
-            <p className="text-sm" style={{ color: "#6B7280" }}>Configure VITE_MAPBOX_TOKEN para exibir o mapa</p>
-            <p className="text-xs mt-2" style={{ color: "#9CA3AF" }}>A interface funciona normalmente sem o mapa</p>
+            <Car className="h-16 w-16 mx-auto mb-4" style={{ color: "#C6FF00", filter: "drop-shadow(0 0 18px rgba(198,255,0,0.45))" }} />
+            <p className="text-sm" style={{ color: "#A0A0A0" }}>Configure VITE_MAPBOX_TOKEN para exibir o mapa</p>
+            <p className="text-xs mt-2" style={{ color: "#6A6A6A" }}>A interface funciona normalmente sem o mapa</p>
           </div>
         </div>
       )}
@@ -457,50 +463,49 @@ const ZuuMob = () => {
       <div className="absolute top-0 left-0 right-0 z-10 p-4">
         <div className="flex items-center gap-3">
           <button
-            className="w-10 h-10 rounded-[14px] flex items-center justify-center backdrop-blur-md transition-all duration-200 hover:border-zm-green/30"
-            style={{ backgroundColor: "rgba(255,255,255,0.92)", border: "1px solid rgba(10,10,10,0.08)" }}
+            className="w-10 h-10 rounded-[14px] flex items-center justify-center backdrop-blur-md transition-all duration-200"
+            style={{ backgroundColor: "rgba(17,17,17,0.92)", border: "1px solid #2A2A2A" }}
             onClick={() => navigate("/")}
           >
-            <ArrowLeft className="h-5 w-5" style={{ color: "#0A0A0A" }} />
+            <ArrowLeft className="h-5 w-5" style={{ color: "#C6FF00" }} />
           </button>
           <div
-            className="flex-1 rounded-[14px] px-4 py-2.5 flex items-center gap-2 cursor-pointer backdrop-blur-md transition-all duration-200 hover:border-zm-green/30"
-            style={{ backgroundColor: "rgba(255,255,255,0.92)", border: "1px solid rgba(10,10,10,0.08)" }}
+            className="flex-1 rounded-[14px] px-4 py-2.5 flex items-center gap-2 cursor-pointer backdrop-blur-md transition-all duration-200"
+            style={{ backgroundColor: "rgba(17,17,17,0.92)", border: "1px solid #2A2A2A" }}
             onClick={() => { if (rideStatus === "idle") { setRideStatus("selecting_destination"); } }}
           >
-            <Search className="h-4 w-4" style={{ color: "#6B7280" }} />
-            <span className="text-sm font-medium" style={{ color: "#6B7280" }}>{destination ? destination.address.substring(0, 30) + "..." : "Para onde?"}</span>
+            <Search className="h-4 w-4" style={{ color: "#A0A0A0" }} />
+            <span className="text-sm font-medium truncate" style={{ color: destination ? "#FFFFFF" : "#A0A0A0" }}>{destination ? destination.address : "Para onde?"}</span>
           </div>
           <div className="flex gap-2">
             <button
-              className="w-10 h-10 rounded-[14px] flex items-center justify-center backdrop-blur-md transition-all duration-200 hover:border-zm-green/30"
-              style={{ backgroundColor: "rgba(255,255,255,0.92)", border: "1px solid rgba(10,10,10,0.08)" }}
+              className="w-10 h-10 rounded-[14px] flex items-center justify-center backdrop-blur-md transition-all duration-200"
+              style={{ backgroundColor: "rgba(17,17,17,0.92)", border: "1px solid #2A2A2A" }}
               onClick={() => navigate("/zuumob/historico")}
             >
-              <History className="h-4 w-4" style={{ color: "#0A0A0A" }} />
+              <History className="h-4 w-4" style={{ color: "#FFFFFF" }} />
             </button>
             <Avatar
               className="h-9 w-9 cursor-pointer"
-              style={{ border: "2px solid #00E676" }}
+              style={{ border: "2px solid #C6FF00" }}
               onClick={() => navigate(user ? "/perfil" : "/auth")}
             >
               <AvatarImage src={profile?.avatar_url || ""} />
-              <AvatarFallback className="text-xs font-semibold" style={{ backgroundColor: "#00E676", color: "#000000" }}>{profile?.display_name?.[0] || user?.email?.[0]?.toUpperCase() || "U"}</AvatarFallback>
+              <AvatarFallback className="text-xs font-semibold" style={{ backgroundColor: "#C6FF00", color: "#000000" }}>{profile?.display_name?.[0] || user?.email?.[0]?.toUpperCase() || "U"}</AvatarFallback>
             </Avatar>
           </div>
         </div>
         {/* ZuuMob logo */}
         <div className="mt-2 ml-1">
-          <span className="font-syne text-lg font-bold" style={{ color: "#00E676" }}>ZuuMob</span>
+          <span className="font-syne text-lg font-bold tracking-wider" style={{ color: "#C6FF00", textShadow: "0 0 12px rgba(198,255,0,0.45)" }}>ZUUMOB</span>
         </div>
       </div>
 
       {/* Sou Motorista button */}
-      {/* Botão de motorista flutuante */}
       {rideStatus === "idle" && (
         <button
-          className="absolute top-24 right-4 z-10 px-4 py-2 rounded-full flex items-center gap-2 text-xs font-bold transition-all duration-200 shadow-lg hover:scale-105"
-          style={{ backgroundColor: "#00E676", color: "#000000" }}
+          className="absolute top-24 right-4 z-10 px-4 py-2 rounded-full flex items-center gap-2 text-xs font-bold transition-all duration-200 hover:scale-105"
+          style={{ backgroundColor: "#C6FF00", color: "#000000", boxShadow: "0 0 20px rgba(198,255,0,0.35)" }}
           onClick={() => navigate("/motorista")}
         >
           <Car className="h-4 w-4" /> Painel do Motorista
@@ -509,12 +514,13 @@ const ZuuMob = () => {
 
       {/* Center button */}
       <button
-        className="absolute bottom-[320px] right-4 z-10 w-10 h-10 rounded-[14px] flex items-center justify-center backdrop-blur-md transition-all duration-200 hover:shadow-[0_0_24px_rgba(0,230,118,0.15)]"
-        style={{ backgroundColor: "rgba(255,255,255,0.92)", border: "1px solid rgba(10,10,10,0.08)" }}
+        className="absolute bottom-[320px] right-4 z-10 w-10 h-10 rounded-[14px] flex items-center justify-center backdrop-blur-md transition-all duration-200"
+        style={{ backgroundColor: "rgba(17,17,17,0.92)", border: "1px solid #2A2A2A" }}
         onClick={centerOnUser}
       >
-        <Locate className="h-5 w-5" style={{ color: "#00E676" }} />
+        <Locate className="h-5 w-5" style={{ color: "#C6FF00" }} />
       </button>
+
 
       {/* Radar animation during searching */}
       {rideStatus === "searching" && origin && (
