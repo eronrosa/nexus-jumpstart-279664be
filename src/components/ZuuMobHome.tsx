@@ -241,8 +241,10 @@ export default function ZuuMobHome({ onSearchOpen }: { onSearchOpen: () => void 
             return (
               <button
                 key={item.label}
+                onClick={() => item.label === "Conta" && setTab("conta")}
                 className="flex flex-col items-center gap-1 py-1.5"
               >
+
                 <Icon
                   size={22}
                   strokeWidth={item.active ? 2 : 1.5}
