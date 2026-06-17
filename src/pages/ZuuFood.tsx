@@ -1612,7 +1612,9 @@ const ZuuFood = () => {
                               ? "bg-[hsl(14_90%_55%)]/10 border-[hsl(14_90%_55%)] text-[hsl(14_90%_45%)]"
                               : "bg-white border-border text-foreground"
                           }`}>
-                          <span className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-base">{ex.emoji}</span>
+                          <span className={`w-7 h-7 rounded-full flex items-center justify-center ${active ? "bg-[hsl(14_90%_55%)]/15 text-[hsl(14_90%_45%)]" : "bg-muted text-foreground/70"}`}>
+                            <ex.icon size={14} strokeWidth={2.2} />
+                          </span>
                           {ex.label}
                           <span className="text-[10px] text-muted-foreground">+{fmt(ex.price)}</span>
                         </button>
