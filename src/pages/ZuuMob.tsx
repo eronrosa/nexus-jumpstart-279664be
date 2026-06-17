@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import ZuuMobHome from "@/components/ZuuMobHome";
+import TripDetailsSheet from "@/components/TripDetailsSheet";
 import { useDriverGPSReceiver } from "@/hooks/useDriverGPS";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
