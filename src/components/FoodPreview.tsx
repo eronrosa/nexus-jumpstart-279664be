@@ -71,13 +71,13 @@ export default function FoodPreview({ onEnter, item = DEFAULT_ITEM }: { onEnter:
 
       {/* Title row */}
       <div className="px-6 mt-3 flex items-start justify-between gap-4">
-        <h1 className="text-3xl font-extrabold leading-tight text-foreground">
-          {item.title} <span className="font-medium text-muted-foreground">{item.highlight.split(" ")[0]}</span>
-          <br />
-          {item.highlight.split(" ").slice(1).join(" ")}
+        <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight text-foreground tracking-tight">
+          {item.title}{" "}
+          <span className="font-medium text-muted-foreground">{item.highlight}</span>
         </h1>
-        <p className="text-3xl font-extrabold text-foreground whitespace-nowrap">
-          {item.temperature}<span className="text-base font-bold">°c</span>
+        <p className="text-2xl sm:text-3xl font-extrabold text-foreground whitespace-nowrap">
+          {item.temperature}
+          <span className="text-sm font-bold align-top ml-0.5">°C</span>
         </p>
       </div>
 
