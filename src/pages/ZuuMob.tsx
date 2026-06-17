@@ -19,7 +19,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "";
 
-type RideStatus = "idle" | "selecting_destination" | "choosing_ride" | "searching" | "accepted" | "arriving" | "in_progress" | "completed";
+type RideStatus = "idle" | "selecting_destination" | "choosing_ride" | "confirming_location" | "searching" | "accepted" | "arriving" | "in_progress" | "completed";
 
 interface Location { lat: number; lng: number; address: string; }
 
