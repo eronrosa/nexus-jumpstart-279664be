@@ -24,11 +24,14 @@ import logoBondinho from "@/assets/logo-bondinho.png";
 interface MenuItemData {
   id: string; category: string; name: string; price: number; image: string; description: string;
 }
+interface OpeningHourData {
+  day: string; enabled: boolean; open: string; close: string;
+}
 interface RestaurantData {
   id: string; name: string; category: string; rating: number; reviewCount: number;
   deliveryTime: string; minOrder: number; deliveryFee: number; promo: string;
   image: string; logo: string; menu: MenuItemData[]; isDynamic?: boolean;
-  openingHours?: any[]; isOpen?: boolean; promotions?: PromotionData[];
+  openingHours?: OpeningHourData[]; isOpen?: boolean; promotions?: PromotionData[];
 }
 interface PromotionData {
   id: string; title: string; description: string | null; discount_type: string;
@@ -190,8 +193,16 @@ const DAY_NAMES = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", 
 /* ─── Helpers ─── */
 const fmt = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
-function normalizeOpeningHours(openingHours: unknown): any[] {
-  return Array.isArray(openingHours) ? openingHours : [];
+function normalizeOpeningHours(openingHours: unknown): OpeningHourData[] {
+  if (!Array.isArray(openingHours)) return [];
+  return openingHours.filter((hour): hour is OpeningHourData => {
+    if (typeof hour !== "object" || hour === null) return false;
+    const candidate = hour as Record<string, unknown>;
+    return typeof candidate.day === "string"
+      && typeof candidate.enabled === "boolean"
+      && typeof candidate.open === "string"
+      && typeof candidate.close === "string";
+  });
 }
 
 function isStoreOpen(openingHours: unknown): boolean {
@@ -199,7 +210,7 @@ function isStoreOpen(openingHours: unknown): boolean {
   if (hours.length === 0) return true; // assume open if no hours set
   const now = new Date();
   const dayName = DAY_NAMES[now.getDay()];
-  const todayHours = hours.find((h: any) => h.day === dayName);
+  const todayHours = hours.find(h => h.day === dayName);
   if (!todayHours || !todayHours.enabled) return false;
   const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
   return currentTime >= todayHours.open && currentTime <= todayHours.close;
