@@ -32,19 +32,11 @@ const services: ServiceCard[] = [
 export default function ZuuMobHome({ onSearchOpen }: { onSearchOpen: () => void }) {
   return (
     <div
-      className="fixed inset-0 z-[55] overflow-y-auto"
+      className="fixed inset-0 z-[55] overflow-hidden flex flex-col"
       style={{ background: BG, color: "#fff", fontFamily: FONT, letterSpacing: "-0.01em" }}
     >
-      <div className="max-w-md mx-auto px-4 sm:px-5 pt-6 sm:pt-8 pb-28">
-        {/* Header / Logo */}
-        <motion.h1
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center text-2xl sm:text-3xl font-extrabold tracking-[0.22em] mb-5 sm:mb-6"
-          style={{ color: NEON, textShadow: `0 0 18px ${NEON}55`, fontFamily: FONT }}
-        >
-          ZUUMOB
-        </motion.h1>
+      <div className="flex-1 overflow-y-auto overscroll-contain max-w-md w-full mx-auto px-4 sm:px-5 pt-4 pb-24">
+
 
         {/* Search */}
         <motion.button
