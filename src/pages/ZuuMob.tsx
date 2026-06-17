@@ -61,6 +61,17 @@ const ZuuMob = () => {
     setShowPreview(false);
     setRideStatus("selecting_destination");
   };
+  const openRides = () => {
+    setShowPreview(false);
+    const mockDest: Location = {
+      lat: -23.5505, lng: -46.6333,
+      address: "Aeroporto Internacional · Terminal 2",
+    };
+    setDestination(mockDest);
+    setDestinationQuery(mockDest.address);
+    setRideStatus("choosing_ride");
+    if (origin) calculateRoute(origin, mockDest);
+  };
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
