@@ -933,7 +933,7 @@ const ZuuFood = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {showPreview && <FoodPreview onEnter={dismissPreview} />}
+      {showPreview && !selectedRestaurant && !urlRestaurantId && <FoodPreview onEnter={dismissPreview} />}
       {!selectedRestaurant ? (
         <>
           {/* ── HEADER (Mirqab-style) ── */}
