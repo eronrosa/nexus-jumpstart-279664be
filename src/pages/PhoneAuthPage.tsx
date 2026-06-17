@@ -38,7 +38,7 @@ const PhoneAuthPage = () => {
   const handleContinue = () => {
     if (phone.replace(/\D/g, "").length < 10) return;
     localStorage.setItem("zuuppi_welcomed", "1");
-    navigate("/auth");
+    navigate("/auth/verify", { state: { phone: `${country.dial} ${phone}` } });
   };
 
   const handleGoogle = async () => {
