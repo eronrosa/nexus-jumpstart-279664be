@@ -591,11 +591,27 @@ const ZuuFood = () => {
   const [selectedItem, setSelectedItem] = useState<MenuItemData | null>(null);
   const [itemQty, setItemQty] = useState(1);
   const [itemNotes, setItemNotes] = useState("");
+  const [itemSize, setItemSize] = useState<"small" | "medium" | "large">("medium");
+  const [itemIngredients, setItemIngredients] = useState<string[]>([]);
+  const sizeMultiplier: Record<"small" | "medium" | "large", number> = { small: 0.85, medium: 1, large: 1.25 };
+  const sizeLabel: Record<"small" | "medium" | "large", string> = { small: "Pequeno", medium: "Médio", large: "Grande" };
+  const defaultExtras = [
+    { id: "fries", label: "Batata", emoji: "🍟", price: 6 },
+    { id: "cheese", label: "Queijo extra", emoji: "🧀", price: 4 },
+    { id: "bacon", label: "Bacon", emoji: "🥓", price: 5 },
+    { id: "egg", label: "Ovo", emoji: "🥚", price: 3 },
+    { id: "sauce", label: "Molho especial", emoji: "🥫", price: 2 },
+  ];
+  const extrasTotal = itemIngredients.reduce((s, id) => s + (defaultExtras.find(e => e.id === id)?.price ?? 0), 0);
+  const itemUnitPrice = selectedItem ? selectedItem.price * sizeMultiplier[itemSize] + extrasTotal : 0;
+  const itemTotal = itemUnitPrice * itemQty;
 
   const openItem = (item: MenuItemData) => {
     setSelectedItem(item);
     setItemQty(1);
     setItemNotes("");
+    setItemSize("medium");
+    setItemIngredients([]);
   };
 
   // Load user favorites
@@ -1396,65 +1412,122 @@ const ZuuFood = () => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-black/60 flex items-end md:items-center justify-center"
             onClick={() => setSelectedItem(null)}>
-            <motion.div initial={{ y: 100 }} animate={{ y: 0 }} exit={{ y: 100 }}
+            <motion.div initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 100, opacity: 0 }}
+              transition={{ type: "spring", damping: 24, stiffness: 240 }}
               onClick={e => e.stopPropagation()}
-              className="bg-card w-full md:max-w-md rounded-t-2xl md:rounded-2xl max-h-[90vh] overflow-y-auto">
-              <div className="relative">
-                {selectedItem.image ? (
-                  <img src={selectedItem.image} alt={selectedItem.name} className="w-full h-56 object-cover md:rounded-t-2xl" />
-                ) : (
-                  <div className="w-full h-56 bg-muted flex items-center justify-center md:rounded-t-2xl">
-                    <StoreIcon size={48} className="text-muted-foreground/30" />
-                  </div>
-                )}
+              className="bg-white w-full md:max-w-md rounded-t-[28px] md:rounded-[28px] max-h-[92vh] overflow-y-auto shadow-2xl">
+              {/* Floating hero */}
+              <div className="relative bg-gradient-to-b from-orange-50 via-white to-white pt-6 pb-4">
                 <button onClick={() => setSelectedItem(null)}
-                  className="absolute top-3 right-3 w-9 h-9 rounded-full bg-card/90 backdrop-blur flex items-center justify-center shadow">
-                  <X size={18} />
+                  className="absolute top-4 left-4 w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center z-10">
+                  <ArrowLeft size={18} className="text-foreground" />
                 </button>
-              </div>
-              <div className="p-5 space-y-4">
-                <div>
-                  <h2 className="text-xl font-extrabold text-foreground">{selectedItem.name}</h2>
-                  {selectedItem.description && (
-                    <p className="text-sm text-muted-foreground mt-1">{selectedItem.description}</p>
+                <button className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center z-10">
+                  <Heart size={18} className="text-foreground" />
+                </button>
+                <div className="px-6 flex items-center justify-center h-56">
+                  {selectedItem.image ? (
+                    <motion.img
+                      initial={{ scale: 0.85, rotate: -8, opacity: 0 }}
+                      animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                      transition={{ type: "spring", stiffness: 140, damping: 14 }}
+                      src={selectedItem.image} alt={selectedItem.name}
+                      className="max-h-56 w-auto object-contain drop-shadow-2xl"
+                    />
+                  ) : (
+                    <div className="w-40 h-40 rounded-full bg-muted flex items-center justify-center">
+                      <StoreIcon size={56} className="text-muted-foreground/40" />
+                    </div>
                   )}
-                  <p className="text-lg font-bold text-primary mt-2">{fmt(selectedItem.price)}</p>
+                </div>
+              </div>
+
+              <div className="px-6 pt-2 pb-6 space-y-5">
+                {/* Title + rating */}
+                <div className="flex items-start justify-between gap-3">
+                  <h2 className="text-2xl font-extrabold text-foreground leading-tight">{selectedItem.name}</h2>
+                  <div className="flex items-center gap-1 text-sm font-bold text-foreground shrink-0 mt-1">
+                    <Star size={14} className="text-[hsl(14_90%_55%)] fill-[hsl(14_90%_55%)]" />
+                    4.9 <span className="text-xs text-muted-foreground font-medium">(5.2k)</span>
+                    <ChevronRight size={14} className="text-muted-foreground" />
+                  </div>
                 </div>
 
+                {selectedItem.description && (
+                  <p className="text-sm text-muted-foreground leading-relaxed -mt-2">{selectedItem.description}</p>
+                )}
+
+                {/* Size selector */}
+                <div className="flex items-center gap-3">
+                  {(["small", "medium", "large"] as const).map(s => {
+                    const active = itemSize === s;
+                    return (
+                      <button key={s} onClick={() => setItemSize(s)}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full border-2 text-sm font-semibold transition-all ${
+                          active
+                            ? "bg-[hsl(14_90%_55%)] border-[hsl(14_90%_55%)] text-white shadow-md"
+                            : "bg-white border-border text-foreground hover:border-[hsl(14_90%_55%)]/40"
+                        }`}>
+                        <span className={`w-4 h-4 rounded-full border-2 ${active ? "border-white bg-white/30" : "border-muted-foreground/40"}`} />
+                        {sizeLabel[s]}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Add ingredients */}
                 <div>
-                  <label className="text-xs font-semibold text-foreground mb-1 block">
-                    Observações (ex: sem cebola, sem tomate, ao ponto)
-                  </label>
-                  <textarea value={itemNotes} onChange={e => setItemNotes(e.target.value)}
-                    placeholder="Alguma observação para a cozinha?"
-                    rows={3}
-                    className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none" />
+                  <h3 className="text-base font-extrabold text-foreground mb-2">Adicionar ingredientes</h3>
+                  <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+                    {defaultExtras.map(ex => {
+                      const active = itemIngredients.includes(ex.id);
+                      return (
+                        <button key={ex.id}
+                          onClick={() => setItemIngredients(prev =>
+                            active ? prev.filter(i => i !== ex.id) : [...prev, ex.id]
+                          )}
+                          className={`shrink-0 flex items-center gap-2 pl-2 pr-3 py-2 rounded-full border-2 text-xs font-semibold transition-all ${
+                            active
+                              ? "bg-[hsl(14_90%_55%)]/10 border-[hsl(14_90%_55%)] text-[hsl(14_90%_45%)]"
+                              : "bg-white border-border text-foreground"
+                          }`}>
+                          <span className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-base">{ex.emoji}</span>
+                          {ex.label}
+                          <span className="text-[10px] text-muted-foreground">+{fmt(ex.price)}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-foreground">Quantidade</span>
-                  <div className="flex items-center gap-3">
+                {/* Notes */}
+                <textarea value={itemNotes} onChange={e => setItemNotes(e.target.value)}
+                  placeholder="Observação para a cozinha (opcional)"
+                  rows={2}
+                  className="w-full bg-muted/40 border border-border rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(14_90%_55%)]/30 resize-none" />
+
+                {/* Bottom action row */}
+                <div className="flex items-center gap-3 pt-1">
+                  <div className="flex items-center gap-1 bg-white border-2 border-[hsl(14_90%_55%)]/20 rounded-full p-1">
                     <button onClick={() => setItemQty(Math.max(1, itemQty - 1))}
-                      className="w-9 h-9 rounded-full border border-border flex items-center justify-center text-foreground hover:bg-muted transition-colors">
-                      <Minus size={14} />
+                      className="w-9 h-9 rounded-full flex items-center justify-center text-foreground hover:bg-muted transition-colors">
+                      <Trash2 size={14} />
                     </button>
-                    <span className="text-lg font-bold text-foreground w-8 text-center">{itemQty}</span>
+                    <span className="text-base font-bold text-foreground w-6 text-center">{itemQty}</span>
                     <button onClick={() => setItemQty(itemQty + 1)}
-                      className="w-9 h-9 rounded-full border border-border flex items-center justify-center text-foreground hover:bg-muted transition-colors">
+                      className="w-9 h-9 rounded-full bg-[hsl(14_90%_55%)] text-white flex items-center justify-center hover:opacity-90 transition-opacity">
                       <Plus size={14} />
                     </button>
                   </div>
+                  <button
+                    onClick={() => {
+                      handleAdd(selectedItem, selectedRestaurant, itemQty, itemNotes);
+                      setSelectedItem(null);
+                    }}
+                    className="flex-1 bg-[hsl(14_90%_55%)] text-white font-bold py-3.5 rounded-full text-sm hover:opacity-90 transition-opacity shadow-lg shadow-[hsl(14_90%_55%)]/30">
+                    Adicionar ao carrinho · {fmt(itemTotal)}
+                  </button>
                 </div>
-
-                <button
-                  onClick={() => {
-                    handleAdd(selectedItem, selectedRestaurant, itemQty, itemNotes);
-                    setSelectedItem(null);
-                  }}
-                  className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl text-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
-                  <ShoppingCart size={16} />
-                  Adicionar {itemQty > 1 ? `${itemQty} itens` : ""} • {fmt(selectedItem.price * itemQty)}
-                </button>
               </div>
             </motion.div>
           </motion.div>
