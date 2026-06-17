@@ -72,48 +72,15 @@ export default function FoodPreview({ onEnter, item = DEFAULT_ITEM }: { onEnter:
         <button onClick={onEnter} className="w-10 h-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-md">
           <ArrowLeft size={18} className="text-black" />
         </button>
-        <div className="flex items-center gap-1.5 text-xs font-bold text-black bg-white/90 backdrop-blur rounded-full px-3 py-1.5 shadow-md">
-          <UtensilsCrossed size={12} className="text-[hsl(14_90%_55%)]" /> Food Preview
-        </div>
         <button className="w-10 h-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-md">
           <Heart size={18} className="text-black" />
         </button>
       </div>
 
-      {/* Title row */}
-      <div className="relative z-10 px-6 mt-3 flex items-start justify-between gap-4 text-white drop-shadow-lg">
-        <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight tracking-tight">
-          {item.title}{" "}
-          <span className="font-medium text-white/70">{item.highlight}</span>
-        </h1>
-        <p className="text-2xl sm:text-3xl font-extrabold whitespace-nowrap">
-          {item.temperature}
-          <span className="text-sm font-bold align-top ml-0.5">°C</span>
-        </p>
-      </div>
+      <div className="relative z-10 flex-1" />
 
-      {/* Center badge */}
-      <div className="relative z-10 flex-1 flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-          className="bg-black/60 backdrop-blur text-white text-xs font-bold pl-3 pr-2 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
-          {item.badge}
-          <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
-            <MoreHorizontal size={12} />
-          </span>
-        </motion.div>
-      </div>
-
-      {/* Bottom: horizontal thumbs + swipe-to-cart */}
+      {/* Bottom: swipe-to-cart */}
       <div className="relative z-10 px-4 pb-6 pt-3 space-y-3">
-        <div className="flex items-center gap-2 overflow-x-auto">
-          {item.thumbs.map((t, i) => (
-            <button key={i} className="shrink-0 w-12 h-12 rounded-full overflow-hidden border-2 border-white/80 hover:border-[hsl(14_90%_55%)] transition-colors shadow">
-              <img src={t} alt="" className="w-full h-full object-cover" />
-            </button>
-          ))}
-        </div>
-
         <div
           ref={handleMeasure}
           className="relative h-16 rounded-full bg-white/95 backdrop-blur shadow-lg flex items-center px-2 overflow-hidden">
