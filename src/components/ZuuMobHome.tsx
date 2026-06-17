@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import {
   Search, Calendar, Car, Clock, Crown, Route, CarFront,
   Package, Truck, Bike, Home, Grid3x3, History, User, ArrowRight,
   Shield, Smartphone, ChevronRight, ArrowLeft
 } from "lucide-react";
+import ZuuMobConta from "./ZuuMobConta";
 
 
 const NEON = "#C6FF00";
@@ -12,6 +14,7 @@ const BG = "#000000";
 const CARD = "#111111";
 const BORDER = "#2A2A2A";
 const FONT = `'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`;
+
 
 interface ServiceCard {
   icon: typeof Car;
@@ -33,7 +36,14 @@ const services: ServiceCard[] = [
 
 export default function ZuuMobHome({ onSearchOpen }: { onSearchOpen: () => void }) {
   const navigate = useNavigate();
+  const [tab, setTab] = useState<"home" | "conta">("home");
+
+  if (tab === "conta") {
+    return <ZuuMobConta onBack={() => setTab("home")} />;
+  }
+
   return (
+
     <div
       className="fixed inset-0 z-[55] overflow-hidden flex flex-col"
       style={{ background: BG, color: "#fff", fontFamily: FONT, letterSpacing: "-0.01em" }}
@@ -231,8 +241,10 @@ export default function ZuuMobHome({ onSearchOpen }: { onSearchOpen: () => void 
             return (
               <button
                 key={item.label}
+                onClick={() => item.label === "Conta" && setTab("conta")}
                 className="flex flex-col items-center gap-1 py-1.5"
               >
+
                 <Icon
                   size={22}
                   strokeWidth={item.active ? 2 : 1.5}
