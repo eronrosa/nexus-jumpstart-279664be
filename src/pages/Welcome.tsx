@@ -32,11 +32,10 @@ const Welcome = () => {
 
   const handleGoogle = async () => {
     localStorage.setItem("zuuppi_welcomed", "1");
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin + "/home",
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin + "/home" },
     });
-    if (result.error || result.redirected) return;
-    navigate("/home");
   };
 
   const handleEmail = () => {
