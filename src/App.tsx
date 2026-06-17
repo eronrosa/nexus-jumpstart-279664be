@@ -9,6 +9,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import PageTransition from "./components/PageTransition";
 import Index from "./pages/Index";
 import Welcome from "./pages/Welcome";
+import PhoneAuthPage from "./pages/PhoneAuthPage";
 import CouponDetail from "./pages/CouponDetail";
 import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -49,6 +50,7 @@ const AnimatedRoutes = () => {
         <Route path="/pedidos" element={<ProtectedRoute><PageTransition><PedidosPage /></PageTransition></ProtectedRoute>} />
         <Route path="/painel" element={<ProtectedRoute><PageTransition><PainelPage /></PageTransition></ProtectedRoute>} />
         <Route path="/auth" element={<PageTransition><AuthPage /></PageTransition>} />
+        <Route path="/auth/phone" element={<PageTransition><PhoneAuthPage /></PageTransition>} />
         <Route path="/perfil" element={<ProtectedRoute><PageTransition><ProfilePage /></PageTransition></ProtectedRoute>} />
         <Route path="/zuumob" element={<PageTransition><ZuuMob /></PageTransition>} />
         <Route path="/motorista" element={<ProtectedRoute><PageTransition><MotoristaPage /></PageTransition></ProtectedRoute>} />
