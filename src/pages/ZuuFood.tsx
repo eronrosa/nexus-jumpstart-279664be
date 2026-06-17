@@ -727,13 +727,18 @@ const ZuuFood = () => {
 
   // Load dynamic stores + real ratings + delivery zones + promotions
   useEffect(() => {
+    let isMounted = true;
+
     const loadStores = async () => {
-      const { data: stores } = await supabase
+      const { data: stores, error } = await supabase
         .from("stores")
         .select("id, name, category, logo_url, cover_url, description, is_active, opening_hours")
         .eq("is_active", true);
 
-      if (!stores || stores.length === 0) return;
+      if (error || !stores || stores.length === 0) {
+        if (isMounted) setStoresLoaded(true);
+        return;
+      }
 
       // Fetch real ratings
       const storeIds = stores.map(s => s.id);
@@ -772,7 +777,7 @@ const ZuuFood = () => {
       const dynamicRestaurants: RestaurantData[] = stores.map(store => {
         const r = ratingMap[store.id];
         const z = zoneMap[store.id];
-        const openHours = store.opening_hours as any[] | null;
+        const openHours = normalizeOpeningHours(store.opening_hours);
         return {
           id: store.id,
           name: store.name,
@@ -793,9 +798,13 @@ const ZuuFood = () => {
         };
       });
 
+      if (!isMounted) return;
       setAllRestaurants([...dynamicRestaurants, ...STATIC_RESTAURANTS]);
+      setStoresLoaded(true);
     };
     loadStores();
+
+    return () => { isMounted = false; };
   }, []);
 
   const handleSelectRestaurant = async (r: RestaurantData) => {
