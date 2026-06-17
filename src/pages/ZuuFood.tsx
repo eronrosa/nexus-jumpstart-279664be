@@ -591,6 +591,20 @@ const ZuuFood = () => {
   const [selectedItem, setSelectedItem] = useState<MenuItemData | null>(null);
   const [itemQty, setItemQty] = useState(1);
   const [itemNotes, setItemNotes] = useState("");
+  const [itemSize, setItemSize] = useState<"small" | "medium" | "large">("medium");
+  const [itemIngredients, setItemIngredients] = useState<string[]>([]);
+  const sizeMultiplier: Record<"small" | "medium" | "large", number> = { small: 0.85, medium: 1, large: 1.25 };
+  const sizeLabel: Record<"small" | "medium" | "large", string> = { small: "Pequeno", medium: "Médio", large: "Grande" };
+  const defaultExtras = [
+    { id: "fries", label: "Batata", emoji: "🍟", price: 6 },
+    { id: "cheese", label: "Queijo extra", emoji: "🧀", price: 4 },
+    { id: "bacon", label: "Bacon", emoji: "🥓", price: 5 },
+    { id: "egg", label: "Ovo", emoji: "🥚", price: 3 },
+    { id: "sauce", label: "Molho especial", emoji: "🥫", price: 2 },
+  ];
+  const extrasTotal = itemIngredients.reduce((s, id) => s + (defaultExtras.find(e => e.id === id)?.price ?? 0), 0);
+  const itemUnitPrice = selectedItem ? selectedItem.price * sizeMultiplier[itemSize] + extrasTotal : 0;
+  const itemTotal = itemUnitPrice * itemQty;
 
   const openItem = (item: MenuItemData) => {
     setSelectedItem(item);
