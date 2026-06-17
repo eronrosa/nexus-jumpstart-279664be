@@ -40,7 +40,7 @@ const Welcome = () => {
 
   const handleEmail = () => {
     localStorage.setItem("zuuppi_welcomed", "1");
-    navigate("/auth");
+    navigate("/auth/phone");
   };
 
   return (
