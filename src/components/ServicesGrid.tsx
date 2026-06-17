@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 const services = [
-  { icon: Utensils, label: "ZuuFood", color: "bg-orange-50 text-orange-500", path: "/zuufood" },
+  { icon: Utensils, label: "ZuuFood", color: "bg-lime-50 text-lime-600", path: "/zuufood" },
   { icon: Car, label: "ZuuMob", color: "bg-blue-50 text-blue-500", path: "/zuumob" },
   { icon: Ticket, label: "ZuuPass", color: "bg-pink-50 text-pink-500", path: "/zuupass" },
   { icon: Briefcase, label: "ZuuPro", color: "bg-yellow-50 text-yellow-600", path: "/" },
