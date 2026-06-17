@@ -10,6 +10,7 @@ import {
   CalendarDays, ChefHat, Flame, Sparkles, BadgePercent, Trophy
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import FoodPreview from "@/components/FoodPreview";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
