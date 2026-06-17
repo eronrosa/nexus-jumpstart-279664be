@@ -159,7 +159,7 @@ export default function ZuuMobHome({ onSearchOpen, onOpenRides }: { onSearchOpen
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.15 + i * 0.04 }}
                 whileHover={{ y: -2, boxShadow: `0 0 20px ${NEON}33` }}
-                onClick={onSearchOpen}
+                onClick={s.label === "Viagens" && onOpenRides ? onOpenRides : onSearchOpen}
                 className="relative aspect-square rounded-2xl flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 transition-all"
                 style={{ background: CARD, border: `1px solid ${BORDER}` }}
               >
