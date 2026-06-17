@@ -815,8 +815,12 @@ const ZuuFood = () => {
     };
     loadStores();
 
-    return () => { isMounted = false; };
+    // Safety timeout: never hang on skeleton if backend is slow/unreachable
+    const safety = setTimeout(() => { if (isMounted) setStoresLoaded(true); }, 6000);
+
+    return () => { isMounted = false; clearTimeout(safety); };
   }, []);
+
 
   const handleSelectRestaurant = async (r: RestaurantData) => {
     if (r.isDynamic && r.isOpen === false) {
