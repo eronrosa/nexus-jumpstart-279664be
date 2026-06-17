@@ -14,6 +14,10 @@ import FoodPreview from "@/components/FoodPreview";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import logoMitsuba from "@/assets/logo-mitsuba.png";
+import logoLeMax from "@/assets/logo-lemax.png";
+import logoPizzaPalace from "@/assets/logo-pizzapalace.png";
+import logoBondinho from "@/assets/logo-bondinho.png";
 
 /* ─── Types ─── */
 interface MenuItemData {
@@ -101,7 +105,7 @@ const STATIC_RESTAURANTS: RestaurantData[] = [
   {
     id: "r1", name: "Restaurante Mitsuba", category: "Japonês", rating: 4.8, reviewCount: 0,
     deliveryTime: "30-45 min", minOrder: 25, deliveryFee: 0, promo: "Frete grátis",
-    image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&q=80&fit=crop",
+    image: logoMitsuba,
     logo: "https://img.icons8.com/color/96/sushi.png",
     menu: [
       { id: "m1", category: "Entradas", name: "Temaki Salmão", price: 22.90, image: "https://images.unsplash.com/photo-1562802378-063ec186a863?w=400&q=80&fit=crop", description: "Temaki com salmão fresco e cream cheese" },
@@ -114,7 +118,7 @@ const STATIC_RESTAURANTS: RestaurantData[] = [
   {
     id: "r2", name: "Le Max Hamburgueria", category: "Hambúrguer", rating: 4.7, reviewCount: 0,
     deliveryTime: "25-40 min", minOrder: 30, deliveryFee: 5.90, promo: "",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80&fit=crop",
+    image: logoLeMax,
     logo: "https://img.icons8.com/color/96/hamburger.png",
     menu: [
       { id: "b1", category: "Burgers", name: "Le Max Clássico", price: 34.90, image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80&fit=crop", description: "Pão brioche, 180g de blend, queijo cheddar e molho especial" },
@@ -127,7 +131,7 @@ const STATIC_RESTAURANTS: RestaurantData[] = [
   {
     id: "r3", name: "Pizza Palace", category: "Pizza", rating: 4.6, reviewCount: 0,
     deliveryTime: "35-50 min", minOrder: 40, deliveryFee: 0, promo: "2 por 1 às terças",
-    image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80&fit=crop",
+    image: logoPizzaPalace,
     logo: "https://img.icons8.com/color/96/pizza.png",
     menu: [
       { id: "p1", category: "Pizzas Salgadas", name: "Calabresa Acebolada", price: 49.90, image: "https://images.unsplash.com/photo-1594007654729-407eedc4be65?w=400&q=80&fit=crop", description: "Molho de tomate, mussarela, calabresa e cebola" },
@@ -140,7 +144,7 @@ const STATIC_RESTAURANTS: RestaurantData[] = [
   {
     id: "r4", name: "Bondinho Carioca", category: "Lanches", rating: 4.5, reviewCount: 0,
     deliveryTime: "20-35 min", minOrder: 20, deliveryFee: 3.90, promo: "",
-    image: "https://images.unsplash.com/photo-1550547660-d9450f859349?w=800&q=80&fit=crop",
+    image: logoBondinho,
     logo: "https://img.icons8.com/color/96/hot-dog.png",
     menu: [
       { id: "l1", category: "Lanches", name: "X-Tudo Carioca", price: 24.90, image: "https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=400&q=80&fit=crop", description: "Pão, hambúrguer, ovo, bacon, presunto e queijo" },
@@ -1073,7 +1077,7 @@ const ZuuFood = () => {
                           {/* Left image with dark rating chip */}
                           <div className="relative shrink-0">
                             <img src={r.image} alt={r.name}
-                              className="w-28 h-28 md:w-32 md:h-32 rounded-2xl object-cover" />
+                              className="w-28 h-28 md:w-32 md:h-32 rounded-2xl object-contain bg-white p-2" />
                             <button onClick={e => toggleFavorite(e, r.id)}
                               className={`absolute top-1.5 left-1.5 w-7 h-7 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow ${
                                 favoriteIds.has(r.id) ? "text-red-500" : "text-muted-foreground"
