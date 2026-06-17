@@ -55,79 +55,75 @@ export default function FoodPreview({ onEnter, item = DEFAULT_ITEM }: { onEnter:
   };
 
   return (
-    <div className="fixed inset-0 z-[60] bg-background flex flex-col">
+    <div className="fixed inset-0 z-[60] bg-black flex flex-col overflow-hidden">
+      {/* Full-bleed hero image */}
+      <motion.img
+        initial={{ scale: 1.1, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        src={item.hero}
+        alt={`${item.title} ${item.highlight}`}
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none" />
+
       {/* Top bar */}
-      <div className="flex items-center justify-between px-5 pt-5">
-        <button onClick={onEnter} className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center shadow-sm">
-          <ArrowLeft size={18} className="text-foreground" />
+      <div className="relative z-10 flex items-center justify-between px-5 pt-5">
+        <button onClick={onEnter} className="w-10 h-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-md">
+          <ArrowLeft size={18} className="text-black" />
         </button>
-        <div className="flex items-center gap-1.5 text-xs font-bold text-foreground bg-card border border-border rounded-full px-3 py-1.5 shadow-sm">
+        <div className="flex items-center gap-1.5 text-xs font-bold text-black bg-white/90 backdrop-blur rounded-full px-3 py-1.5 shadow-md">
           <UtensilsCrossed size={12} className="text-[hsl(14_90%_55%)]" /> Food Preview
         </div>
-        <button className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center shadow-sm">
-          <Heart size={18} className="text-foreground" />
+        <button className="w-10 h-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-md">
+          <Heart size={18} className="text-black" />
         </button>
       </div>
 
       {/* Title row */}
-      <div className="px-6 mt-3 flex items-start justify-between gap-4">
-        <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight text-foreground tracking-tight">
+      <div className="relative z-10 px-6 mt-3 flex items-start justify-between gap-4 text-white drop-shadow-lg">
+        <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight tracking-tight">
           {item.title}{" "}
-          <span className="font-medium text-muted-foreground">{item.highlight}</span>
+          <span className="font-medium text-white/70">{item.highlight}</span>
         </h1>
-        <p className="text-2xl sm:text-3xl font-extrabold text-foreground whitespace-nowrap">
+        <p className="text-2xl sm:text-3xl font-extrabold whitespace-nowrap">
           {item.temperature}
           <span className="text-sm font-bold align-top ml-0.5">°C</span>
         </p>
       </div>
 
-      {/* Hero with side thumbs */}
-      <div className="flex-1 relative overflow-hidden mt-2">
-        {/* Vertical thumb strip */}
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-2 bg-card/70 backdrop-blur rounded-full p-1.5 border border-border shadow">
-          {item.thumbs.map((t, i) => (
-            <button key={i} className="w-11 h-11 rounded-full overflow-hidden border-2 border-card hover:border-[hsl(14_90%_55%)] transition-colors">
-              <img src={t} alt="" className="w-full h-full object-cover" />
-            </button>
-          ))}
-        </div>
-
-        {/* Hero image */}
-        <motion.img
-          initial={{ scale: 0.85, opacity: 0, rotate: -8 }}
-          animate={{ scale: 1, opacity: 1, rotate: 0 }}
-          transition={{ type: "spring", stiffness: 120, damping: 18 }}
-          src={item.hero}
-          alt={`${item.title} ${item.highlight}`}
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
-
-        {/* Center badge */}
+      {/* Center badge */}
+      <div className="relative z-10 flex-1 flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-foreground/70 backdrop-blur text-background text-xs font-bold pl-3 pr-2 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
+          className="bg-black/60 backdrop-blur text-white text-xs font-bold pl-3 pr-2 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
           {item.badge}
-          <span className="w-5 h-5 rounded-full bg-background/20 flex items-center justify-center">
+          <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
             <MoreHorizontal size={12} />
           </span>
         </motion.div>
       </div>
 
-      {/* Swipe-to-cart track */}
-      <div className="px-6 pb-6 pt-3">
+      {/* Bottom: horizontal thumbs + swipe-to-cart */}
+      <div className="relative z-10 px-4 pb-6 pt-3 space-y-3">
+        <div className="flex items-center gap-2 overflow-x-auto">
+          {item.thumbs.map((t, i) => (
+            <button key={i} className="shrink-0 w-12 h-12 rounded-full overflow-hidden border-2 border-white/80 hover:border-[hsl(14_90%_55%)] transition-colors shadow">
+              <img src={t} alt="" className="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
+
         <div
           ref={handleMeasure}
-          className="relative h-16 rounded-full bg-card border border-border shadow-inner flex items-center px-2 overflow-hidden">
-          {/* Fill */}
+          className="relative h-16 rounded-full bg-white/95 backdrop-blur shadow-lg flex items-center px-2 overflow-hidden">
           <motion.div
             style={{ width: useTransform(x, v => `${Math.min(100, (v / Math.max(maxX, 1)) * 100)}%`) }}
-            className="absolute inset-y-0 left-0 bg-[hsl(14_90%_55%)]/15 rounded-full"
+            className="absolute inset-y-0 left-0 bg-[hsl(14_90%_55%)]/20 rounded-full"
           />
-          {/* Arrows */}
-          <motion.div style={{ opacity: opacityArrows }} className="absolute inset-0 flex items-center justify-center text-muted-foreground font-bold tracking-widest text-sm">
+          <motion.div style={{ opacity: opacityArrows }} className="absolute inset-0 flex items-center justify-center text-black/40 font-bold tracking-widest text-sm">
             <span>›››</span>
           </motion.div>
-          {/* Drag handle */}
           <motion.button
             drag="x"
             dragConstraints={{ left: 0, right: maxX }}
@@ -136,15 +132,14 @@ export default function FoodPreview({ onEnter, item = DEFAULT_ITEM }: { onEnter:
             style={{ x }}
             onDragEnd={onDragEnd}
             whileTap={{ scale: 1.05 }}
-            className="relative z-10 w-14 h-14 rounded-full bg-foreground text-background flex items-center justify-center shadow-lg cursor-grab active:cursor-grabbing">
+            className="relative z-10 w-14 h-14 rounded-full bg-black text-white flex items-center justify-center shadow-lg cursor-grab active:cursor-grabbing">
             <UtensilsCrossed size={20} className="text-[hsl(14_90%_55%)]" />
           </motion.button>
-          {/* Target cart */}
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-foreground text-background flex items-center justify-center">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black text-white flex items-center justify-center">
             <ShoppingCart size={18} />
           </div>
         </div>
-        <p className="text-center text-[11px] text-muted-foreground mt-2 font-medium">
+        <p className="text-center text-[11px] text-white/90 font-medium drop-shadow">
           {unlocked ? "Bem-vindo ao ZuuFood…" : "Arraste para entrar no ZuuFood"}
         </p>
       </div>
