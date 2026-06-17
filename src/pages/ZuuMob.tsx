@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import ZuuMobHome from "@/components/ZuuMobHome";
+import TripDetailsSheet from "@/components/TripDetailsSheet";
 import { useDriverGPSReceiver } from "@/hooks/useDriverGPS";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -52,6 +53,7 @@ const getMockDrivers = (lat: number, lng: number): MockDriver[] => [
 
 const ZuuMob = () => {
   const [showPreview, setShowPreview] = useState(true);
+  const [tripDetailsOpen, setTripDetailsOpen] = useState(false);
   const dismissPreview = () => setShowPreview(false);
   const { user, profile } = useAuth();
   const navigate = useNavigate();
@@ -724,7 +726,13 @@ const ZuuMob = () => {
                   onClick={() => setShowChat(!showChat)}>
                   <MessageCircle className="h-4 w-4" style={{ color: "#00E676" }} /> Chat
                 </button>
+                <button className="px-3 py-2.5 rounded-[14px] text-sm font-semibold transition-all duration-200"
+                  style={{ backgroundColor: "#0A0A0A", color: "#C6FF00", border: "1px solid #2A2A2A" }}
+                  onClick={() => setTripDetailsOpen(true)}>
+                  Detalhes
+                </button>
               </div>
+
 
               {/* Quick chat */}
               {showChat && (
@@ -909,6 +917,16 @@ const ZuuMob = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <TripDetailsSheet
+        open={tripDetailsOpen}
+        onClose={() => setTripDetailsOpen(false)}
+        origin={origin?.address}
+        destination={destination?.address}
+        destinationTime={estimatedDuration ? `${estimatedDuration} min` : "20:30"}
+        fare={currentRide?.final_price ? formatPrice(currentRide.final_price) : formatPrice(getPrice(selectedRideType))}
+        paymentMethod={paymentMethods.find((p) => p.id === selectedPayment)?.label || "Dinheiro"}
+      />
     </div>
   );
 };
