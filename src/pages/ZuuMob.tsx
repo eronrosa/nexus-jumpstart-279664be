@@ -54,8 +54,10 @@ const getMockDrivers = (lat: number, lng: number): MockDriver[] => [
 
 const ZuuMob = () => {
   const [showPreview, setShowPreview] = useState(true);
+  // Mantém a Home nova sempre visível; clicar em buscar não derruba a UI
+
   const [tripDetailsOpen, setTripDetailsOpen] = useState(false);
-  const dismissPreview = () => setShowPreview(false);
+  const dismissPreview = () => {/* mantém ZuuMobHome ativo */};
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
