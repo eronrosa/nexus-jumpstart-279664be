@@ -411,7 +411,7 @@ const ZuuMob = () => {
 
   return (
     <div className="zuumob-dark relative h-screen w-full overflow-hidden font-dm" style={{ backgroundColor: "#F7F8FA" }}>
-      <style>{`
+      {showPreview && <MobPreview onEnter={dismissPreview} />}
         @keyframes zm-pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(0,230,118,0.4); } 70% { box-shadow: 0 0 0 15px rgba(0,230,118,0); } 100% { box-shadow: 0 0 0 0 rgba(0,230,118,0); } }
         @keyframes zm-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
         @keyframes zm-radar { 0% { transform: scale(0); opacity: 0.8; } 100% { transform: scale(3); opacity: 0; } }
