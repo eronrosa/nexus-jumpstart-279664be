@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
   Search, Calendar, Car, Clock, Crown, Route, CarFront,
   Package, Truck, Bike, Home, Grid3x3, History, User, ArrowRight,
-  Shield, Smartphone, ChevronRight
+  Shield, Smartphone, ChevronRight, ArrowLeft
 } from "lucide-react";
+
 
 const NEON = "#C6FF00";
 const BG = "#000000";
@@ -30,13 +32,31 @@ const services: ServiceCard[] = [
 ];
 
 export default function ZuuMobHome({ onSearchOpen }: { onSearchOpen: () => void }) {
+  const navigate = useNavigate();
   return (
     <div
       className="fixed inset-0 z-[55] overflow-hidden flex flex-col"
       style={{ background: BG, color: "#fff", fontFamily: FONT, letterSpacing: "-0.01em" }}
     >
       <div className="flex-1 overflow-y-auto overscroll-contain max-w-md w-full mx-auto px-4 sm:px-5 pt-4 pb-24">
-
+        {/* Top bar with back button */}
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={() => navigate("/")}
+            aria-label="Voltar"
+            className="w-10 h-10 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+            style={{ background: CARD, border: `1px solid ${BORDER}` }}
+          >
+            <ArrowLeft size={18} strokeWidth={1.8} style={{ color: NEON }} />
+          </button>
+          <span
+            className="text-[11px] font-bold tracking-[0.3em]"
+            style={{ color: NEON, textShadow: `0 0 12px ${NEON}55` }}
+          >
+            ZUUMOB
+          </span>
+          <span className="w-10" />
+        </div>
 
         {/* Search */}
         <motion.button
