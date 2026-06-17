@@ -58,15 +58,20 @@ const Welcome = () => {
             className={[
               "aspect-square rounded-3xl flex items-center justify-center",
               filled
-                ? "bg-[hsl(160_70%_35%)] text-white shadow-lg"
+                ? "shadow-lg"
                 : dashed
-                ? "border-2 border-dashed border-[hsl(160_60%_45%)] bg-white"
+                ? "border-2 border-dashed bg-white"
                 : "bg-white shadow-[0_4px_20px_rgba(0,0,0,0.08)]",
               i === 2 ? "translate-y-2" : "",
             ].join(" ")}
+            style={{
+              backgroundColor: filled ? LIME : dashed ? "white" : undefined,
+              borderColor: dashed ? LIME : undefined,
+            }}
           >
             <Icon
-              className={`w-9 h-9 ${filled ? "text-white" : "text-[hsl(160_70%_30%)]"}`}
+              className="w-9 h-9"
+              color={filled ? "#0a0a0a" : LIME}
               strokeWidth={1.8}
             />
           </motion.div>
