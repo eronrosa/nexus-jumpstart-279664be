@@ -575,75 +575,148 @@ const ZuuMob = () => {
           </motion.div>
         )}
 
-        {/* CHOOSING RIDE */}
+        {/* CHOOSING RIDE - DARK PREMIUM */}
         {rideStatus === "choosing_ride" && destination && (
-          <motion.div key="choose" initial={{ y: 400 }} animate={{ y: 0 }} exit={{ y: 400 }} transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="absolute bottom-0 left-0 right-0 z-20 rounded-t-[28px] shadow-2xl"
-            style={{ backgroundColor: "#FFFFFF" }}>
-            <div className="w-12 h-1.5 rounded-full mx-auto mt-3" style={{ backgroundColor: "#9CA3AF" }} />
+          <motion.div key="choose" initial={{ y: 400 }} animate={{ y: 0 }} exit={{ y: 400 }} transition={{ type: "spring", damping: 26, stiffness: 280 }}
+            className="absolute bottom-0 left-0 right-0 z-20 rounded-t-[24px] max-h-[72vh] overflow-y-auto"
+            style={{ backgroundColor: "#000000", border: "1px solid #2A2A2A", fontFamily: "Inter, sans-serif" }}>
+            <div className="w-12 h-1.5 rounded-full mx-auto mt-3" style={{ backgroundColor: "#2A2A2A" }} />
             <div className="p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm" style={{ color: "#6B7280" }}>Distância</p>
-                  <p className="font-syne font-bold" style={{ color: "#0A0A0A" }}><span className="font-mono-jb">{estimatedDistance.toFixed(1)}</span> km</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm" style={{ color: "#6B7280" }}>Tempo estimado</p>
-                  <p className="font-syne font-bold" style={{ color: "#0A0A0A" }}><span className="font-mono-jb">{estimatedDuration}</span> min</p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {rideTypes.map((rt) => (
-                  <button key={rt.id} onClick={() => setSelectedRideType(rt.id)}
-                    className="w-full flex items-center gap-4 p-3.5 rounded-xl transition-all duration-200"
-                    style={{
-                      backgroundColor: selectedRideType === rt.id ? "rgba(0,230,118,0.05)" : "#F1F3F5",
-                      border: `2px solid ${selectedRideType === rt.id ? "rgba(0,230,118,0.3)" : "transparent"}`,
-                      boxShadow: selectedRideType === rt.id ? "0 0 24px rgba(0,230,118,0.15)" : "none",
-                    }}>
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center"
-                      style={{ backgroundColor: selectedRideType === rt.id ? "#00E676" : "#FFFFFF", color: selectedRideType === rt.id ? "#000000" : "#0A0A0A" }}>{rt.icon}</div>
-                    <div className="flex-1 text-left">
-                      <div className="flex items-center gap-2">
-                        <p className="font-semibold text-sm" style={{ color: "#0A0A0A" }}>{rt.name}</p>
-                        {"badge" in rt && <span className="text-[10px] px-1.5 py-0.5 rounded-md font-medium" style={{ backgroundColor: "rgba(0,230,118,0.1)", color: "#00E676" }}>{(rt as any).badge}</span>}
+              <h3 className="text-lg font-bold" style={{ color: "#FFFFFF" }}>Escolha uma viagem</h3>
+
+              <div className="space-y-2.5">
+                {rideTypes.map((rt) => {
+                  const selected = selectedRideType === rt.id;
+                  return (
+                    <button key={rt.id} onClick={() => setSelectedRideType(rt.id)}
+                      className="w-full flex items-center gap-4 p-3.5 rounded-2xl transition-all duration-200"
+                      style={{
+                        backgroundColor: "#111111",
+                        border: `1.5px solid ${selected ? "#C6FF00" : "#2A2A2A"}`,
+                        boxShadow: selected ? "0 0 20px rgba(198,255,0,0.18)" : "none",
+                      }}>
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: "#1A1A1A", color: selected ? "#C6FF00" : "#FFFFFF" }}>{rt.icon}</div>
+                      <div className="flex-1 text-left min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-semibold text-[14px]" style={{ color: "#FFFFFF" }}>{rt.name}</p>
+                          {"badge" in rt && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-md font-bold"
+                              style={{ backgroundColor: "#C6FF00", color: "#000000" }}>{(rt as any).badge}</span>
+                          )}
+                        </div>
+                        <p className="text-xs mt-0.5" style={{ color: "#A0A0A0" }}>{rt.description} · {rt.eta}</p>
                       </div>
-                      <p className="text-xs" style={{ color: "#6B7280" }}>{rt.description} · <Clock className="inline h-3 w-3" /> <span className="font-mono-jb">{rt.eta}</span></p>
-                    </div>
-                    <p className="font-mono-jb font-semibold" style={{ color: selectedRideType === rt.id ? "#00E676" : "#0A0A0A" }}>{formatPrice(getPrice(rt.id))}</p>
-                  </button>
-                ))}
+                      <p className="font-bold text-[15px]" style={{ color: selected ? "#C6FF00" : "#FFFFFF" }}>
+                        {formatPrice(getPrice(rt.id))}
+                      </p>
+                    </button>
+                  );
+                })}
               </div>
-              <div className="flex gap-2">
-                {paymentMethods.map((pm) => (
-                  <button key={pm.id} onClick={() => setSelectedPayment(pm.id)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200"
-                    style={{
-                      backgroundColor: selectedPayment === pm.id ? "#00E676" : "#F1F3F5",
-                      color: selectedPayment === pm.id ? "#000000" : "#6B7280",
-                      border: `1px solid ${selectedPayment === pm.id ? "#00E676" : "rgba(10,10,10,0.08)"}`,
-                    }}>
-                    {pm.icon}{pm.label}
-                  </button>
-                ))}
-              </div>
-              <div className="flex gap-2">
+
+              {/* ZUPPI Pay - integrated wallet */}
+              <button
+                onClick={() => navigate("/perfil")}
+                className="w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all duration-200"
+                style={{ backgroundColor: "#111111", border: "1px solid #2A2A2A" }}
+              >
+                <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: "#C6FF00" }}>
+                  <Wallet className="h-4 w-4" style={{ color: "#000" }} />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="text-[13px] font-semibold" style={{ color: "#FFFFFF" }}>ZUPPI Pay</p>
+                  <p className="text-[11px]" style={{ color: "#A0A0A0" }}>Carteira do Super App</p>
+                </div>
+                <ArrowLeft className="h-4 w-4 rotate-180" style={{ color: "#A0A0A0" }} />
+              </button>
+
+              <div className="flex gap-2 pt-1">
                 <button
-                  className="w-12 h-12 rounded-[14px] flex items-center justify-center transition-all duration-200"
-                  style={{ backgroundColor: "#F1F3F5", border: "1px solid rgba(10,10,10,0.08)", color: "#0A0A0A" }}
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                  style={{ backgroundColor: "#1A1A1A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
                   onClick={() => { setRideStatus("idle"); setDestination(null); setDestinationQuery(""); }}
                 >
                   <X className="h-5 w-5" />
                 </button>
                 <button
-                  className="flex-1 h-12 rounded-[14px] text-base font-semibold font-dm flex items-center justify-center transition-all duration-200 hover:shadow-[0_0_24px_rgba(0,230,118,0.2)]"
-                  style={{ backgroundColor: "#00E676", color: "#000000" }}
-                  onClick={requestRide}
-                  disabled={isRequesting}
+                  className="flex-1 h-14 rounded-2xl text-[15px] font-bold transition-all"
+                  style={{ backgroundColor: "#C6FF00", color: "#000000", boxShadow: "0 0 24px rgba(198,255,0,0.25)" }}
+                  onClick={() => setRideStatus("confirming_location")}
                 >
-                  {isRequesting ? <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : `Solicitar ZuuMob · ${formatPrice(getPrice(selectedRideType))}`}
+                  Confirmar {rideTypes.find((r) => r.id === selectedRideType)?.name}
                 </button>
               </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* CONFIRMING LOCATION - DARK PREMIUM */}
+        {rideStatus === "confirming_location" && destination && (
+          <motion.div key="confirm-loc" initial={{ y: 400 }} animate={{ y: 0 }} exit={{ y: 400 }} transition={{ type: "spring", damping: 26, stiffness: 280 }}
+            className="absolute bottom-0 left-0 right-0 z-20 rounded-t-[24px] max-h-[72vh] overflow-y-auto"
+            style={{ backgroundColor: "#000000", border: "1px solid #2A2A2A", fontFamily: "Inter, sans-serif" }}>
+            <div className="w-12 h-1.5 rounded-full mx-auto mt-3" style={{ backgroundColor: "#2A2A2A" }} />
+            <div className="p-5 space-y-4">
+              {/* Location card */}
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: "rgba(198,255,0,0.12)", border: "1px solid rgba(198,255,0,0.3)" }}>
+                  <MapPin className="h-5 w-5" style={{ color: "#C6FF00" }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[15px] font-bold leading-tight" style={{ color: "#FFFFFF" }}>
+                    {destination.address.split(",")[0]}
+                  </p>
+                  <p className="text-[12px] mt-0.5" style={{ color: "#A0A0A0" }}>
+                    Embarque no local indicado
+                  </p>
+                </div>
+              </div>
+
+              {/* Editar */}
+              <button
+                onClick={() => { setRideStatus("idle"); }}
+                className="w-full flex items-center gap-2 px-4 h-12 rounded-2xl text-[13px] font-medium"
+                style={{ backgroundColor: "#111111", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C6FF00" strokeWidth="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                Editar ponto de encontro
+              </button>
+
+              {/* Confirmar */}
+              <button
+                onClick={requestRide}
+                disabled={isRequesting}
+                className="w-full h-14 rounded-2xl text-[15px] font-bold transition-all"
+                style={{ backgroundColor: "#C6FF00", color: "#000000", boxShadow: "0 0 24px rgba(198,255,0,0.25)" }}
+              >
+                {isRequesting ? "..." : "Confirmar local"}
+              </button>
+
+              {/* Instruções */}
+              <div className="space-y-3 pt-1">
+                {[
+                  { icon: Shield, text: "Certifique-se de que o motorista encontre você no local correto." },
+                  { icon: MapPin, text: "Dirija-se ao ponto informado para o embarque." },
+                  { icon: Star, text: "Compartilhe seu PIN após encontrar o motorista." },
+                ].map((it, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <it.icon className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "#C6FF00" }} />
+                    <p className="text-[12px] leading-snug" style={{ color: "#A0A0A0" }}>{it.text}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Fechar */}
+              <button
+                onClick={() => setRideStatus("choosing_ride")}
+                className="w-full h-14 rounded-2xl text-[14px] font-semibold"
+                style={{ backgroundColor: "#1A1A1A", color: "#FFFFFF", border: "1px solid #2A2A2A" }}
+              >
+                Fechar
+              </button>
             </div>
           </motion.div>
         )}
