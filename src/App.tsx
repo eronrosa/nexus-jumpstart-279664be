@@ -50,6 +50,7 @@ const AnimatedRoutes = () => {
         <Route path="/pedidos" element={<ProtectedRoute><PageTransition><PedidosPage /></PageTransition></ProtectedRoute>} />
         <Route path="/painel" element={<ProtectedRoute><PageTransition><PainelPage /></PageTransition></ProtectedRoute>} />
         <Route path="/auth" element={<PageTransition><AuthPage /></PageTransition>} />
+        <Route path="/auth/phone" element={<PageTransition><PhoneAuthPage /></PageTransition>} />
         <Route path="/perfil" element={<ProtectedRoute><PageTransition><ProfilePage /></PageTransition></ProtectedRoute>} />
         <Route path="/zuumob" element={<PageTransition><ZuuMob /></PageTransition>} />
         <Route path="/motorista" element={<ProtectedRoute><PageTransition><MotoristaPage /></PageTransition></ProtectedRoute>} />
