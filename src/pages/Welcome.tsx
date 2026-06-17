@@ -122,7 +122,7 @@ const Welcome = () => {
 
         <p className="text-center text-sm text-zinc-500 pt-2">
           Já tem uma conta?{" "}
-          <button onClick={handleEmail} className="text-[hsl(160_70%_35%)] font-semibold">
+          <button onClick={handleEmail} className="text-[hsl(84_95%_45%)] font-semibold">
             Entrar
           </button>
         </p>
