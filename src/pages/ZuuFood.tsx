@@ -1002,7 +1002,7 @@ const ZuuFood = () => {
         {/* ── RESTAURANT DETAIL VIEW ── */}
         <div className="min-h-screen bg-background">
           {/* Hero banner with search overlay */}
-          <div className="relative md:max-w-5xl md:mx-auto">
+          <div className="relative md:max-w-5xl xl:max-w-7xl md:mx-auto">
             <img src={selectedRestaurant.image} alt={selectedRestaurant.name} className="w-full h-56 md:h-72 lg:h-80 object-cover md:rounded-b-2xl" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent md:rounded-b-2xl" />
             <div className="absolute top-3 left-0 right-0 px-4 flex items-center gap-2">
@@ -1030,7 +1030,7 @@ const ZuuFood = () => {
           </div>
 
           {/* Two-column layout on desktop */}
-          <div className="md:max-w-5xl md:mx-auto md:grid md:grid-cols-[380px_1fr] md:gap-6 md:mt-4">
+          <div className="md:max-w-5xl xl:max-w-7xl md:mx-auto md:grid md:grid-cols-[380px_1fr] xl:grid-cols-[420px_1fr] md:gap-6 xl:gap-8 md:mt-4">
             {/* LEFT: Info sidebar */}
             <div className="md:sticky md:top-4 md:self-start">
               {/* Restaurant info card */}
@@ -1223,7 +1223,7 @@ const ZuuFood = () => {
                   Object.entries(menuGroups).map(([category, menuItems]) => (
                     <section key={category}>
                       <h2 className="text-sm font-extrabold text-foreground mb-3 uppercase tracking-wide">{category}</h2>
-                      <div className="space-y-2 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
+                      <div className="space-y-2 md:grid md:grid-cols-2 xl:grid-cols-3 md:gap-3 md:space-y-0">
                         {menuItems.map(item => (
                           <motion.div key={item.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                             className="bg-card rounded-2xl border border-border p-3 flex gap-3 items-center">
