@@ -723,18 +723,19 @@ const ZuuFood = () => {
     return matchCat && matchSearch;
   });
 
-  const handleAdd = (item: MenuItemData, restaurant: RestaurantData) => {
+  const handleAdd = (item: MenuItemData, restaurant: RestaurantData, qty: number = 1, notes: string = "") => {
     if (items.length > 0 && items[0].restaurantId !== restaurant.id) {
       toast.error("Você só pode pedir de um restaurante por vez. Limpe o carrinho antes.");
       return;
     }
-    // Min order is validated at checkout, just add
     add({
       id: item.id, restaurantId: restaurant.id, restaurantName: restaurant.name,
       name: item.name, price: item.price, image: item.image,
-    });
+      notes: notes.trim() || undefined,
+    }, qty);
     setAddedId(item.id);
     setTimeout(() => setAddedId(null), 800);
+    toast.success(`${qty}x ${item.name} adicionado ao carrinho`);
   };
 
   const menuGroups = selectedRestaurant
