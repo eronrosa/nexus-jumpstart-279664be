@@ -599,6 +599,7 @@ export type Database = {
           item_image: string | null
           item_name: string
           item_price: number
+          notes: string | null
           order_id: string
           quantity: number
         }
@@ -608,6 +609,7 @@ export type Database = {
           item_image?: string | null
           item_name: string
           item_price: number
+          notes?: string | null
           order_id: string
           quantity?: number
         }
@@ -617,6 +619,7 @@ export type Database = {
           item_image?: string | null
           item_name?: string
           item_price?: number
+          notes?: string | null
           order_id?: string
           quantity?: number
         }
