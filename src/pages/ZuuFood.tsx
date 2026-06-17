@@ -7,7 +7,8 @@ import {
   CreditCard, Banknote, Smartphone, Tag, Home, Building, Mic,
   SlidersHorizontal, Heart, User, Phone, Share2, Wifi, ParkingCircle,
   Music, UtensilsCrossed, Package, Users, ChevronDown, ShieldCheck,
-  CalendarDays, ChefHat, Flame, Sparkles, BadgePercent, Trophy
+  CalendarDays, ChefHat, Flame, Sparkles, BadgePercent, Trophy,
+  Drumstick, Salad, EggFried, Beef, Cookie, GlassWater, type LucideIcon
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import FoodPreview from "@/components/FoodPreview";
@@ -675,12 +676,12 @@ const ZuuFood = () => {
   const [itemIngredients, setItemIngredients] = useState<string[]>([]);
   const sizeMultiplier: Record<"small" | "medium" | "large", number> = { small: 0.85, medium: 1, large: 1.25 };
   const sizeLabel: Record<"small" | "medium" | "large", string> = { small: "Pequeno", medium: "Médio", large: "Grande" };
-  const defaultExtras = [
-    { id: "fries", label: "Batata", emoji: "🍟", price: 6 },
-    { id: "cheese", label: "Queijo extra", emoji: "🧀", price: 4 },
-    { id: "bacon", label: "Bacon", emoji: "🥓", price: 5 },
-    { id: "egg", label: "Ovo", emoji: "🥚", price: 3 },
-    { id: "sauce", label: "Molho especial", emoji: "🥫", price: 2 },
+  const defaultExtras: { id: string; label: string; icon: LucideIcon; price: number }[] = [
+    { id: "fries", label: "Batata", icon: Drumstick, price: 6 },
+    { id: "cheese", label: "Queijo extra", icon: Cookie, price: 4 },
+    { id: "bacon", label: "Bacon", icon: Beef, price: 5 },
+    { id: "egg", label: "Ovo", icon: EggFried, price: 3 },
+    { id: "sauce", label: "Molho especial", icon: GlassWater, price: 2 },
   ];
   const extrasTotal = itemIngredients.reduce((s, id) => s + (defaultExtras.find(e => e.id === id)?.price ?? 0), 0);
   const itemUnitPrice = selectedItem ? selectedItem.price * sizeMultiplier[itemSize] + extrasTotal : 0;
@@ -1611,7 +1612,9 @@ const ZuuFood = () => {
                               ? "bg-[hsl(14_90%_55%)]/10 border-[hsl(14_90%_55%)] text-[hsl(14_90%_45%)]"
                               : "bg-white border-border text-foreground"
                           }`}>
-                          <span className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-base">{ex.emoji}</span>
+                          <span className={`w-7 h-7 rounded-full flex items-center justify-center ${active ? "bg-[hsl(14_90%_55%)]/15 text-[hsl(14_90%_45%)]" : "bg-muted text-foreground/70"}`}>
+                            <ex.icon size={14} strokeWidth={2.2} />
+                          </span>
                           {ex.label}
                           <span className="text-[10px] text-muted-foreground">+{fmt(ex.price)}</span>
                         </button>
