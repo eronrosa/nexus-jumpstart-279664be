@@ -1358,6 +1358,77 @@ const ZuuFood = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Product Detail Modal */}
+      <AnimatePresence>
+        {selectedItem && selectedRestaurant && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 flex items-end md:items-center justify-center"
+            onClick={() => setSelectedItem(null)}>
+            <motion.div initial={{ y: 100 }} animate={{ y: 0 }} exit={{ y: 100 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-card w-full md:max-w-md rounded-t-2xl md:rounded-2xl max-h-[90vh] overflow-y-auto">
+              <div className="relative">
+                {selectedItem.image ? (
+                  <img src={selectedItem.image} alt={selectedItem.name} className="w-full h-56 object-cover md:rounded-t-2xl" />
+                ) : (
+                  <div className="w-full h-56 bg-muted flex items-center justify-center md:rounded-t-2xl">
+                    <StoreIcon size={48} className="text-muted-foreground/30" />
+                  </div>
+                )}
+                <button onClick={() => setSelectedItem(null)}
+                  className="absolute top-3 right-3 w-9 h-9 rounded-full bg-card/90 backdrop-blur flex items-center justify-center shadow">
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="p-5 space-y-4">
+                <div>
+                  <h2 className="text-xl font-extrabold text-foreground">{selectedItem.name}</h2>
+                  {selectedItem.description && (
+                    <p className="text-sm text-muted-foreground mt-1">{selectedItem.description}</p>
+                  )}
+                  <p className="text-lg font-bold text-primary mt-2">{fmt(selectedItem.price)}</p>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-foreground mb-1 block">
+                    Observações (ex: sem cebola, sem tomate, ao ponto)
+                  </label>
+                  <textarea value={itemNotes} onChange={e => setItemNotes(e.target.value)}
+                    placeholder="Alguma observação para a cozinha?"
+                    rows={3}
+                    className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none" />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-foreground">Quantidade</span>
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => setItemQty(Math.max(1, itemQty - 1))}
+                      className="w-9 h-9 rounded-full border border-border flex items-center justify-center text-foreground hover:bg-muted transition-colors">
+                      <Minus size={14} />
+                    </button>
+                    <span className="text-lg font-bold text-foreground w-8 text-center">{itemQty}</span>
+                    <button onClick={() => setItemQty(itemQty + 1)}
+                      className="w-9 h-9 rounded-full border border-border flex items-center justify-center text-foreground hover:bg-muted transition-colors">
+                      <Plus size={14} />
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    handleAdd(selectedItem, selectedRestaurant, itemQty, itemNotes);
+                    setSelectedItem(null);
+                  }}
+                  className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl text-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+                  <ShoppingCart size={16} />
+                  Adicionar {itemQty > 1 ? `${itemQty} itens` : ""} • {fmt(selectedItem.price * itemQty)}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
