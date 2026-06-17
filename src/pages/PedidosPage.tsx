@@ -184,7 +184,7 @@ const PedidosPage = () => {
         </div>
       </div>
 
-      <div className="max-w-xl mx-auto px-4 py-6">
+      <div className="max-w-xl lg:max-w-3xl mx-auto px-4 py-6">
         {loading ? (
           <div className="flex flex-col gap-3">
             {[1, 2, 3].map(i => (
