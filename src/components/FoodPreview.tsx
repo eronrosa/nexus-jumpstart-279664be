@@ -86,7 +86,7 @@ export default function FoodPreview({ onEnter, item = DEFAULT_ITEM }: { onEnter:
           className="relative h-16 rounded-full bg-white/95 backdrop-blur shadow-lg flex items-center px-2 overflow-hidden">
           <motion.div
             style={{ width: useTransform(x, v => `${Math.min(100, (v / Math.max(maxX, 1)) * 100)}%`) }}
-            className="absolute inset-y-0 left-0 bg-[hsl(14_90%_55%)]/20 rounded-full"
+            className="absolute inset-y-0 left-0 bg-[hsl(84_90%_42%)]/20 rounded-full"
           />
           <motion.div style={{ opacity: opacityArrows }} className="absolute inset-0 flex items-center justify-center text-black/40 font-bold tracking-widest text-sm">
             <span>›››</span>
@@ -100,7 +100,7 @@ export default function FoodPreview({ onEnter, item = DEFAULT_ITEM }: { onEnter:
             onDragEnd={onDragEnd}
             whileTap={{ scale: 1.05 }}
             className="relative z-10 w-14 h-14 rounded-full bg-black text-white flex items-center justify-center shadow-lg cursor-grab active:cursor-grabbing">
-            <UtensilsCrossed size={20} className="text-[hsl(14_90%_55%)]" />
+            <UtensilsCrossed size={20} className="text-[hsl(84_90%_42%)]" />
           </motion.button>
           <div className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black text-white flex items-center justify-center">
             <ShoppingCart size={18} />

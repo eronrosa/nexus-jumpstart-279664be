@@ -360,7 +360,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
     onClose();
   };
 
-  const ORANGE = "hsl(14_90%_55%)";
+  const ORANGE = "hsl(84_90%_42%)";
 
   return (
     <AnimatePresence>
@@ -385,7 +385,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                 {count > 0 && !ordered ? (
                   <span className="relative">
                     <ShoppingCart size={16} className="text-foreground" />
-                    <span className="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-[hsl(14_90%_55%)] text-white text-[9px] font-bold flex items-center justify-center">{count}</span>
+                    <span className="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-[hsl(84_90%_42%)] text-white text-[9px] font-bold flex items-center justify-center">{count}</span>
                   </span>
                 ) : (
                   <X size={18} className="text-foreground" />
@@ -400,8 +400,8 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                   <motion.div key="success" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
                     className="flex flex-col items-center justify-center min-h-full gap-3 py-12 text-center">
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 380, damping: 16, delay: 0.1 }}
-                      className="w-20 h-20 rounded-2xl bg-[hsl(14_90%_55%)]/10 flex items-center justify-center mb-2">
-                      <CheckCircle size={44} className="text-[hsl(14_90%_55%)]" strokeWidth={2.2} />
+                      className="w-20 h-20 rounded-2xl bg-[hsl(84_90%_42%)]/10 flex items-center justify-center mb-2">
+                      <CheckCircle size={44} className="text-[hsl(84_90%_42%)]" strokeWidth={2.2} />
                     </motion.div>
                     <h3 className="text-2xl font-extrabold text-foreground">Pedido confirmado!</h3>
                     <p className="text-sm text-muted-foreground max-w-xs">
@@ -426,7 +426,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                       Explore restaurantes deliciosos e adicione itens ao seu carrinho.
                     </p>
                     <button onClick={handleClose}
-                      className="mt-4 w-full max-w-xs bg-[hsl(14_90%_55%)] text-white font-bold py-3.5 rounded-full shadow-lg shadow-[hsl(14_90%_55%)]/30 hover:opacity-90 transition-opacity">
+                      className="mt-4 w-full max-w-xs bg-[hsl(84_90%_42%)] text-white font-bold py-3.5 rounded-full shadow-lg shadow-[hsl(84_90%_42%)]/30 hover:opacity-90 transition-opacity">
                       Explorar restaurantes
                     </button>
                   </motion.div>
@@ -451,14 +451,14 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                           )}
                           <p className="text-base font-extrabold text-foreground mt-1">{fmt(item.price * item.qty)}</p>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0 bg-[hsl(14_90%_55%)]/5 border border-[hsl(14_90%_55%)]/20 rounded-full p-1">
+                        <div className="flex items-center gap-2 shrink-0 bg-[hsl(84_90%_42%)]/5 border border-[hsl(84_90%_42%)]/20 rounded-full p-1">
                           <button onClick={() => item.qty > 1 ? decrement(item.id) : remove(item.id)}
                             className="w-7 h-7 rounded-full bg-white border border-border flex items-center justify-center text-foreground">
                             <Minus size={12} />
                           </button>
                           <span className="text-sm font-bold w-4 text-center">{item.qty}</span>
                           <button onClick={() => increment(item.id)}
-                            className="w-7 h-7 rounded-full bg-[hsl(14_90%_55%)] text-white flex items-center justify-center">
+                            className="w-7 h-7 rounded-full bg-[hsl(84_90%_42%)] text-white flex items-center justify-center">
                             <Plus size={12} />
                           </button>
                         </div>
@@ -480,7 +480,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                             placeholder="Código promocional" maxLength={30}
                             className="flex-1 bg-transparent text-sm focus:outline-none placeholder:text-muted-foreground/60" />
                           <button onClick={applyCoupon} disabled={validatingCoupon || !couponInput.trim()}
-                            className="bg-[hsl(14_90%_55%)] text-white font-bold text-xs px-5 py-2 rounded-full disabled:opacity-50">
+                            className="bg-[hsl(84_90%_42%)] text-white font-bold text-xs px-5 py-2 rounded-full disabled:opacity-50">
                             {validatingCoupon ? "..." : "Aplicar"}
                           </button>
                         </>
@@ -496,7 +496,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                       <Row label="Impostos (5%)" value={fmt(tax)} muted />
                       <div className="border-t border-border pt-2.5 flex items-center justify-between">
                         <span className="text-base font-extrabold text-foreground">Total</span>
-                        <span className="text-base font-extrabold text-[hsl(14_90%_55%)]">{fmt(grandTotal)}</span>
+                        <span className="text-base font-extrabold text-[hsl(84_90%_42%)]">{fmt(grandTotal)}</span>
                       </div>
                     </div>
                   </motion.div>
@@ -509,7 +509,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                         const active = selectedPayment === pm.id;
                         return (
                           <button key={pm.id} onClick={() => setSelectedPayment(pm.id)}
-                            className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${active ? "bg-[hsl(14_90%_55%)]/5" : "hover:bg-muted/40"} ${i > 0 ? "border-t border-border/40" : ""}`}>
+                            className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${active ? "bg-[hsl(84_90%_42%)]/5" : "hover:bg-muted/40"} ${i > 0 ? "border-t border-border/40" : ""}`}>
                             <span className="w-10 h-10 rounded-xl bg-muted/60 flex items-center justify-center">
                               <pm.icon size={18} className="text-foreground" />
                             </span>
@@ -517,13 +517,13 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                               <p className="text-sm font-bold text-foreground">{pm.label}</p>
                               <p className="text-[11px] text-muted-foreground">Pagamento seguro</p>
                             </div>
-                            <span className={`w-5 h-5 rounded-md border-2 flex items-center justify-center ${active ? "bg-[hsl(14_90%_55%)] border-[hsl(14_90%_55%)]" : "border-border"}`}>
+                            <span className={`w-5 h-5 rounded-md border-2 flex items-center justify-center ${active ? "bg-[hsl(84_90%_42%)] border-[hsl(84_90%_42%)]" : "border-border"}`}>
                               {active && <CheckCircle size={12} className="text-white" />}
                             </span>
                           </button>
                         );
                       })}
-                      <button className="w-full flex items-center justify-center gap-2 p-3 border-t border-dashed border-border text-sm font-bold text-[hsl(14_90%_55%)]">
+                      <button className="w-full flex items-center justify-center gap-2 p-3 border-t border-dashed border-border text-sm font-bold text-[hsl(84_90%_42%)]">
                         <Plus size={14} /> Adicionar método de pagamento
                       </button>
                     </div>
@@ -543,9 +543,9 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                             const active = selectedAddress === addr.id;
                             return (
                               <button key={addr.id} onClick={() => setSelectedAddress(addr.id)}
-                                className={`w-full flex items-center gap-3 bg-white rounded-2xl border shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-3.5 text-left transition-all ${active ? "border-[hsl(14_90%_55%)]" : "border-border/40"}`}>
-                                <span className="w-10 h-10 rounded-full bg-[hsl(14_90%_55%)]/10 flex items-center justify-center shrink-0">
-                                  <MapPin size={16} className="text-[hsl(14_90%_55%)]" />
+                                className={`w-full flex items-center gap-3 bg-white rounded-2xl border shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-3.5 text-left transition-all ${active ? "border-[hsl(84_90%_42%)]" : "border-border/40"}`}>
+                                <span className="w-10 h-10 rounded-full bg-[hsl(84_90%_42%)]/10 flex items-center justify-center shrink-0">
+                                  <MapPin size={16} className="text-[hsl(84_90%_42%)]" />
                                 </span>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-1.5">
@@ -568,7 +568,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                     <textarea value={notes} onChange={e => setNotes(e.target.value)}
                       placeholder="Observações para o entregador (opcional)"
                       rows={2} maxLength={300}
-                      className="w-full bg-muted/30 border border-border rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(14_90%_55%)]/30 resize-none" />
+                      className="w-full bg-muted/30 border border-border rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(84_90%_42%)]/30 resize-none" />
 
                     {/* Order Summary */}
                     <div className="bg-white rounded-2xl border border-border/40 shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-4 space-y-2.5">
@@ -586,7 +586,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                       {discount > 0 && <Row label="Desconto" value={`-${fmt(discount)}`} accent />}
                       <div className="border-t border-border pt-2.5 flex items-center justify-between">
                         <span className="text-base font-extrabold text-foreground">Total</span>
-                        <span className="text-base font-extrabold text-[hsl(14_90%_55%)]">{fmt(grandTotal)}</span>
+                        <span className="text-base font-extrabold text-[hsl(84_90%_42%)]">{fmt(grandTotal)}</span>
                       </div>
                       {belowMin && (
                         <p className="text-xs text-destructive font-semibold">
@@ -604,7 +604,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
               {ordered ? (
                 <div className="space-y-2">
                   <button onClick={() => { handleClose(); navigate("/pedidos"); }}
-                    className="w-full bg-[hsl(14_90%_55%)] text-white font-bold py-3.5 rounded-full shadow-lg shadow-[hsl(14_90%_55%)]/30 hover:opacity-90 transition-opacity">
+                    className="w-full bg-[hsl(84_90%_42%)] text-white font-bold py-3.5 rounded-full shadow-lg shadow-[hsl(84_90%_42%)]/30 hover:opacity-90 transition-opacity">
                     Acompanhar pedido
                   </button>
                   <button onClick={handleClose}
@@ -615,7 +615,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
               ) : items.length > 0 ? (
                 <motion.button whileTap={{ scale: 0.97 }} onClick={handleOrder}
                   disabled={saving || (step === "checkout" && (belowMin || addresses.length === 0))}
-                  className="w-full bg-[hsl(14_90%_55%)] text-white font-bold py-4 rounded-full shadow-lg shadow-[hsl(14_90%_55%)]/30 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
+                  className="w-full bg-[hsl(84_90%_42%)] text-white font-bold py-4 rounded-full shadow-lg shadow-[hsl(84_90%_42%)]/30 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
                   {saving
                     ? "Finalizando..."
                     : step === "cart"
@@ -946,8 +946,8 @@ const ZuuFood = () => {
                   <ArrowLeft size={18} className="text-foreground" />
                 </button>
                 <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-xl bg-[hsl(14_90%_55%)]/10 flex items-center justify-center">
-                    <UtensilsCrossed size={16} className="text-[hsl(14_90%_55%)]" />
+                  <div className="w-9 h-9 rounded-xl bg-[hsl(84_90%_42%)]/10 flex items-center justify-center">
+                    <UtensilsCrossed size={16} className="text-[hsl(84_90%_42%)]" />
                   </div>
                   <p className="text-base font-extrabold text-foreground">ZuuFood</p>
                 </div>
@@ -960,7 +960,7 @@ const ZuuFood = () => {
                     className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center shadow-sm relative">
                     <ShoppingCart size={16} className="text-foreground" />
                     {count > 0 && (
-                      <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[hsl(14_90%_55%)] text-white text-[9px] font-bold flex items-center justify-center">{count}</span>
+                      <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[hsl(84_90%_42%)] text-white text-[9px] font-bold flex items-center justify-center">{count}</span>
                     )}
                   </button>
                 </div>
@@ -970,7 +970,7 @@ const ZuuFood = () => {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
                 <input value={search} onChange={e => setSearch(e.target.value)}
                   placeholder="Buscar por restaurantes ou pratos"
-                  className="w-full bg-card border border-border rounded-full pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(14_90%_55%)]/30 shadow-sm placeholder:text-muted-foreground" />
+                  className="w-full bg-card border border-border rounded-full pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(84_90%_42%)]/30 shadow-sm placeholder:text-muted-foreground" />
               </div>
             </div>
           </div>
@@ -985,13 +985,13 @@ const ZuuFood = () => {
               />
               <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/30 to-transparent" />
               <div className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow">
-                <BadgePercent size={18} className="text-[hsl(14_90%_55%)]" />
+                <BadgePercent size={18} className="text-[hsl(84_90%_42%)]" />
               </div>
               <div className="absolute left-5 top-1/2 -translate-y-1/2 text-white">
                 <p className="text-xl md:text-2xl font-extrabold flex items-center gap-1">
-                  Hot Deals! <Flame size={18} className="text-[hsl(14_90%_55%)]" />
+                  Hot Deals! <Flame size={18} className="text-[hsl(84_90%_42%)]" />
                 </p>
-                <p className="text-base md:text-lg font-bold">Até <span className="text-[hsl(14_90%_60%)]">40% OFF</span></p>
+                <p className="text-base md:text-lg font-bold">Até <span className="text-[hsl(84_90%_48%)]">40% OFF</span></p>
               </div>
               <p className="absolute bottom-3 right-4 text-[10px] text-white/80 max-w-[140px] text-right leading-tight">
                 Não perca os maiores descontos de hoje.
@@ -1010,8 +1010,8 @@ const ZuuFood = () => {
                     onClick={() => setActiveCategory(active ? "Todos" : food.label)}
                     className={`shrink-0 flex items-center gap-2 rounded-full pl-1.5 pr-4 py-1.5 border transition-all ${
                       active
-                        ? "bg-[hsl(14_90%_55%)] border-[hsl(14_90%_55%)] text-white shadow"
-                        : "bg-card border-border text-foreground hover:border-[hsl(14_90%_55%)]/40"
+                        ? "bg-[hsl(84_90%_42%)] border-[hsl(84_90%_42%)] text-white shadow"
+                        : "bg-card border-border text-foreground hover:border-[hsl(84_90%_42%)]/40"
                     }`}>
                     <span className={`w-7 h-7 rounded-full flex items-center justify-center ${active ? "bg-white/20" : "bg-secondary"}`}>
                       <img src={food.image} alt={food.label} className="w-5 h-5 object-contain" />
@@ -1090,7 +1090,7 @@ const ZuuFood = () => {
                           {/* Right content */}
                           <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
                             <div>
-                              <p className="text-[10px] font-bold text-[hsl(14_90%_55%)] mb-0.5 uppercase tracking-wide">
+                              <p className="text-[10px] font-bold text-[hsl(84_90%_42%)] mb-0.5 uppercase tracking-wide">
                                 {offerLabel}
                               </p>
                               <p className="font-extrabold text-foreground text-base leading-tight truncate">{r.name}</p>
@@ -1113,7 +1113,7 @@ const ZuuFood = () => {
                               <span className="text-[11px] font-bold">{r.rating > 0 ? r.rating.toFixed(1) : "Novo"}</span>
                             </div>
                             <motion.button whileTap={{ scale: 0.9 }}
-                              className="w-9 h-9 rounded-full bg-[hsl(14_90%_55%)] text-white flex items-center justify-center shadow-md">
+                              className="w-9 h-9 rounded-full bg-[hsl(84_90%_42%)] text-white flex items-center justify-center shadow-md">
                               <ArrowLeft size={16} className="rotate-180" />
                             </motion.button>
                           </div>
@@ -1135,14 +1135,14 @@ const ZuuFood = () => {
               className="w-11 h-11 rounded-full flex items-center justify-center text-background/70 hover:text-background transition-colors">
               <Home size={18} />
             </button>
-            <button className="w-12 h-12 rounded-full bg-[hsl(14_90%_55%)] text-white flex items-center justify-center shadow-md">
+            <button className="w-12 h-12 rounded-full bg-[hsl(84_90%_42%)] text-white flex items-center justify-center shadow-md">
               <StoreIcon size={20} />
             </button>
             <button onClick={() => setCartOpen(true)}
               className="w-11 h-11 rounded-full flex items-center justify-center text-background/70 hover:text-background transition-colors relative">
               <ShoppingCart size={18} />
               {count > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[hsl(14_90%_55%)] text-white text-[9px] font-bold flex items-center justify-center">{count}</span>
+                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[hsl(84_90%_42%)] text-white text-[9px] font-bold flex items-center justify-center">{count}</span>
               )}
             </button>
             <button onClick={() => navigate(user ? "/perfil" : "/auth")}
@@ -1568,7 +1568,7 @@ const ZuuFood = () => {
                 <div className="flex items-start justify-between gap-3">
                   <h2 className="text-2xl font-extrabold text-foreground leading-tight">{selectedItem.name}</h2>
                   <div className="flex items-center gap-1 text-sm font-bold text-foreground shrink-0 mt-1">
-                    <Star size={14} className="text-[hsl(14_90%_55%)] fill-[hsl(14_90%_55%)]" />
+                    <Star size={14} className="text-[hsl(84_90%_42%)] fill-[hsl(84_90%_42%)]" />
                     4.9 <span className="text-xs text-muted-foreground font-medium">(5.2k)</span>
                     <ChevronRight size={14} className="text-muted-foreground" />
                   </div>
@@ -1586,8 +1586,8 @@ const ZuuFood = () => {
                       <button key={s} onClick={() => setItemSize(s)}
                         className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full border-2 text-sm font-semibold transition-all ${
                           active
-                            ? "bg-[hsl(14_90%_55%)] border-[hsl(14_90%_55%)] text-white shadow-md"
-                            : "bg-white border-border text-foreground hover:border-[hsl(14_90%_55%)]/40"
+                            ? "bg-[hsl(84_90%_42%)] border-[hsl(84_90%_42%)] text-white shadow-md"
+                            : "bg-white border-border text-foreground hover:border-[hsl(84_90%_42%)]/40"
                         }`}>
                         <span className={`w-4 h-4 rounded-full border-2 ${active ? "border-white bg-white/30" : "border-muted-foreground/40"}`} />
                         {sizeLabel[s]}
@@ -1609,10 +1609,10 @@ const ZuuFood = () => {
                           )}
                           className={`shrink-0 flex items-center gap-2 pl-2 pr-3 py-2 rounded-full border-2 text-xs font-semibold transition-all ${
                             active
-                              ? "bg-[hsl(14_90%_55%)]/10 border-[hsl(14_90%_55%)] text-[hsl(14_90%_45%)]"
+                              ? "bg-[hsl(84_90%_42%)]/10 border-[hsl(84_90%_42%)] text-[hsl(84_95%_32%)]"
                               : "bg-white border-border text-foreground"
                           }`}>
-                          <span className={`w-7 h-7 rounded-full flex items-center justify-center ${active ? "bg-[hsl(14_90%_55%)]/15 text-[hsl(14_90%_45%)]" : "bg-muted text-foreground/70"}`}>
+                          <span className={`w-7 h-7 rounded-full flex items-center justify-center ${active ? "bg-[hsl(84_90%_42%)]/15 text-[hsl(84_95%_32%)]" : "bg-muted text-foreground/70"}`}>
                             <ex.icon size={14} strokeWidth={2.2} />
                           </span>
                           {ex.label}
@@ -1627,18 +1627,18 @@ const ZuuFood = () => {
                 <textarea value={itemNotes} onChange={e => setItemNotes(e.target.value)}
                   placeholder="Observação para a cozinha (opcional)"
                   rows={2}
-                  className="w-full bg-muted/40 border border-border rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(14_90%_55%)]/30 resize-none" />
+                  className="w-full bg-muted/40 border border-border rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(84_90%_42%)]/30 resize-none" />
 
                 {/* Bottom action row */}
                 <div className="flex items-center gap-3 pt-1">
-                  <div className="flex items-center gap-1 bg-white border-2 border-[hsl(14_90%_55%)]/20 rounded-full p-1">
+                  <div className="flex items-center gap-1 bg-white border-2 border-[hsl(84_90%_42%)]/20 rounded-full p-1">
                     <button onClick={() => setItemQty(Math.max(1, itemQty - 1))}
                       className="w-9 h-9 rounded-full flex items-center justify-center text-foreground hover:bg-muted transition-colors">
                       <Trash2 size={14} />
                     </button>
                     <span className="text-base font-bold text-foreground w-6 text-center">{itemQty}</span>
                     <button onClick={() => setItemQty(itemQty + 1)}
-                      className="w-9 h-9 rounded-full bg-[hsl(14_90%_55%)] text-white flex items-center justify-center hover:opacity-90 transition-opacity">
+                      className="w-9 h-9 rounded-full bg-[hsl(84_90%_42%)] text-white flex items-center justify-center hover:opacity-90 transition-opacity">
                       <Plus size={14} />
                     </button>
                   </div>
@@ -1647,7 +1647,7 @@ const ZuuFood = () => {
                       handleAdd(selectedItem, selectedRestaurant, itemQty, itemNotes);
                       setSelectedItem(null);
                     }}
-                    className="flex-1 bg-[hsl(14_90%_55%)] text-white font-bold py-3.5 rounded-full text-sm hover:opacity-90 transition-opacity shadow-lg shadow-[hsl(14_90%_55%)]/30">
+                    className="flex-1 bg-[hsl(84_90%_42%)] text-white font-bold py-3.5 rounded-full text-sm hover:opacity-90 transition-opacity shadow-lg shadow-[hsl(84_90%_42%)]/30">
                     Adicionar ao carrinho · {fmt(itemTotal)}
                   </button>
                 </div>
