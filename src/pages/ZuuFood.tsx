@@ -582,7 +582,11 @@ const ZuuFood = () => {
   const [reservePhone, setReservePhone] = useState(profile?.phone ?? "");
   const [reserveNotes, setReserveNotes] = useState("");
   const [reserving, setReserving] = useState(false);
-  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  const [openItem, setOpenItem] = useState(false); // placeholder retained
+  const [filterOffers, setFilterOffers] = useState(false);
+  const [filterRating, setFilterRating] = useState(false);
+  const [filterFast, setFilterFast] = useState(false);
+  const [sortBy, setSortBy] = useState<"recommended" | "rating" | "time">("recommended");
   const [selectedItem, setSelectedItem] = useState<MenuItemData | null>(null);
   const [itemQty, setItemQty] = useState(1);
   const [itemNotes, setItemNotes] = useState("");
