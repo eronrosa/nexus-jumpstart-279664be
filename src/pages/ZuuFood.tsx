@@ -583,6 +583,15 @@ const ZuuFood = () => {
   const [reserveNotes, setReserveNotes] = useState("");
   const [reserving, setReserving] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  const [selectedItem, setSelectedItem] = useState<MenuItemData | null>(null);
+  const [itemQty, setItemQty] = useState(1);
+  const [itemNotes, setItemNotes] = useState("");
+
+  const openItem = (item: MenuItemData) => {
+    setSelectedItem(item);
+    setItemQty(1);
+    setItemNotes("");
+  };
 
   // Load user favorites
   useEffect(() => {
