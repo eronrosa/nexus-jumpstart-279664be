@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Search, Star, Clock, ShoppingCart, Plus, Minus,
@@ -641,6 +641,7 @@ function Row({ label, value, muted, accent }: { label: string; value: string; mu
 /* ─── Main page ─── */
 const ZuuFood = () => {
   const navigate = useNavigate();
+  const { restaurantId: urlRestaurantId } = useParams<{ restaurantId?: string }>();
   const { add, count, items } = useCart();
   const { user, profile } = useAuth();
   const [search, setSearch] = useState("");
@@ -791,6 +792,7 @@ const ZuuFood = () => {
       toast.error("Este estabelecimento está fechado no momento");
       return;
     }
+    navigate(`/zuufood/r/${r.id}`, { replace: false });
     if (r.isDynamic && r.menu.length === 0) {
       setLoadingMenu(true);
       setSelectedRestaurant(r);
@@ -812,6 +814,21 @@ const ZuuFood = () => {
       setSelectedRestaurant(r);
     }
   };
+
+  const closeRestaurant = () => {
+    setSelectedRestaurant(null);
+    navigate("/zuufood");
+  };
+
+  // Deep-link: open restaurant from URL when allRestaurants is ready
+  useEffect(() => {
+    if (!urlRestaurantId) return;
+    if (selectedRestaurant?.id === urlRestaurantId) return;
+    const r = allRestaurants.find(x => x.id === urlRestaurantId);
+    if (r) handleSelectRestaurant(r);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlRestaurantId, allRestaurants]);
+
 
   const filtered = allRestaurants.filter(r => {
     const matchCat = activeCategory === "Todos" || r.category === activeCategory;
@@ -1138,7 +1155,7 @@ const ZuuFood = () => {
             <img src={selectedRestaurant.image} alt={selectedRestaurant.name} className="w-full h-56 md:h-72 lg:h-80 object-cover md:rounded-b-2xl" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent md:rounded-b-2xl" />
             <div className="absolute top-3 left-0 right-0 px-4 flex items-center gap-2">
-              <button onClick={() => setSelectedRestaurant(null)} className="w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-foreground shadow">
+              <button onClick={closeRestaurant} className="w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-foreground shadow">
                 <ArrowLeft size={18} />
               </button>
               <div className="flex-1 relative">
@@ -1146,6 +1163,21 @@ const ZuuFood = () => {
                 <input placeholder="Buscar no cardápio..." value={search} onChange={e => setSearch(e.target.value)}
                   className="w-full bg-card/90 backdrop-blur-sm rounded-full pl-9 pr-4 py-2 text-sm focus:outline-none shadow" />
               </div>
+              <button
+                onClick={async () => {
+                  const url = `${window.location.origin}/zuufood/r/${selectedRestaurant.id}`;
+                  try {
+                    if (navigator.share) {
+                      await navigator.share({ title: selectedRestaurant.name, text: `Confira ${selectedRestaurant.name} no ZuuFood`, url });
+                    } else {
+                      await navigator.clipboard.writeText(url);
+                      toast.success("Link do restaurante copiado!");
+                    }
+                  } catch {/* user cancelled */}
+                }}
+                className="w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-foreground shadow">
+                <Share2 size={16} />
+              </button>
               <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                 onClick={() => setCartOpen(true)} className="relative w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-foreground shadow">
                 <ShoppingCart size={18} />
