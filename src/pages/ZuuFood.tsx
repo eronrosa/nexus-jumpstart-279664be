@@ -335,10 +335,8 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
 
       setSaving(false);
       setOrdered(true);
-      setTimeout(() => {
-        setOrdered(false); setStep("cart"); clear(); onClose();
-        setNotes(""); setCouponInput(""); setAppliedCoupon(null);
-      }, 2800);
+      setOrderRef(createdOrderId);
+      clear();
     } catch (err) {
       console.error("Erro ao salvar pedido:", err);
       // Rollback: remove parent order if items failed
