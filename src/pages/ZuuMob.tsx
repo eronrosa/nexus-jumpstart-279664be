@@ -51,14 +51,8 @@ const getMockDrivers = (lat: number, lng: number): MockDriver[] => [
 ];
 
 const ZuuMob = () => {
-  const [showPreview, setShowPreview] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return sessionStorage.getItem("zuumob:preview-seen") !== "1";
-  });
-  const dismissPreview = () => {
-    sessionStorage.setItem("zuumob:preview-seen", "1");
-    setShowPreview(false);
-  };
+  const [showPreview, setShowPreview] = useState(true);
+  const dismissPreview = () => setShowPreview(false);
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
