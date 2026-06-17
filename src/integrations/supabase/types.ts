@@ -632,9 +632,15 @@ export type Database = {
       }
       orders: {
         Row: {
+          address_snapshot: Json | null
+          coupon_code: string | null
           created_at: string
           delivery_fee: number
+          discount: number
+          estimated_time: string | null
           id: string
+          notes: string | null
+          payment_method: string | null
           restaurant_id: string
           restaurant_name: string
           status: string
@@ -642,9 +648,15 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          address_snapshot?: Json | null
+          coupon_code?: string | null
           created_at?: string
           delivery_fee?: number
+          discount?: number
+          estimated_time?: string | null
           id?: string
+          notes?: string | null
+          payment_method?: string | null
           restaurant_id: string
           restaurant_name: string
           status?: string
@@ -652,9 +664,15 @@ export type Database = {
           user_id: string
         }
         Update: {
+          address_snapshot?: Json | null
+          coupon_code?: string | null
           created_at?: string
           delivery_fee?: number
+          discount?: number
+          estimated_time?: string | null
           id?: string
+          notes?: string | null
+          payment_method?: string | null
           restaurant_id?: string
           restaurant_name?: string
           status?: string
