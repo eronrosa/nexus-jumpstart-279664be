@@ -9,6 +9,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import PageTransition from "./components/PageTransition";
 import Index from "./pages/Index";
 import Welcome from "./pages/Welcome";
+import PhoneAuthPage from "./pages/PhoneAuthPage";
 import CouponDetail from "./pages/CouponDetail";
 import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/ProfilePage";
