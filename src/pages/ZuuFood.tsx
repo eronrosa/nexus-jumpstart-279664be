@@ -457,26 +457,75 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                       </div>
                     </div>
 
+                    {/* Coupon */}
+                    <div>
+                      <p className="text-xs font-bold text-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5"><Tag size={13} /> Cupom de desconto</p>
+                      {appliedCoupon ? (
+                        <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-emerald-700 truncate">{appliedCoupon.title}</p>
+                            <p className="text-xs text-emerald-600">-{fmt(discount)}</p>
+                          </div>
+                          <button onClick={() => { setAppliedCoupon(null); setCouponInput(""); }}
+                            className="text-xs font-bold text-destructive">Remover</button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <input value={couponInput} onChange={e => setCouponInput(e.target.value.toUpperCase())}
+                            placeholder="Inserir código" maxLength={30}
+                            className="flex-1 rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+                          <button onClick={applyCoupon} disabled={validatingCoupon || !couponInput.trim()}
+                            className="bg-primary text-primary-foreground font-bold px-4 rounded-xl text-sm disabled:opacity-50">
+                            {validatingCoupon ? "..." : "Aplicar"}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Notes */}
+                    <div>
+                      <p className="text-xs font-bold text-foreground uppercase tracking-wide mb-2">Observações (opcional)</p>
+                      <textarea value={notes} onChange={e => setNotes(e.target.value)}
+                        placeholder="Ex: sem cebola, ponto da carne, troco para R$ 50..." rows={2} maxLength={300}
+                        className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none" />
+                    </div>
+
                     {/* Order summary */}
                     <div className="bg-secondary/50 rounded-xl p-3 space-y-2">
-                      <p className="text-xs font-bold text-foreground uppercase tracking-wide">Resumo</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-bold text-foreground uppercase tracking-wide">Resumo</p>
+                        {estimatedTime && (
+                          <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock size={11} /> {estimatedTime}</span>
+                        )}
+                      </div>
                       {items.map(item => (
                         <div key={item.id} className="flex justify-between text-xs text-muted-foreground">
                           <span>{item.qty}× {item.name}</span>
                           <span>{fmt(item.price * item.qty)}</span>
                         </div>
                       ))}
+                      {belowMin && (
+                        <p className="text-xs text-destructive font-semibold pt-1">
+                          Pedido mínimo: {fmt(minOrder)} (faltam {fmt(minOrder - total)})
+                        </p>
+                      )}
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
             {items.length > 0 && !ordered && (
-              <div className="p-4 border-t border-border space-y-3">
+              <div className="p-4 border-t border-border space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Subtotal</span>
                   <span className="font-bold text-foreground">{fmt(total)}</span>
                 </div>
+                {step === "checkout" && discount > 0 && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground flex items-center gap-1"><Tag size={13} /> Desconto</span>
+                    <span className="font-semibold text-emerald-600">-{fmt(discount)}</span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground flex items-center gap-1"><Bike size={13} /> Entrega</span>
                   <span className={`font-semibold ${deliveryFee === 0 && step === "checkout" ? "text-emerald-600" : "text-foreground"}`}>
@@ -489,9 +538,10 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                     <span className="text-primary">{fmt(grandTotal)}</span>
                   </div>
                 )}
-                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={handleOrder} disabled={saving}
-                  className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-70">
-                  {saving ? "Finalizando..." : step === "cart" ? `Continuar · ${fmt(total)}` : `Confirmar pedido · ${fmt(grandTotal)}`}
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={handleOrder}
+                  disabled={saving || (step === "checkout" && (belowMin || addresses.length === 0))}
+                  className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
+                  {saving ? "Finalizando..." : step === "cart" ? `Continuar · ${fmt(total)}` : belowMin ? `Mínimo ${fmt(minOrder)}` : `Confirmar pedido · ${fmt(grandTotal)}`}
                 </motion.button>
               </div>
             )}
