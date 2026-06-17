@@ -110,7 +110,7 @@ const VerifyCodePage = () => {
         {digits.map((d, i) => (
           <input
             key={i}
-            ref={(el) => (inputs.current[i] = el)}
+            ref={(el) => { inputs.current[i] = el; }}
             value={d}
             onChange={(e) => setAt(i, e.target.value)}
             onKeyDown={(e) => onKeyDown(i, e)}
