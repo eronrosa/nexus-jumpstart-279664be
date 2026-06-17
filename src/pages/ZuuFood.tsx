@@ -813,201 +813,218 @@ const ZuuFood = () => {
     <div className="min-h-screen bg-background pb-20">
       {!selectedRestaurant ? (
         <>
-          {/* ── HEADER ── */}
-          <div className="sticky top-0 z-20 bg-[hsl(25_100%_96%)] dark:bg-card px-4 pt-4 pb-3">
+          {/* ── HEADER (Mirqab-style) ── */}
+          <div className="sticky top-0 z-20 bg-background px-4 pt-4 pb-3">
             <div className="max-w-5xl mx-auto">
               <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <ShoppingCart size={18} className="text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-foreground text-sm leading-tight">
-                      {user ? (profile?.display_name ?? "Usuário") : "ZuuFood"}
-                    </p>
-                    <button onClick={() => navigate("/")} className="text-[11px] text-muted-foreground flex items-center gap-1 hover:text-foreground transition-colors">
-                      <MapPin size={10} className="text-primary" /> Sua localização
-                      <ChevronRight size={10} className="rotate-90" />
-                    </button>
-                  </div>
+                <button onClick={() => navigate("/")}
+                  className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center shadow-sm">
+                  <ArrowLeft size={18} className="text-foreground" />
+                </button>
+                <div className="text-center leading-tight">
+                  <p className="text-[11px] text-muted-foreground">Entregar em</p>
+                  <p className="text-sm font-extrabold text-foreground flex items-center justify-center gap-1">
+                    {profile?.display_name?.split(" ")[0] ?? "Sua localização"}
+                    <ChevronDown size={14} />
+                  </p>
                 </div>
-                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                  onClick={() => setCartOpen(true)}
-                  className="flex items-center gap-1.5 bg-card border border-border rounded-full px-3.5 py-2 text-sm font-semibold text-foreground shadow-sm">
-                  <ShoppingCart size={14} className="text-primary" />
-                  {count > 0 ? <span className="text-primary font-bold">{count}</span> : <span>Carrinho</span>}
-                </motion.button>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => navigate(user ? "/perfil" : "/auth")}
+                    className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center shadow-sm relative">
+                    <Heart size={16} className="text-foreground" />
+                  </button>
+                  <button onClick={() => setCartOpen(true)}
+                    className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center shadow-sm relative">
+                    <ShoppingCart size={16} className="text-foreground" />
+                    {count > 0 && (
+                      <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[hsl(14_90%_55%)] text-white text-[9px] font-bold flex items-center justify-center">{count}</span>
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
                 <input value={search} onChange={e => setSearch(e.target.value)}
-                  placeholder="Buscar restaurante, comida..."
-                  className="w-full bg-card border border-border rounded-full pl-10 pr-16 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-sm" />
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                  <button className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"><Mic size={16} /></button>
-                  <button className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"><SlidersHorizontal size={16} /></button>
-                </div>
+                  placeholder="Buscar por restaurantes ou pratos"
+                  className="w-full bg-card border border-border rounded-full pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(14_90%_55%)]/30 shadow-sm placeholder:text-muted-foreground" />
               </div>
             </div>
           </div>
 
-          <div className="max-w-5xl mx-auto px-4 py-4 space-y-6">
+          <div className="max-w-5xl mx-auto px-4 py-4 space-y-5">
+            {/* HOT DEALS hero card */}
+            <div className="relative rounded-3xl overflow-hidden h-44 md:h-56 shadow-md">
+              <img
+                src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=1200&q=80&auto=format&fit=crop"
+                alt="Hot Deals"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/30 to-transparent" />
+              <div className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow">
+                <BadgePercent size={18} className="text-[hsl(14_90%_55%)]" />
+              </div>
+              <div className="absolute left-5 top-1/2 -translate-y-1/2 text-white">
+                <p className="text-xl md:text-2xl font-extrabold flex items-center gap-1">
+                  Hot Deals! <Flame size={18} className="text-[hsl(14_90%_55%)]" />
+                </p>
+                <p className="text-base md:text-lg font-bold">Até <span className="text-[hsl(14_90%_60%)]">40% OFF</span></p>
+              </div>
+              <p className="absolute bottom-3 right-4 text-[10px] text-white/80 max-w-[140px] text-right leading-tight">
+                Não perca os maiores descontos de hoje.
+              </p>
+            </div>
 
-            {/* Banner Carousel */}
-            <FoodBannerCarousel />
+            {/* Section title */}
+            <h2 className="text-base font-extrabold text-foreground">Todos os restaurantes</h2>
 
-            {/* What's your favourite food? - Large icons without boxes */}
-            <section>
-              <h2 className="text-lg font-bold text-foreground mb-4">Qual sua comida favorita?</h2>
-              <div className="flex gap-5 overflow-x-auto pb-2 scrollbar-hide">
-                {FOOD_ICONS.map(food => (
-                  <button key={food.label} onClick={() => {
-                    const cat = CATEGORIES.includes(food.label) ? food.label : "Todos";
-                    setActiveCategory(cat === activeCategory ? "Todos" : cat);
-                  }}
-                    className="flex flex-col items-center gap-1 shrink-0 transition-transform hover:scale-105">
-                    <img src={food.image} alt={food.label} className={`w-12 h-12 object-contain transition-all ${
-                      activeCategory === food.label ? "scale-110 drop-shadow-md" : ""
-                    }`} />
-                    <span className={`text-xs font-medium ${
-                      activeCategory === food.label ? "text-primary font-bold" : "text-foreground"
-                    }`}>{food.label}</span>
+            {/* Category chips with image + label */}
+            <div className="flex gap-2.5 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-1">
+              {FOOD_ICONS.map(food => {
+                const active = activeCategory === food.label;
+                return (
+                  <button key={food.label}
+                    onClick={() => setActiveCategory(active ? "Todos" : food.label)}
+                    className={`shrink-0 flex items-center gap-2 rounded-full pl-1.5 pr-4 py-1.5 border transition-all ${
+                      active
+                        ? "bg-[hsl(14_90%_55%)] border-[hsl(14_90%_55%)] text-white shadow"
+                        : "bg-card border-border text-foreground hover:border-[hsl(14_90%_55%)]/40"
+                    }`}>
+                    <span className={`w-7 h-7 rounded-full flex items-center justify-center ${active ? "bg-white/20" : "bg-secondary"}`}>
+                      <img src={food.image} alt={food.label} className="w-5 h-5 object-contain" />
+                    </span>
+                    <span className="text-xs font-bold">{food.label}</span>
                   </button>
-                ))}
-              </div>
-            </section>
+                );
+              })}
+            </div>
 
-            {/* Favourite Cuisines */}
-            <section>
-              <h2 className="text-lg font-bold text-foreground mb-3">Cozinhas favoritas</h2>
-              <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide">
-                {CUISINES.map(cuisine => (
-                  <button key={cuisine.label}
-                    className="flex items-center gap-2 bg-card border border-border rounded-full px-4 py-2.5 text-sm whitespace-nowrap hover:border-primary/40 hover:bg-primary/5 transition-all shrink-0 shadow-sm">
-                    <img src={cuisine.image} alt={cuisine.label} className="w-6 h-6 rounded-full object-cover" />
-                    <span className="font-medium text-foreground">{cuisine.label}</span>
-                  </button>
-                ))}
-              </div>
-            </section>
+            {/* Filter pills */}
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-1">
+              <button
+                onClick={() => setSortBy(sortBy === "rating" ? "time" : sortBy === "time" ? "recommended" : "rating")}
+                className="shrink-0 flex items-center gap-1.5 rounded-full px-3.5 py-2 bg-card border border-border text-xs font-semibold text-foreground hover:border-foreground/40 transition-colors">
+                <SlidersHorizontal size={12} />
+                Ordenar: {sortBy === "rating" ? "Avaliação" : sortBy === "time" ? "Entrega" : "Recomendados"}
+                <ChevronDown size={12} />
+              </button>
+              {[
+                { key: "offers", label: "Ofertas", active: filterOffers, toggle: () => setFilterOffers(v => !v) },
+                { key: "rating", label: "Avaliação 4.5+", active: filterRating, toggle: () => setFilterRating(v => !v) },
+                { key: "fast", label: "Entrega rápida", active: filterFast, toggle: () => setFilterFast(v => !v) },
+              ].map(f => (
+                <button key={f.key} onClick={f.toggle}
+                  className={`shrink-0 rounded-full px-3.5 py-2 text-xs font-semibold border transition-all ${
+                    f.active
+                      ? "bg-foreground text-background border-foreground"
+                      : "bg-card text-foreground border-border hover:border-foreground/40"
+                  }`}>
+                  {f.label}
+                </button>
+              ))}
+            </div>
 
-            {/* Fastest Near You */}
-            <section>
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-lg font-bold text-foreground">Mais rápidos perto de você</h2>
-                <button className="text-xs text-primary font-semibold">Ver todos</button>
-              </div>
+            {/* Restaurant cards — Mirqab-style horizontal */}
+            {(() => {
+              const list = filtered
+                .filter(r => !filterOffers || (r.promo && r.promo.length > 0))
+                .filter(r => !filterRating || r.rating >= 4.5)
+                .filter(r => !filterFast || parseInt(r.deliveryTime) <= 30)
+                .sort((a, b) => {
+                  if (sortBy === "rating") return b.rating - a.rating;
+                  if (sortBy === "time") return parseInt(a.deliveryTime) - parseInt(b.deliveryTime);
+                  return 0;
+                });
+              if (list.length === 0) {
+                return <p className="text-center text-muted-foreground text-sm py-16">Nenhum restaurante encontrado</p>;
+              }
+              return (
+                <div className="space-y-3 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-3 md:space-y-0">
+                  {list.map((r, i) => {
+                    const offerLabel = r.deliveryFee === 0
+                      ? "Frete grátis"
+                      : r.promo ? r.promo : `Até ${fmt(5)} OFF`;
+                    return (
+                      <motion.div key={r.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.04 }}
+                        onClick={() => handleSelectRestaurant(r)}
+                        className={`bg-card rounded-2xl border border-border overflow-hidden cursor-pointer hover:shadow-lg transition-all relative ${
+                          r.isOpen === false ? "opacity-60" : ""
+                        }`}>
+                        <div className="flex gap-3 p-3">
+                          {/* Left image with dark rating chip */}
+                          <div className="relative shrink-0">
+                            <img src={r.image} alt={r.name}
+                              className="w-28 h-28 md:w-32 md:h-32 rounded-2xl object-cover" />
+                            <button onClick={e => toggleFavorite(e, r.id)}
+                              className={`absolute top-1.5 left-1.5 w-7 h-7 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow ${
+                                favoriteIds.has(r.id) ? "text-red-500" : "text-muted-foreground"
+                              }`}>
+                              <Heart size={13} fill={favoriteIds.has(r.id) ? "currentColor" : "none"} />
+                            </button>
+                          </div>
 
-              {filtered.length === 0 ? (
-                <p className="text-center text-muted-foreground text-sm py-12">Nenhum restaurante encontrado</p>
-              ) : (
-                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory md:grid md:grid-cols-3 lg:grid-cols-4 md:overflow-visible">
-                  {filtered.map((r, i) => (
-                    <motion.div key={r.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      onClick={() => handleSelectRestaurant(r)}
-                      className={`bg-card rounded-2xl border border-border overflow-hidden cursor-pointer hover:shadow-lg transition-all shrink-0 snap-start ${
-                        r.isOpen === false ? "opacity-60" : ""
-                      }`}
-                      style={{ width: "72vw", maxWidth: "320px" }}>
-                      <div className="relative h-44 md:h-40">
-                        <img src={r.image} alt={r.name} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                        {r.deliveryFee === 0 && (
-                          <span className="absolute top-3 left-3 bg-primary text-primary-foreground text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-sm">
-                            <Bike size={12} /> Frete Grátis
-                          </span>
-                        )}
-                        {r.promo && r.deliveryFee !== 0 && (
-                          <span className="absolute top-3 left-3 bg-primary text-primary-foreground text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-sm">
-                            <Tag size={11} /> {r.promo}
-                          </span>
-                        )}
-                        <button onClick={e => toggleFavorite(e, r.id)} className={`absolute top-3 right-3 w-8 h-8 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center transition-colors shadow-sm ${favoriteIds.has(r.id) ? "text-red-500" : "text-muted-foreground hover:text-red-500"}`}>
-                          <Heart size={16} fill={favoriteIds.has(r.id) ? "currentColor" : "none"} />
-                        </button>
-                        {r.isOpen === false && (
-                          <span className="absolute bottom-3 left-3 bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">Fechado</span>
-                        )}
-                      </div>
-                      <div className="p-3 flex items-center justify-between">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <img src={r.logo} alt={r.name} className="w-9 h-9 rounded-xl border border-border bg-card object-cover shrink-0" />
-                          <div className="min-w-0">
-                            <p className="font-bold text-foreground text-sm truncate">{r.name}</p>
-                            <p className="text-[11px] text-muted-foreground truncate">{r.category} · {r.deliveryTime}</p>
+                          {/* Right content */}
+                          <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                            <div>
+                              <p className="text-[10px] font-bold text-[hsl(14_90%_55%)] mb-0.5 uppercase tracking-wide">
+                                {offerLabel}
+                              </p>
+                              <p className="font-extrabold text-foreground text-base leading-tight truncate">{r.name}</p>
+                              <p className="text-[11px] text-muted-foreground line-clamp-1">{r.category}</p>
+                            </div>
+                            <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-1.5">
+                              <span className="flex items-center gap-1">
+                                <Clock size={11} /> {r.deliveryTime}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Bike size={11} /> {r.deliveryFee === 0 ? "Grátis" : fmt(r.deliveryFee)}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Right side: rating chip + CTA */}
+                          <div className="flex flex-col items-end justify-between py-0.5 shrink-0">
+                            <div className="flex items-center gap-1 bg-foreground text-background rounded-full px-2 py-0.5">
+                              <Star size={10} className="text-yellow-400" fill="currentColor" />
+                              <span className="text-[11px] font-bold">{r.rating > 0 ? r.rating.toFixed(1) : "Novo"}</span>
+                            </div>
+                            <motion.button whileTap={{ scale: 0.9 }}
+                              className="w-9 h-9 rounded-full bg-[hsl(14_90%_55%)] text-white flex items-center justify-center shadow-md">
+                              <ArrowLeft size={16} className="rotate-180" />
+                            </motion.button>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1 shrink-0 bg-secondary/80 rounded-lg px-2 py-1">
-                          <Star size={12} className="text-yellow-500" fill="currentColor" />
-                          <span className="text-xs font-bold text-foreground">{r.rating > 0 ? r.rating.toFixed(1) : "Novo"}</span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                        {r.isOpen === false && (
+                          <span className="absolute top-3 right-3 bg-destructive text-destructive-foreground text-[9px] font-bold px-2 py-0.5 rounded-full">Fechado</span>
+                        )}
+                      </motion.div>
+                    );
+                  })}
                 </div>
-              )}
-            </section>
-
-            {/* All restaurants vertical list */}
-            {filtered.length > 0 && (
-              <section>
-                <h2 className="text-lg font-bold text-foreground mb-3">Todos os restaurantes</h2>
-                <div className="space-y-3 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-3 md:space-y-0">
-                  {filtered.map((r, i) => (
-                    <motion.div key={`list-${r.id}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.04 }}
-                      onClick={() => handleSelectRestaurant(r)}
-                      className={`bg-card rounded-2xl border border-border p-3 flex gap-3 items-center cursor-pointer hover:shadow-md transition-shadow ${r.isOpen === false ? "opacity-60" : ""}`}>
-                      <img src={r.logo} alt={r.name} className="w-14 h-14 rounded-xl border border-border bg-card object-cover shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-foreground text-sm truncate">{r.name}</p>
-                        <p className="text-xs text-muted-foreground">{r.category}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="flex items-center gap-0.5 text-xs">
-                            <Star size={11} className="text-yellow-500" fill="currentColor" />
-                            <span className="font-semibold text-foreground">{r.rating > 0 ? r.rating.toFixed(1) : "Novo"}</span>
-                          </span>
-                          <span className="text-[11px] text-muted-foreground flex items-center gap-0.5"><Clock size={10} /> {r.deliveryTime}</span>
-                          <span className="text-[11px] text-muted-foreground">
-                            {r.deliveryFee === 0 ? <span className="text-emerald-600 font-semibold">Grátis</span> : fmt(r.deliveryFee)}
-                          </span>
-                        </div>
-                      </div>
-                      <ChevronRight size={16} className="text-muted-foreground shrink-0" />
-                    </motion.div>
-                  ))}
-                </div>
-              </section>
-            )}
+              );
+            })()}
           </div>
 
-          {/* Bottom Navigation */}
-          <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border flex justify-around items-center py-2 z-50">
-            <button className="flex flex-col items-center gap-0.5 px-3 py-1 text-primary">
-              <Home size={20} strokeWidth={1.8} />
-              <span className="text-[10px] font-semibold">Food</span>
+          {/* Bottom Navigation — dark pill style with elevated center */}
+          <nav className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-foreground rounded-full px-2 py-2 shadow-2xl">
+            <button onClick={() => navigate("/")}
+              className="w-11 h-11 rounded-full flex items-center justify-center text-background/70 hover:text-background transition-colors">
+              <Home size={18} />
             </button>
-            <button onClick={() => navigate("/")} className="flex flex-col items-center gap-0.5 px-3 py-1 text-muted-foreground hover:text-primary transition-colors">
-              <StoreIcon size={20} strokeWidth={1.8} />
-              <span className="text-[10px] font-medium">Mercado</span>
+            <button className="w-12 h-12 rounded-full bg-[hsl(14_90%_55%)] text-white flex items-center justify-center shadow-md">
+              <StoreIcon size={20} />
             </button>
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-              onClick={() => setCartOpen(true)}
-              className="w-12 h-12 -mt-5 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center shadow-lg">
-              <ShoppingCart size={22} />
-            </motion.button>
-            <button onClick={() => setCartOpen(true)} className="flex flex-col items-center gap-0.5 px-3 py-1 text-muted-foreground hover:text-primary transition-colors relative">
-              <ShoppingCart size={20} strokeWidth={1.8} />
-              <span className="text-[10px] font-medium">Carrinho</span>
+            <button onClick={() => setCartOpen(true)}
+              className="w-11 h-11 rounded-full flex items-center justify-center text-background/70 hover:text-background transition-colors relative">
+              <ShoppingCart size={18} />
               {count > 0 && (
-                <span className="absolute -top-0.5 right-1.5 bg-primary text-primary-foreground text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">{count}</span>
+                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[hsl(14_90%_55%)] text-white text-[9px] font-bold flex items-center justify-center">{count}</span>
               )}
             </button>
-            <button onClick={() => navigate(user ? "/perfil" : "/auth")} className="flex flex-col items-center gap-0.5 px-3 py-1 text-muted-foreground hover:text-primary transition-colors">
-              <User size={20} strokeWidth={1.8} />
-              <span className="text-[10px] font-medium">Perfil</span>
+            <button onClick={() => navigate(user ? "/perfil" : "/auth")}
+              className="w-11 h-11 rounded-full flex items-center justify-center text-background/70 hover:text-background transition-colors">
+              <User size={18} />
             </button>
           </nav>
         </>
