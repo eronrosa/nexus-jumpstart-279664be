@@ -59,12 +59,7 @@ export default function ZuuMobHome({ onSearchOpen, onOpenRides }: { onSearchOpen
           >
             <ArrowLeft size={18} strokeWidth={1.8} style={{ color: NEON }} />
           </button>
-          <span
-            className="text-[11px] font-bold tracking-[0.3em]"
-            style={{ color: NEON, textShadow: `0 0 12px ${NEON}55` }}
-          >
-            ZUUMOB
-          </span>
+          <span className="w-10" />
           <span className="w-10" />
         </div>
 
