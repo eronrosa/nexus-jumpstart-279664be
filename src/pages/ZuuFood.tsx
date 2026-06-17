@@ -610,6 +610,8 @@ const ZuuFood = () => {
     setSelectedItem(item);
     setItemQty(1);
     setItemNotes("");
+    setItemSize("medium");
+    setItemIngredients([]);
   };
 
   // Load user favorites
