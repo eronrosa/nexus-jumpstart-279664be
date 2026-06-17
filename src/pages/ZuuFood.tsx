@@ -1223,7 +1223,7 @@ const ZuuFood = () => {
                   Object.entries(menuGroups).map(([category, menuItems]) => (
                     <section key={category}>
                       <h2 className="text-sm font-extrabold text-foreground mb-3 uppercase tracking-wide">{category}</h2>
-                      <div className="space-y-2 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
+                      <div className="space-y-2 md:grid md:grid-cols-2 xl:grid-cols-3 md:gap-3 md:space-y-0">
                         {menuItems.map(item => (
                           <motion.div key={item.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                             className="bg-card rounded-2xl border border-border p-3 flex gap-3 items-center">
