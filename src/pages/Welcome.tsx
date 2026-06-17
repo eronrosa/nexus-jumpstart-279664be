@@ -1,16 +1,19 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Apple, Phone, Pizza, Coffee, IceCream, Cookie, Soup, Sandwich, Salad, Beef } from "lucide-react";
+import { Apple, Phone, Utensils, Car, Ticket, Pill, MessageCircle, Stethoscope, ShoppingBag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
+const LIME = "hsl(84 95% 55%)";
+const LIME_SOFT = "hsl(84 95% 55% / 0.12)";
+
 const tiles = [
-  { Icon: Soup, filled: true, dashed: false },
-  { Icon: Beef, filled: true, dashed: false },
-  { Icon: Pizza, filled: false, dashed: false },
-  { Icon: Sandwich, filled: false, dashed: false },
-  { Icon: Salad, filled: false, dashed: true },
-  { Icon: Coffee, filled: false, dashed: true },
-  { Icon: Cookie, filled: false, dashed: false },
+  { Icon: Utensils, filled: true, dashed: false },     // ZuuFood
+  { Icon: Car, filled: true, dashed: false },          // ZuuMob
+  { Icon: Ticket, filled: false, dashed: false },      // ZuuPass
+  { Icon: Pill, filled: false, dashed: false },        // ZuuMed - farmácia
+  { Icon: Stethoscope, filled: false, dashed: true },  // ZuuMed - consultas
+  { Icon: MessageCircle, filled: false, dashed: true },// ZuuChat
+  { Icon: ShoppingBag, filled: false, dashed: false }, // ZuuShop
 ];
 
 const GoogleG = () => (
@@ -55,15 +58,20 @@ const Welcome = () => {
             className={[
               "aspect-square rounded-3xl flex items-center justify-center",
               filled
-                ? "bg-[hsl(160_70%_35%)] text-white shadow-lg"
+                ? "shadow-lg"
                 : dashed
-                ? "border-2 border-dashed border-[hsl(160_60%_45%)] bg-white"
+                ? "border-2 border-dashed bg-white"
                 : "bg-white shadow-[0_4px_20px_rgba(0,0,0,0.08)]",
               i === 2 ? "translate-y-2" : "",
             ].join(" ")}
+            style={{
+              backgroundColor: filled ? LIME : dashed ? "white" : undefined,
+              borderColor: dashed ? LIME : undefined,
+            }}
           >
             <Icon
-              className={`w-9 h-9 ${filled ? "text-white" : "text-[hsl(160_70%_30%)]"}`}
+              className="w-9 h-9"
+              color={filled ? "#0a0a0a" : LIME}
               strokeWidth={1.8}
             />
           </motion.div>
@@ -114,7 +122,7 @@ const Welcome = () => {
 
         <p className="text-center text-sm text-zinc-500 pt-2">
           Já tem uma conta?{" "}
-          <button onClick={handleEmail} className="text-[hsl(160_70%_35%)] font-semibold">
+          <button onClick={handleEmail} className="text-[hsl(84_95%_45%)] font-semibold">
             Entrar
           </button>
         </p>
