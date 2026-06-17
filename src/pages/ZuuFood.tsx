@@ -190,11 +190,16 @@ const DAY_NAMES = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", 
 /* ─── Helpers ─── */
 const fmt = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
-function isStoreOpen(openingHours: any[] | null | undefined): boolean {
-  if (!openingHours || openingHours.length === 0) return true; // assume open if no hours set
+function normalizeOpeningHours(openingHours: unknown): any[] {
+  return Array.isArray(openingHours) ? openingHours : [];
+}
+
+function isStoreOpen(openingHours: unknown): boolean {
+  const hours = normalizeOpeningHours(openingHours);
+  if (hours.length === 0) return true; // assume open if no hours set
   const now = new Date();
   const dayName = DAY_NAMES[now.getDay()];
-  const todayHours = openingHours.find((h: any) => h.day === dayName);
+  const todayHours = hours.find((h: any) => h.day === dayName);
   if (!todayHours || !todayHours.enabled) return false;
   const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
   return currentTime >= todayHours.open && currentTime <= todayHours.close;
@@ -655,6 +660,7 @@ const ZuuFood = () => {
   const [cartOpen, setCartOpen] = useState(false);
   const [addedId, setAddedId] = useState<string | null>(null);
   const [allRestaurants, setAllRestaurants] = useState<RestaurantData[]>(STATIC_RESTAURANTS);
+  const [storesLoaded, setStoresLoaded] = useState(false);
   const [loadingMenu, setLoadingMenu] = useState(false);
   const [reserveOpen, setReserveOpen] = useState(false);
   const [reserveDate, setReserveDate] = useState("");
