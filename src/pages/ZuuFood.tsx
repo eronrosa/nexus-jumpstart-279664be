@@ -1415,14 +1415,15 @@ const ZuuFood = () => {
                             <div className="flex items-end justify-between mt-1">
                               <div>
                                 <p className="text-[10px] text-muted-foreground leading-none">A partir de</p>
-                                <p className="text-sm font-bold text-primary">{fmt(item.price)}</p>
+                                <p className="text-sm font-bold text-[hsl(84_90%_38%)]">{fmt(item.price)}</p>
                               </div>
                               <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                                 onClick={(e) => { e.stopPropagation(); handleAdd(item, selectedRestaurant); }}
                                 animate={addedId === item.id ? { scale: [1, 1.3, 1] } : {}}
-                                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors shadow-md ${
-                                  addedId === item.id ? "bg-emerald-500 text-card" : "bg-primary text-primary-foreground hover:opacity-90"
+                                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors shadow-md text-white ${
+                                  addedId === item.id ? "bg-[hsl(84_95%_32%)]" : "bg-[hsl(84_90%_42%)] hover:opacity-90"
                                 }`}>
+
                                 {addedId === item.id ? <CheckCircle size={16} /> : <Plus size={16} />}
                               </motion.button>
                             </div>
