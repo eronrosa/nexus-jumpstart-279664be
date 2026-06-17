@@ -57,7 +57,7 @@ const ZuuMob = () => {
   // Mantém a Home nova sempre visível; clicar em buscar não derruba a UI
 
   const [tripDetailsOpen, setTripDetailsOpen] = useState(false);
-  const dismissPreview = () => setShowPreview(false);
+  const dismissPreview = () => {/* mantém ZuuMobHome ativo */};
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
