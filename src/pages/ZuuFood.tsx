@@ -1030,7 +1030,7 @@ const ZuuFood = () => {
           </div>
 
           {/* Two-column layout on desktop */}
-          <div className="md:max-w-5xl xl:max-w-7xl md:mx-auto md:grid md:grid-cols-[380px_1fr] md:gap-6 md:mt-4">
+          <div className="md:max-w-5xl xl:max-w-7xl md:mx-auto md:grid md:grid-cols-[380px_1fr] xl:grid-cols-[420px_1fr] md:gap-6 xl:gap-8 md:mt-4">
             {/* LEFT: Info sidebar */}
             <div className="md:sticky md:top-4 md:self-start">
               {/* Restaurant info card */}
