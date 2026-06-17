@@ -326,6 +326,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
       const orderItems = items.map(item => ({
         order_id: orderData.id, item_id: item.id, item_name: item.name,
         item_price: item.price, quantity: item.qty, item_image: item.image,
+        notes: item.notes?.trim() || null,
       }));
       const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
       if (itemsError) throw itemsError;
