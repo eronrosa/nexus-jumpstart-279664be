@@ -53,6 +53,7 @@ const getMockDrivers = (lat: number, lng: number): MockDriver[] => [
 
 const ZuuMob = () => {
   const [showPreview, setShowPreview] = useState(true);
+  const [tripDetailsOpen, setTripDetailsOpen] = useState(false);
   const dismissPreview = () => setShowPreview(false);
   const { user, profile } = useAuth();
   const navigate = useNavigate();
