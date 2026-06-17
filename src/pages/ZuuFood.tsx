@@ -895,7 +895,9 @@ const ZuuFood = () => {
     const url = window.location.href;
     const text = `Confira ${selectedRestaurant.name} no ZuuFood!`;
     if (navigator.share) {
-      try { await navigator.share({ title: selectedRestaurant.name, text, url }); } catch {}
+      try { await navigator.share({ title: selectedRestaurant.name, text, url }); } catch {
+        return;
+      }
     } else {
       await navigator.clipboard.writeText(`${text} ${url}`);
       toast.success("Link copiado!");
