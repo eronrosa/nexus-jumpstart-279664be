@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import {
   Search, Calendar, Car, Clock, Crown, Route, CarFront,
   Package, Truck, Bike, Home, Grid3x3, History, User, ArrowRight,
   Shield, Smartphone, ChevronRight, ArrowLeft
 } from "lucide-react";
+import ZuuMobConta from "./ZuuMobConta";
 
 
 const NEON = "#C6FF00";
@@ -12,6 +14,7 @@ const BG = "#000000";
 const CARD = "#111111";
 const BORDER = "#2A2A2A";
 const FONT = `'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`;
+
 
 interface ServiceCard {
   icon: typeof Car;
