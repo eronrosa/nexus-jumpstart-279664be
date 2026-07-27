@@ -353,7 +353,7 @@ const Index = () => {
               { name: "Beleza Lounge", cat: "Salão", rating: 4.9, cta: "Reservar", img: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=400&q=80" },
             ].map((b) => (
               <div key={b.name} className="rounded-[20px] overflow-hidden" style={{ background: CARD, border: `1px solid ${BORDER}` }}>
-                <img src={b.img} alt={b.name} loading="lazy" className="w-full h-24 object-cover" />
+                <img src={b.img} alt={b.name} loading="lazy" className="w-full h-24 md:h-32 lg:h-36 object-cover" />
                 <div className="p-3">
                   <p className="text-[13px] font-bold leading-tight truncate">{b.name}</p>
                   <p className="text-[11px]" style={{ color: TEXT_MUTED }}>{b.cat}</p>
@@ -388,7 +388,7 @@ const Index = () => {
               { name: "Pizza Palace", cat: "Pizza", img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80", icon: "🍕" },
             ].map((d) => (
               <button key={d.name} onClick={() => navigate("/zuufood")} className="relative rounded-[20px] overflow-hidden text-left active:scale-[0.98] transition-transform" style={{ background: CARD, border: `1px solid ${BORDER}` }}>
-                <img src={d.img} alt={d.name} loading="lazy" className="w-full h-24 object-cover" />
+                <img src={d.img} alt={d.name} loading="lazy" className="w-full h-24 md:h-32 lg:h-36 object-cover" />
                 <span className="absolute top-2 left-2 text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#000000CC", color: NEON, border: `1px solid ${NEON}44` }}>
                   DELIVERY
                 </span>
@@ -431,7 +431,7 @@ const Index = () => {
             ].map((c) => (
               <button key={c.id} onClick={() => navigate(`/coupondetail?id=${c.id}`)} className="rounded-[20px] overflow-hidden text-left active:scale-[0.98] transition-transform" style={{ background: CARD, border: `1px solid ${BORDER}` }}>
                 <div className="relative">
-                  <img src={c.img} alt={c.title} loading="lazy" className="w-full h-24 object-cover" />
+                  <img src={c.img} alt={c.title} loading="lazy" className="w-full h-24 md:h-32 lg:h-36 object-cover" />
                   <span className="absolute top-2 right-2 text-[11px] font-black px-2 py-0.5 rounded-full" style={{ background: NEON, color: "#000" }}>
                     {c.disc}
                   </span>
