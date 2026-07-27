@@ -179,42 +179,34 @@ const Index = () => {
         <SponsoredCarousel onGo={() => navigate("/zuufood")} />
 
 
-        {/* Balance Card */}
+        {/* Balance Card — clean & compact */}
         <div
-          className="rounded-[24px] p-5 sm:p-6"
+          className="rounded-2xl px-4 py-3.5"
           style={{ background: CARD, border: `1px solid ${BORDER}` }}
         >
-          {/* Top: label + balance */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-[13px] font-medium" style={{ color: TEXT_MUTED }}>
-                Saldo Zuuppi
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: TEXT_MUTED }}>
+                Saldo
               </span>
               <button onClick={() => setBalanceHidden((v) => !v)} aria-label="Ocultar saldo">
                 {balanceHidden ? (
-                  <EyeOff size={14} style={{ color: TEXT_MUTED }} />
+                  <EyeOff size={12} style={{ color: TEXT_MUTED }} />
                 ) : (
-                  <Eye size={14} style={{ color: TEXT_MUTED }} />
+                  <Eye size={12} style={{ color: TEXT_MUTED }} />
                 )}
               </button>
+              <span className="ml-2 text-[20px] font-bold leading-none tracking-tight text-white">
+                {balanceHidden ? "R$ ••••" : "R$ 250,00"}
+              </span>
             </div>
-            <button className="text-[12px] font-semibold flex items-center gap-1" style={{ color: NEON }}>
-              Extrato <ArrowRight size={12} />
+            <button className="text-[11px] font-semibold flex items-center gap-1" style={{ color: NEON }}>
+              Extrato <ArrowRight size={11} />
             </button>
           </div>
 
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-[15px] font-semibold" style={{ color: TEXT_MUTED }}>R$</span>
-            <span className="text-[38px] font-extrabold leading-none tracking-tight text-white">
-              {balanceHidden ? "••••••" : "250,00"}
-            </span>
-          </div>
-
-          {/* Divider */}
-          <div className="my-5 h-px w-full" style={{ background: BORDER }} />
-
           {/* Action buttons row */}
-          <div className="grid grid-cols-4 gap-2">
+          <div className="mt-3.5 grid grid-cols-4 gap-1">
             {[
               { icon: QrCode, label: "Pix" },
               { icon: CreditCard, label: "Pagar" },
@@ -225,38 +217,39 @@ const Index = () => {
               return (
                 <button
                   key={b.label}
-                  className="flex flex-col items-center gap-2 py-2 active:scale-95 transition-transform"
+                  className="flex flex-col items-center gap-1.5 py-1 active:scale-95 transition-transform"
                 >
                   <span
-                    className="w-11 h-11 rounded-full flex items-center justify-center"
+                    className="w-9 h-9 rounded-full flex items-center justify-center"
                     style={{ background: "#1A1A1A", border: `1px solid ${BORDER}` }}
                   >
-                    <Icon size={18} strokeWidth={2} style={{ color: NEON }} />
+                    <Icon size={15} strokeWidth={2} style={{ color: NEON }} />
                   </span>
-                  <span className="text-[11px] font-semibold text-white">{b.label}</span>
+                  <span className="text-[10.5px] font-medium text-white">{b.label}</span>
                 </button>
               );
             })}
           </div>
-
-          {/* Points row */}
-          <button
-            className="mt-4 w-full flex items-center gap-3 px-4 py-3 rounded-2xl"
-            style={{ background: "#0C0C0C", border: `1px solid ${BORDER}` }}
-          >
-            <span
-              className="w-8 h-8 rounded-full flex items-center justify-center text-[9px] font-black"
-              style={{ background: NEON, color: "#000" }}
-            >
-              ZUU
-            </span>
-            <span className="text-[14px] font-bold text-white">1.250 pts</span>
-            <span className="text-[12px] flex-1 text-left" style={{ color: TEXT_MUTED }}>
-              Resgate descontos e vantagens
-            </span>
-            <ArrowRight size={14} style={{ color: TEXT_MUTED }} />
-          </button>
         </div>
+
+        {/* Points row — separado, mais leve */}
+        <button
+          className="-mt-3 w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl"
+          style={{ background: CARD, border: `1px solid ${BORDER}` }}
+        >
+          <span
+            className="w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-black"
+            style={{ background: NEON, color: "#000" }}
+          >
+            ZUU
+          </span>
+          <span className="text-[12px] font-bold text-white">1.250 pts</span>
+          <span className="text-[11px] flex-1 text-left" style={{ color: TEXT_MUTED }}>
+            Resgate descontos
+          </span>
+          <ArrowRight size={12} style={{ color: TEXT_MUTED }} />
+        </button>
+
 
 
         {/* Ofertas do dia */}
