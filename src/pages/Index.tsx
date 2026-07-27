@@ -512,4 +512,94 @@ const Index = () => {
   );
 };
 
+type Slide = {
+  kicker: string;
+  title: React.ReactNode;
+  desc: string;
+  cta: string;
+  image: string;
+  bg: string;
+  imageFit?: "cover" | "contain";
+};
+
+const SLIDES: Slide[] = [
+  {
+    kicker: "PATROCINADO",
+    title: <>McDonald's<br /><span style={{ color: NEON }}>Delivery</span></>,
+    desc: "Peça agora e ganhe pontos ZP!",
+    cta: "Pedir agora",
+    image: burgerBanner,
+    bg: "linear-gradient(90deg, #0B0F04 0%, #131a06 55%, #1a2408 100%)",
+    imageFit: "cover",
+  },
+  {
+    kicker: "PATROCINADO",
+    title: <>Marcas <span style={{ color: NEON }}>parceiras</span></>,
+    desc: "Peça agora e ganhe pontos ZP!",
+    cta: "Ver marcas",
+    image: brandsBanner.url,
+    bg: "linear-gradient(90deg, #1a0d3d 0%, #241458 55%, #2d1a6b 100%)",
+    imageFit: "cover",
+  },
+];
+
+const SponsoredCarousel = ({ onGo }: { onGo: () => void }) => {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setIdx((i) => (i + 1) % SLIDES.length), 5000);
+    return () => clearInterval(t);
+  }, []);
+  const s = SLIDES[idx];
+  return (
+    <motion.button
+      key={idx}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      onClick={onGo}
+      className="relative w-full rounded-[24px] overflow-hidden text-left h-[220px] flex"
+      style={{ background: s.bg, border: `1px solid ${BORDER}` }}
+    >
+      <div className="relative z-10 flex-1 p-6 flex flex-col justify-between max-w-[58%]">
+        <div>
+          <span className="text-[10px] font-bold tracking-widest" style={{ color: NEON }}>
+            {s.kicker}
+          </span>
+          <h2 className="text-[26px] font-extrabold leading-[1.05] mt-2">{s.title}</h2>
+          <p className="text-[12px] mt-2" style={{ color: "#D0D0D0" }}>{s.desc}</p>
+        </div>
+        <span
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-[13px] font-bold w-fit"
+          style={{ background: NEON, color: "#000" }}
+        >
+          {s.cta} <ArrowRight size={14} strokeWidth={2.5} />
+        </span>
+      </div>
+      <div className="absolute right-0 top-0 bottom-0 w-[55%]">
+        <img
+          src={s.image}
+          alt=""
+          className={`w-full h-full ${s.imageFit === "contain" ? "object-contain" : "object-cover"}`}
+          style={{
+            maskImage: "linear-gradient(90deg, transparent 0%, black 25%)",
+            WebkitMaskImage: "linear-gradient(90deg, transparent 0%, black 25%)",
+          }}
+        />
+      </div>
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+        {SLIDES.map((_, i) => (
+          <span
+            key={i}
+            className="rounded-full transition-all"
+            style={{
+              width: i === idx ? 16 : 5,
+              height: 5,
+              background: i === idx ? NEON : "#FFFFFF44",
+            }}
+          />
+        ))}
+      </div>
+    </motion.button>
+  );
+};
+
 export default Index;
