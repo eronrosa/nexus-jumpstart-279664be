@@ -220,11 +220,12 @@ export default function ZuuMobHome({ onSearchOpen, onOpenRides }: { onSearchOpen
         </motion.div>
       </div>
 
-      {/* Bottom Nav */}
+      {/* Bottom Nav (sticky, funciona dentro de ancestrais com transform) */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-[56] max-w-md mx-auto"
+        className="sticky bottom-0 left-0 right-0 z-[56] max-w-md w-full mx-auto"
         style={{ background: BG, borderTop: `1px solid #1B1B1B`, fontFamily: FONT }}
       >
+
         <div className="grid grid-cols-4 px-2 pt-2 pb-[max(12px,env(safe-area-inset-bottom))]">
           {[
             { icon: Home, label: "Início", active: true },
