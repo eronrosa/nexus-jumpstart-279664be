@@ -452,7 +452,7 @@ const Index = () => {
 
       {/* Bottom Nav */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto"
+        className="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto md:hidden"
         style={{ background: BG, borderTop: `1px solid ${BORDER}` }}
       >
         <div className="relative grid grid-cols-5 items-end px-4 pt-2 pb-[max(10px,env(safe-area-inset-bottom))]">
