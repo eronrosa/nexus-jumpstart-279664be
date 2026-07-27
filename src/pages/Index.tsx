@@ -535,25 +535,8 @@ const SLIDES: Slide[] = [
     image: burgerBanner,
     bg: "linear-gradient(90deg, #0B0F04 0%, #131a06 55%, #1a2408 100%)",
   },
-  {
-    kind: "brands",
-    kicker: "MARCAS PARCEIRAS",
-    title: <>Compre e ganhe <span style={{ color: NEON }}>pontos ZP</span></>,
-    desc: "Mais de 200 marcas aceitando ZuuPoints",
-    cta: "Ver marcas",
-    bg: "linear-gradient(120deg, #0A0A0A 0%, #141428 50%, #1E1240 100%)",
-    brands: [
-      { name: "Amazon", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/240px-Amazon_logo.svg.png" },
-      { name: "Nike", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Logo_NIKE.svg/240px-Logo_NIKE.svg.png" },
-      { name: "Spotify", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/240px-Spotify_logo_without_text.svg.png" },
-      { name: "Apple", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/160px-Apple_logo_black.svg.png" },
-      { name: "Netflix", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_N_logo.svg/240px-Netflix_2015_N_logo.svg.png" },
-      { name: "Uber", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Uber_logo_2018.svg/240px-Uber_logo_2018.svg.png" },
-      { name: "McDonald's", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/McDonald%27s_Golden_Arches.svg/240px-McDonald%27s_Golden_Arches.svg.png" },
-      { name: "Starbucks", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Starbucks_Corporation_Logo_2011.svg/240px-Starbucks_Corporation_Logo_2011.svg.png" },
-    ],
-  },
 ];
+
 
 const SponsoredCarousel = ({ onGo }: { onGo: () => void }) => {
   const [idx, setIdx] = useState(0);
