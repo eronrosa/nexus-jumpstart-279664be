@@ -32,7 +32,7 @@ const shortcuts = [
 
 const offers = [
   { logo: "https://cdn.simpleicons.org/pizzahut", brand: "Pizza Hut", desc: "Até 30% OFF em pizzas", tag: "30% OFF", color: "#E31837" },
-  { logo: "https://cdn.simpleicons.org/ifood", brand: "iFood", desc: "R$20 OFF no 1º pedido", tag: "25% OFF", color: "#EA1D2C" },
+  { logo: "https://cdn.simpleicons.org/mcdonalds", brand: "McDonald's", desc: "Big Mac em dobro", tag: "2x1", color: "#FFC72C" },
   { logo: "https://cdn.simpleicons.org/mcdonalds", brand: "McDonald's", desc: "Combo do dia", tag: "20% OFF", color: "#FFC72C" },
   { logo: "https://cdn.simpleicons.org/starbucks", brand: "Starbucks", desc: "Frappuccino 2x1", tag: "2x1", color: "#00704A" },
   { logo: "https://cdn.simpleicons.org/burgerking", brand: "Burger King", desc: "Whopper duplo", tag: "40% OFF", color: "#EC1C24" },
