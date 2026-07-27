@@ -513,33 +513,43 @@ const Index = () => {
 };
 
 type Slide = {
+  kind: "image" | "brands";
   kicker: string;
   title: React.ReactNode;
   desc: string;
   cta: string;
-  image: string;
+  image?: string;
   bg: string;
-  imageFit?: "cover" | "contain";
+  brands?: { name: string; logo: string }[];
 };
 
 const SLIDES: Slide[] = [
   {
+    kind: "image",
     kicker: "PATROCINADO",
     title: <>McDonald's<br /><span style={{ color: NEON }}>Delivery</span></>,
     desc: "Peça agora e ganhe pontos ZP!",
     cta: "Pedir agora",
     image: burgerBanner,
     bg: "linear-gradient(90deg, #0B0F04 0%, #131a06 55%, #1a2408 100%)",
-    imageFit: "cover",
   },
   {
-    kicker: "PATROCINADO",
-    title: <>Marcas <span style={{ color: NEON }}>parceiras</span></>,
-    desc: "Peça agora e ganhe pontos ZP!",
+    kind: "brands",
+    kicker: "MARCAS PARCEIRAS",
+    title: <>Compre e ganhe <span style={{ color: NEON }}>pontos ZP</span></>,
+    desc: "Mais de 200 marcas aceitando ZuuPoints",
     cta: "Ver marcas",
-    image: brandsBanner.url,
-    bg: "linear-gradient(90deg, #1a0d3d 0%, #241458 55%, #2d1a6b 100%)",
-    imageFit: "cover",
+    bg: "linear-gradient(120deg, #0A0A0A 0%, #141428 50%, #1E1240 100%)",
+    brands: [
+      { name: "Amazon", logo: "https://logo.clearbit.com/amazon.com" },
+      { name: "Natura", logo: "https://logo.clearbit.com/natura.com.br" },
+      { name: "Nike", logo: "https://logo.clearbit.com/nike.com" },
+      { name: "Spotify", logo: "https://logo.clearbit.com/spotify.com" },
+      { name: "Apple", logo: "https://logo.clearbit.com/apple.com" },
+      { name: "Netflix", logo: "https://logo.clearbit.com/netflix.com" },
+      { name: "Uber", logo: "https://logo.clearbit.com/uber.com" },
+      { name: "Magalu", logo: "https://logo.clearbit.com/magazineluiza.com.br" },
+    ],
   },
 ];
 
@@ -559,12 +569,12 @@ const SponsoredCarousel = ({ onGo }: { onGo: () => void }) => {
       className="relative w-full rounded-[24px] overflow-hidden text-left h-[220px] flex"
       style={{ background: s.bg, border: `1px solid ${BORDER}` }}
     >
-      <div className="relative z-10 flex-1 p-6 flex flex-col justify-between max-w-[58%]">
+      <div className={`relative z-10 flex-1 p-6 flex flex-col justify-between ${s.kind === "brands" ? "max-w-[50%]" : "max-w-[58%]"}`}>
         <div>
           <span className="text-[10px] font-bold tracking-widest" style={{ color: NEON }}>
             {s.kicker}
           </span>
-          <h2 className="text-[26px] font-extrabold leading-[1.05] mt-2">{s.title}</h2>
+          <h2 className="text-[22px] font-extrabold leading-[1.1] mt-2">{s.title}</h2>
           <p className="text-[12px] mt-2" style={{ color: "#D0D0D0" }}>{s.desc}</p>
         </div>
         <span
@@ -574,17 +584,40 @@ const SponsoredCarousel = ({ onGo }: { onGo: () => void }) => {
           {s.cta} <ArrowRight size={14} strokeWidth={2.5} />
         </span>
       </div>
-      <div className="absolute right-0 top-0 bottom-0 w-[55%]">
-        <img
-          src={s.image}
-          alt=""
-          className={`w-full h-full ${s.imageFit === "contain" ? "object-contain" : "object-cover"}`}
-          style={{
-            maskImage: "linear-gradient(90deg, transparent 0%, black 25%)",
-            WebkitMaskImage: "linear-gradient(90deg, transparent 0%, black 25%)",
-          }}
-        />
-      </div>
+
+      {s.kind === "image" && s.image && (
+        <div className="absolute right-0 top-0 bottom-0 w-[55%]">
+          <img
+            src={s.image}
+            alt=""
+            className="w-full h-full object-cover"
+            style={{
+              maskImage: "linear-gradient(90deg, transparent 0%, black 25%)",
+              WebkitMaskImage: "linear-gradient(90deg, transparent 0%, black 25%)",
+            }}
+          />
+        </div>
+      )}
+
+      {s.kind === "brands" && s.brands && (
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 w-[48%] grid grid-cols-4 gap-2">
+          {s.brands.map((b) => (
+            <div
+              key={b.name}
+              className="aspect-square rounded-xl bg-white flex items-center justify-center p-1.5 shadow-lg"
+              style={{ boxShadow: "0 4px 14px rgba(198,255,0,0.08)" }}
+            >
+              <img
+                src={b.logo}
+                alt={b.name}
+                className="w-full h-full object-contain"
+                onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
         {SLIDES.map((_, i) => (
           <span
