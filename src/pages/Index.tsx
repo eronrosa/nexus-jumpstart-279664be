@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import burgerBanner from "@/assets/home-burger-banner.jpg";
+import zuuppiZLogo from "@/assets/zuuppi-z-logo.png.asset.json";
 
 const BG = "#070707";
 const CARD = "#111111";
@@ -496,16 +497,20 @@ const Index = () => {
                 <div key="c" className="flex justify-center">
                   <button
                     onClick={() => navigate("/")}
-                    className="w-14 h-14 rounded-full flex items-center justify-center -translate-y-4 active:scale-95 transition-transform"
+                    className="w-16 h-16 rounded-full flex items-center justify-center -translate-y-5 active:scale-95 transition-transform"
                     style={{
-                      background: NEON,
-                      boxShadow: `0 8px 24px ${NEON}66, 0 0 0 6px ${BG}`,
+                      background: "#000",
+                      border: `2px solid ${NEON}`,
+                      boxShadow: `0 8px 28px ${NEON}77, 0 0 0 6px ${BG}`,
                     }}
                     aria-label="Zuuppi"
                   >
-                    <span className="text-[22px] font-black text-black" style={{ fontFamily: FONT }}>
-                      Z
-                    </span>
+                    <img
+                      src={zuuppiZLogo.url}
+                      alt="Zuuppi"
+                      className="w-9 h-9 object-contain"
+                      style={{ filter: `drop-shadow(0 0 6px ${NEON}88)` }}
+                    />
                   </button>
                 </div>
               );
