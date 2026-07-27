@@ -43,12 +43,12 @@ export default function ZuuMobHome({ onSearchOpen, onOpenRides }: { onSearchOpen
   }
 
   return (
-
     <div
-      className="fixed inset-0 z-[55] overflow-hidden flex flex-col"
+      className="min-h-[100dvh] flex flex-col overscroll-contain"
       style={{ background: BG, color: "#fff", fontFamily: FONT, letterSpacing: "-0.01em" }}
     >
-      <div className="flex-1 overflow-y-auto overscroll-contain max-w-md w-full mx-auto px-4 sm:px-5 pt-4 pb-24">
+      <div className="flex-1 max-w-md w-full mx-auto px-4 sm:px-5 pt-4 pb-6">
+
         {/* Top bar with back button */}
         <div className="flex items-center justify-between mb-4">
           <button
