@@ -150,8 +150,8 @@ export default function ZuuMobHome({ onSearchOpen, onOpenRides }: { onSearchOpen
             return (
               <motion.button
                 key={s.label}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ delay: 0.15 + i * 0.04 }}
                 whileHover={{ y: -2, boxShadow: `0 0 20px ${NEON}33` }}
                 onClick={s.label === "Viagens" && onOpenRides ? onOpenRides : onSearchOpen}
