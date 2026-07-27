@@ -35,13 +35,14 @@ const shortcuts = [
 ];
 
 const offers = [
-  { logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Pizza_Hut_1967-1999_logo.svg/320px-Pizza_Hut_1967-1999_logo.svg.png", brand: "Pizza Hut", desc: "Até 30% OFF em pizzas", tag: "30% OFF", color: "#E31837" },
-  { logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/McDonald%27s_Golden_Arches.svg/240px-McDonald%27s_Golden_Arches.svg.png", brand: "McDonald's", desc: "Big Mac em dobro", tag: "2x1", color: "#FFC72C" },
-  { logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/McDonald%27s_Golden_Arches.svg/240px-McDonald%27s_Golden_Arches.svg.png", brand: "McDonald's", desc: "Combo do dia", tag: "20% OFF", color: "#FFC72C" },
-  { logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Starbucks_Corporation_Logo_2011.svg/240px-Starbucks_Corporation_Logo_2011.svg.png", brand: "Starbucks", desc: "Frappuccino 2x1", tag: "2x1", color: "#00704A" },
+  { logo: pizzahutLogo.url, brand: "Pizza Hut", desc: "Até 30% OFF em pizzas", tag: "30% OFF", color: "#E31837" },
+  { logo: mcdonaldsLogo.url, brand: "McDonald's", desc: "Big Mac em dobro", tag: "2x1", color: "#FFC72C" },
+  { logo: mcdonaldsLogo.url, brand: "McDonald's", desc: "Combo do dia", tag: "20% OFF", color: "#FFC72C" },
+  { logo: starbucksLogo.url, brand: "Starbucks", desc: "Frappuccino 2x1", tag: "2x1", color: "#00704A" },
   { logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Burger_King_2020.svg/320px-Burger_King_2020.svg.png", brand: "Burger King", desc: "Whopper duplo", tag: "40% OFF", color: "#EC1C24" },
   { logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/240px-Spotify_logo_without_text.svg.png", brand: "Spotify", desc: "Premium 3 meses grátis", tag: "FREE", color: "#1DB954" },
 ];
+
 
 
 const services = [
