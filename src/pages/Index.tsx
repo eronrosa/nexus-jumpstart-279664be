@@ -68,10 +68,11 @@ const Index = () => {
 
   return (
     <div
-      className="min-h-screen pb-28"
+      className="min-h-screen pb-28 md:pb-10"
       style={{ background: BG, color: "#fff", fontFamily: FONT, letterSpacing: "-0.01em" }}
     >
-      <div className="max-w-md mx-auto px-6 pt-6 space-y-7">
+      <div className="max-w-md md:max-w-5xl lg:max-w-6xl mx-auto px-6 md:px-10 lg:px-12 pt-6 md:pt-10 space-y-7 md:space-y-10">
+
         {/* Header */}
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
