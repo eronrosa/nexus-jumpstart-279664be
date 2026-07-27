@@ -68,10 +68,11 @@ const Index = () => {
 
   return (
     <div
-      className="min-h-screen pb-28"
+      className="min-h-screen pb-28 md:pb-10"
       style={{ background: BG, color: "#fff", fontFamily: FONT, letterSpacing: "-0.01em" }}
     >
-      <div className="max-w-md mx-auto px-6 pt-6 space-y-7">
+      <div className="max-w-md md:max-w-5xl lg:max-w-6xl mx-auto px-6 md:px-10 lg:px-12 pt-6 md:pt-10 space-y-7 md:space-y-10">
+
         {/* Header */}
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
@@ -313,7 +314,7 @@ const Index = () => {
               Editar
             </button>
           </div>
-          <div className="grid grid-cols-5 gap-2.5">
+          <div className="grid grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-2.5 md:gap-3">
             {services.map((s) => {
               const Icon = s.icon;
               return (
@@ -344,7 +345,7 @@ const Index = () => {
             </div>
             <button className="text-[13px] font-semibold" style={{ color: NEON }}>Ver todas</button>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
             {[
               { name: "Pizzaria Bella Napoli", cat: "Restaurante", rating: 4.9, cta: "Ver Cardápio", img: "https://images.unsplash.com/photo-1590947132387-155cc02f3212?auto=format&fit=crop&w=400&q=80" },
               { name: "TopFit Academia", cat: "Fitness", rating: 4.7, cta: "Treinar Agora", img: "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?auto=format&fit=crop&w=400&q=80" },
@@ -352,7 +353,7 @@ const Index = () => {
               { name: "Beleza Lounge", cat: "Salão", rating: 4.9, cta: "Reservar", img: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=400&q=80" },
             ].map((b) => (
               <div key={b.name} className="rounded-[20px] overflow-hidden" style={{ background: CARD, border: `1px solid ${BORDER}` }}>
-                <img src={b.img} alt={b.name} loading="lazy" className="w-full h-24 object-cover" />
+                <img src={b.img} alt={b.name} loading="lazy" className="w-full h-24 md:h-32 lg:h-36 object-cover" />
                 <div className="p-3">
                   <p className="text-[13px] font-bold leading-tight truncate">{b.name}</p>
                   <p className="text-[11px]" style={{ color: TEXT_MUTED }}>{b.cat}</p>
@@ -379,7 +380,7 @@ const Index = () => {
             </div>
             <button onClick={() => navigate("/zuufood")} className="text-[13px] font-semibold" style={{ color: NEON }}>Ver todos</button>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
             {[
               { name: "Restaurante Mitsuba", cat: "Japonês", img: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=800&q=80", icon: "🍣" },
               { name: "Bondinho Carioca", cat: "Lanches", img: "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=800&q=80", icon: "🍔", badge: "WHATSAPP" },
@@ -387,7 +388,7 @@ const Index = () => {
               { name: "Pizza Palace", cat: "Pizza", img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80", icon: "🍕" },
             ].map((d) => (
               <button key={d.name} onClick={() => navigate("/zuufood")} className="relative rounded-[20px] overflow-hidden text-left active:scale-[0.98] transition-transform" style={{ background: CARD, border: `1px solid ${BORDER}` }}>
-                <img src={d.img} alt={d.name} loading="lazy" className="w-full h-24 object-cover" />
+                <img src={d.img} alt={d.name} loading="lazy" className="w-full h-24 md:h-32 lg:h-36 object-cover" />
                 <span className="absolute top-2 left-2 text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#000000CC", color: NEON, border: `1px solid ${NEON}44` }}>
                   DELIVERY
                 </span>
@@ -421,7 +422,7 @@ const Index = () => {
             </div>
             <button className="text-[13px] font-semibold" style={{ color: NEON }}>Ver todos</button>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
             {[
               { id: "coupon-1", brand: "SHOULDER", disc: "-30%", title: "Jaquetas importadas", until: "Até 05/01", left: 188, img: "https://images.unsplash.com/photo-1551232864-3f0890e580d9?auto=format&fit=crop&w=600&q=80" },
               { id: "coupon-2", brand: "BENEDETTO", disc: "-10%", title: "Pizza de Calabresa", until: "Até 05/01", left: 191, img: "https://images.unsplash.com/photo-1594007654729-407eedc4be65?auto=format&fit=crop&w=600&q=80" },
@@ -430,7 +431,7 @@ const Index = () => {
             ].map((c) => (
               <button key={c.id} onClick={() => navigate(`/coupondetail?id=${c.id}`)} className="rounded-[20px] overflow-hidden text-left active:scale-[0.98] transition-transform" style={{ background: CARD, border: `1px solid ${BORDER}` }}>
                 <div className="relative">
-                  <img src={c.img} alt={c.title} loading="lazy" className="w-full h-24 object-cover" />
+                  <img src={c.img} alt={c.title} loading="lazy" className="w-full h-24 md:h-32 lg:h-36 object-cover" />
                   <span className="absolute top-2 right-2 text-[11px] font-black px-2 py-0.5 rounded-full" style={{ background: NEON, color: "#000" }}>
                     {c.disc}
                   </span>
@@ -451,7 +452,7 @@ const Index = () => {
 
       {/* Bottom Nav */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto"
+        className="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto md:hidden"
         style={{ background: BG, borderTop: `1px solid ${BORDER}` }}
       >
         <div className="relative grid grid-cols-5 items-end px-4 pt-2 pb-[max(10px,env(safe-area-inset-bottom))]">
