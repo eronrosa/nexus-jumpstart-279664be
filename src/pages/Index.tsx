@@ -30,12 +30,12 @@ const shortcuts = [
 ];
 
 const offers = [
-  { logo: "https://logo.clearbit.com/pizzahut.com", brand: "Pizza Hut", desc: "Até 30% OFF em pizzas", tag: "30% OFF", color: "#E31837" },
-  { logo: "https://logo.clearbit.com/uber.com", brand: "Uber", desc: "Corridas com até 25% OFF", tag: "25% OFF", color: "#000000" },
-  { logo: "https://logo.clearbit.com/mcdonalds.com", brand: "McDonald's", desc: "Combo do dia", tag: "20% OFF", color: "#FFC72C" },
-  { logo: "https://logo.clearbit.com/starbucks.com", brand: "Starbucks", desc: "Frappuccino 2x1", tag: "2x1", color: "#00704A" },
-  { logo: "https://logo.clearbit.com/burgerking.com", brand: "Burger King", desc: "Whopper duplo", tag: "40% OFF", color: "#EC1C24" },
-  { logo: "https://logo.clearbit.com/spotify.com", brand: "Spotify", desc: "Premium 3 meses grátis", tag: "FREE", color: "#1DB954" },
+  { logo: "https://cdn.simpleicons.org/pizzahut", brand: "Pizza Hut", desc: "Até 30% OFF em pizzas", tag: "30% OFF", color: "#E31837" },
+  { logo: "https://cdn.simpleicons.org/ifood", brand: "iFood", desc: "R$20 OFF no 1º pedido", tag: "25% OFF", color: "#EA1D2C" },
+  { logo: "https://cdn.simpleicons.org/mcdonalds", brand: "McDonald's", desc: "Combo do dia", tag: "20% OFF", color: "#FFC72C" },
+  { logo: "https://cdn.simpleicons.org/starbucks", brand: "Starbucks", desc: "Frappuccino 2x1", tag: "2x1", color: "#00704A" },
+  { logo: "https://cdn.simpleicons.org/burgerking", brand: "Burger King", desc: "Whopper duplo", tag: "40% OFF", color: "#EC1C24" },
+  { logo: "https://cdn.simpleicons.org/spotify", brand: "Spotify", desc: "Premium 3 meses grátis", tag: "FREE", color: "#1DB954" },
 ];
 
 
