@@ -29,11 +29,14 @@ const shortcuts = [
 ];
 
 const offers = [
-  { logo: "🍕", brand: "Pizza Hut", desc: "Até 30% OFF em pizzas", tag: "30% OFF", color: "#E31837" },
-  { logo: "🎤", brand: "Festa Sertaneja", desc: "30% OFF Ingressos", tag: "30% OFF", color: "#7B2D26" },
-  { logo: "🚗", brand: "Uber", desc: "Corridas com até 25% OFF", tag: "25% OFF", color: "#000" },
-  { logo: "🍔", brand: "McDonald's", desc: "Combo do dia", tag: "20% OFF", color: "#DA291C" },
+  { logo: "https://logo.clearbit.com/pizzahut.com", brand: "Pizza Hut", desc: "Até 30% OFF em pizzas", tag: "30% OFF", color: "#E31837" },
+  { logo: "https://logo.clearbit.com/uber.com", brand: "Uber", desc: "Corridas com até 25% OFF", tag: "25% OFF", color: "#000000" },
+  { logo: "https://logo.clearbit.com/mcdonalds.com", brand: "McDonald's", desc: "Combo do dia", tag: "20% OFF", color: "#FFC72C" },
+  { logo: "https://logo.clearbit.com/starbucks.com", brand: "Starbucks", desc: "Frappuccino 2x1", tag: "2x1", color: "#00704A" },
+  { logo: "https://logo.clearbit.com/burgerking.com", brand: "Burger King", desc: "Whopper duplo", tag: "40% OFF", color: "#EC1C24" },
+  { logo: "https://logo.clearbit.com/spotify.com", brand: "Spotify", desc: "Premium 3 meses grátis", tag: "FREE", color: "#1DB954" },
 ];
+
 
 const services = [
   { icon: Utensils, label: "ZuuFood", color: "#C8FF00", path: "/zuufood" },
