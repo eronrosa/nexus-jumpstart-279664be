@@ -71,7 +71,8 @@ const Index = () => {
       className="min-h-screen pb-28 md:pb-10"
       style={{ background: BG, color: "#fff", fontFamily: FONT, letterSpacing: "-0.01em" }}
     >
-      <div className="max-w-md md:max-w-5xl lg:max-w-6xl mx-auto px-6 md:px-10 lg:px-12 pt-6 md:pt-10 space-y-7 md:space-y-10">
+      <div className="max-w-md md:max-w-xl lg:max-w-2xl mx-auto px-5 md:px-6 pt-6 md:pt-8 space-y-7">
+
 
         {/* Header */}
         <header className="flex items-center justify-between">
