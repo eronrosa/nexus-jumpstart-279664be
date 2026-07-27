@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import burgerBanner from "@/assets/home-burger-banner.jpg";
+import zuuppiZLogo from "@/assets/zuuppi-z-logo.png.asset.json";
 
 const BG = "#070707";
 const CARD = "#111111";
