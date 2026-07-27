@@ -11,17 +11,17 @@ const PageTransition = ({ children }: { children: React.ReactNode }) => {
   if (isSlide) {
     return (
       <motion.div
-        initial={{ opacity: 0, x: 24, scale: 0.98 }}
-        animate={{ opacity: 1, x: 0, scale: 1 }}
-        exit={{ opacity: 0, x: -24, scale: 0.98 }}
-        transition={{ type: "spring", stiffness: 320, damping: 32, mass: 0.7 }}
-        className="min-h-screen will-change-transform"
-        style={{ transformOrigin: "center" }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className="min-h-screen"
       >
         {children}
       </motion.div>
     );
   }
+
 
   return (
     <motion.div

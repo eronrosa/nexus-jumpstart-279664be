@@ -43,12 +43,13 @@ export default function ZuuMobHome({ onSearchOpen, onOpenRides }: { onSearchOpen
   }
 
   return (
-
     <div
-      className="fixed inset-0 z-[55] overflow-hidden flex flex-col"
+      className="absolute inset-0 z-[55] flex flex-col overflow-hidden"
       style={{ background: BG, color: "#fff", fontFamily: FONT, letterSpacing: "-0.01em" }}
     >
-      <div className="flex-1 overflow-y-auto overscroll-contain max-w-md w-full mx-auto px-4 sm:px-5 pt-4 pb-24">
+      <div className="flex-1 overflow-y-auto overscroll-contain max-w-md w-full mx-auto px-4 sm:px-5 pt-4 pb-4">
+
+
         {/* Top bar with back button */}
         <div className="flex items-center justify-between mb-4">
           <button
@@ -150,8 +151,8 @@ export default function ZuuMobHome({ onSearchOpen, onOpenRides }: { onSearchOpen
             return (
               <motion.button
                 key={s.label}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ delay: 0.15 + i * 0.04 }}
                 whileHover={{ y: -2, boxShadow: `0 0 20px ${NEON}33` }}
                 onClick={s.label === "Viagens" && onOpenRides ? onOpenRides : onSearchOpen}
@@ -220,11 +221,12 @@ export default function ZuuMobHome({ onSearchOpen, onOpenRides }: { onSearchOpen
         </motion.div>
       </div>
 
-      {/* Bottom Nav */}
+      {/* Bottom Nav (sticky, funciona dentro de ancestrais com transform) */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-[56] max-w-md mx-auto"
+        className="sticky bottom-0 left-0 right-0 z-[56] max-w-md w-full mx-auto"
         style={{ background: BG, borderTop: `1px solid #1B1B1B`, fontFamily: FONT }}
       >
+
         <div className="grid grid-cols-4 px-2 pt-2 pb-[max(12px,env(safe-area-inset-bottom))]">
           {[
             { icon: Home, label: "Início", active: true },
