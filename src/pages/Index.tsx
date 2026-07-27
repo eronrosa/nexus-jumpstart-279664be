@@ -6,7 +6,7 @@ import {
   Utensils, ShoppingBag, Car, Ticket, Star, Grid3x3,
   Home, ClipboardList, User, Zap, Pizza, Music,
   Stethoscope, MessageCircle, CreditCard, Gamepad2, Tag, Phone, Shield,
-  BookOpen, GraduationCap, ShoppingCart, Store,
+  BookOpen, GraduationCap, ShoppingCart, Store, Plus,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import burgerBanner from "@/assets/home-burger-banner.jpg";
