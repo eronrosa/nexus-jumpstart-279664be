@@ -274,19 +274,20 @@ const Index = () => {
               >
                 <div className="flex gap-3">
                   <div
-                    className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden"
-                    style={{ background: "#fff" }}
+                    className="w-14 h-14 rounded-2xl shrink-0 overflow-hidden flex items-center justify-center"
+                    style={{ background: o.color }}
                   >
                     <img
                       src={o.logo}
                       alt={o.brand}
                       loading="lazy"
-                      className="w-10 h-10 object-contain"
+                      className="w-full h-full object-cover"
                       onError={(e) => {
                         (e.currentTarget as HTMLImageElement).style.display = "none";
                       }}
                     />
                   </div>
+
                   <div className="min-w-0 flex-1">
                     <p className="text-[14px] font-bold truncate">{o.brand}</p>
                     <p className="text-[11px] leading-tight mt-0.5" style={{ color: TEXT_MUTED }}>
