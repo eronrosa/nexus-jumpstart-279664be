@@ -31,12 +31,12 @@ const shortcuts = [
 ];
 
 const offers = [
-  { logo: "https://logo.clearbit.com/pizzahut.com", brand: "Pizza Hut", desc: "Até 30% OFF em pizzas", tag: "30% OFF", color: "#E31837" },
-  { logo: "https://logo.clearbit.com/mcdonalds.com", brand: "McDonald's", desc: "Big Mac em dobro", tag: "2x1", color: "#FFC72C" },
-  { logo: "https://logo.clearbit.com/mcdonalds.com", brand: "McDonald's", desc: "Combo do dia", tag: "20% OFF", color: "#FFC72C" },
-  { logo: "https://logo.clearbit.com/starbucks.com", brand: "Starbucks", desc: "Frappuccino 2x1", tag: "2x1", color: "#00704A" },
-  { logo: "https://logo.clearbit.com/bk.com", brand: "Burger King", desc: "Whopper duplo", tag: "40% OFF", color: "#EC1C24" },
-  { logo: "https://logo.clearbit.com/spotify.com", brand: "Spotify", desc: "Premium 3 meses grátis", tag: "FREE", color: "#1DB954" },
+  { logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Pizza_Hut_1967-1999_logo.svg/320px-Pizza_Hut_1967-1999_logo.svg.png", brand: "Pizza Hut", desc: "Até 30% OFF em pizzas", tag: "30% OFF", color: "#E31837" },
+  { logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/McDonald%27s_Golden_Arches.svg/240px-McDonald%27s_Golden_Arches.svg.png", brand: "McDonald's", desc: "Big Mac em dobro", tag: "2x1", color: "#FFC72C" },
+  { logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/McDonald%27s_Golden_Arches.svg/240px-McDonald%27s_Golden_Arches.svg.png", brand: "McDonald's", desc: "Combo do dia", tag: "20% OFF", color: "#FFC72C" },
+  { logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Starbucks_Corporation_Logo_2011.svg/240px-Starbucks_Corporation_Logo_2011.svg.png", brand: "Starbucks", desc: "Frappuccino 2x1", tag: "2x1", color: "#00704A" },
+  { logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Burger_King_2020.svg/320px-Burger_King_2020.svg.png", brand: "Burger King", desc: "Whopper duplo", tag: "40% OFF", color: "#EC1C24" },
+  { logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/240px-Spotify_logo_without_text.svg.png", brand: "Spotify", desc: "Premium 3 meses grátis", tag: "FREE", color: "#1DB954" },
 ];
 
 
@@ -542,14 +542,14 @@ const SLIDES: Slide[] = [
     cta: "Ver marcas",
     bg: "linear-gradient(120deg, #0A0A0A 0%, #141428 50%, #1E1240 100%)",
     brands: [
-      { name: "Amazon", logo: "https://logo.clearbit.com/amazon.com" },
-      { name: "Natura", logo: "https://logo.clearbit.com/natura.com.br" },
-      { name: "Nike", logo: "https://logo.clearbit.com/nike.com" },
-      { name: "Spotify", logo: "https://logo.clearbit.com/spotify.com" },
-      { name: "Apple", logo: "https://logo.clearbit.com/apple.com" },
-      { name: "Netflix", logo: "https://logo.clearbit.com/netflix.com" },
-      { name: "Uber", logo: "https://logo.clearbit.com/uber.com" },
-      { name: "Magalu", logo: "https://logo.clearbit.com/magazineluiza.com.br" },
+      { name: "Amazon", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/240px-Amazon_logo.svg.png" },
+      { name: "Nike", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Logo_NIKE.svg/240px-Logo_NIKE.svg.png" },
+      { name: "Spotify", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/240px-Spotify_logo_without_text.svg.png" },
+      { name: "Apple", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/160px-Apple_logo_black.svg.png" },
+      { name: "Netflix", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_N_logo.svg/240px-Netflix_2015_N_logo.svg.png" },
+      { name: "Uber", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Uber_logo_2018.svg/240px-Uber_logo_2018.svg.png" },
+      { name: "McDonald's", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/McDonald%27s_Golden_Arches.svg/240px-McDonald%27s_Golden_Arches.svg.png" },
+      { name: "Starbucks", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Starbucks_Corporation_Logo_2011.svg/240px-Starbucks_Corporation_Logo_2011.svg.png" },
     ],
   },
 ];
