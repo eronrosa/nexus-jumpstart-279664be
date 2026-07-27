@@ -350,6 +350,121 @@ const Index = () => {
             })}
           </div>
         </section>
+
+        {/* Empresas em Destaque */}
+        <section>
+          <div className="flex items-end justify-between mb-4">
+            <div>
+              <h3 className="text-[18px] font-bold">Empresas em Destaque</h3>
+              <p className="text-[12px] mt-0.5" style={{ color: TEXT_MUTED }}>
+                Negócios e serviços perto de você
+              </p>
+            </div>
+            <button className="text-[13px] font-semibold" style={{ color: NEON }}>Ver todas</button>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { name: "Pizzaria Bella Napoli", cat: "Restaurante", rating: 4.9, cta: "Ver Cardápio", img: "https://images.unsplash.com/photo-1590947132387-155cc02f3212?auto=format&fit=crop&w=400&q=80" },
+              { name: "TopFit Academia", cat: "Fitness", rating: 4.7, cta: "Treinar Agora", img: "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?auto=format&fit=crop&w=400&q=80" },
+              { name: "Clínica Viva Bem", cat: "Saúde", rating: 4.8, cta: "Agendar", img: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=400&q=80" },
+              { name: "Beleza Lounge", cat: "Salão", rating: 4.9, cta: "Reservar", img: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=400&q=80" },
+            ].map((b) => (
+              <div key={b.name} className="rounded-[20px] overflow-hidden" style={{ background: CARD, border: `1px solid ${BORDER}` }}>
+                <img src={b.img} alt={b.name} loading="lazy" className="w-full h-24 object-cover" />
+                <div className="p-3">
+                  <p className="text-[13px] font-bold leading-tight truncate">{b.name}</p>
+                  <p className="text-[11px]" style={{ color: TEXT_MUTED }}>{b.cat}</p>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold">
+                      <Star size={11} fill="#FFB800" style={{ color: "#FFB800" }} /> {b.rating}
+                    </span>
+                    <button className="text-[11px] font-semibold" style={{ color: NEON }}>{b.cta}</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Deliverys em Alta */}
+        <section>
+          <div className="flex items-end justify-between mb-4">
+            <div>
+              <h3 className="text-[18px] font-bold">Deliverys em Alta</h3>
+              <p className="text-[12px] mt-0.5" style={{ color: TEXT_MUTED }}>
+                Bateu aquela fome? Bora pedir!
+              </p>
+            </div>
+            <button onClick={() => navigate("/zuufood")} className="text-[13px] font-semibold" style={{ color: NEON }}>Ver todos</button>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { name: "Restaurante Mitsuba", cat: "Japonês", img: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=800&q=80", icon: "🍣" },
+              { name: "Bondinho Carioca", cat: "Lanches", img: "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=800&q=80", icon: "🍔", badge: "WHATSAPP" },
+              { name: "Le Max Hamburgueria", cat: "Hambúrguer", img: "https://images.unsplash.com/photo-1596662951482-0c4ba74a6df6?auto=format&fit=crop&w=800&q=80", icon: "🍟" },
+              { name: "Pizza Palace", cat: "Pizza", img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80", icon: "🍕" },
+            ].map((d) => (
+              <button key={d.name} onClick={() => navigate("/zuufood")} className="relative rounded-[20px] overflow-hidden text-left active:scale-[0.98] transition-transform" style={{ background: CARD, border: `1px solid ${BORDER}` }}>
+                <img src={d.img} alt={d.name} loading="lazy" className="w-full h-24 object-cover" />
+                <span className="absolute top-2 left-2 text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#000000CC", color: NEON, border: `1px solid ${NEON}44` }}>
+                  DELIVERY
+                </span>
+                {d.badge && (
+                  <span className="absolute top-2 right-2 text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: NEON, color: "#000" }}>
+                    {d.badge}
+                  </span>
+                )}
+                <div className="p-3 flex items-center gap-2">
+                  <span className="w-8 h-8 rounded-full flex items-center justify-center text-[15px] shrink-0" style={{ background: "#1A1A1A", border: `1px solid ${BORDER}` }}>
+                    {d.icon}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[12px] font-bold leading-tight truncate">{d.name}</p>
+                    <p className="text-[10.5px]" style={{ color: TEXT_MUTED }}>{d.cat}</p>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* Cupons Desconto */}
+        <section>
+          <div className="flex items-end justify-between mb-4">
+            <div>
+              <h3 className="text-[18px] font-bold">Cupons Desconto</h3>
+              <p className="text-[12px] mt-0.5" style={{ color: TEXT_MUTED }}>
+                Super promoções, aproveite!
+              </p>
+            </div>
+            <button className="text-[13px] font-semibold" style={{ color: NEON }}>Ver todos</button>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { id: "coupon-1", brand: "SHOULDER", disc: "-30%", title: "Jaquetas importadas", until: "Até 05/01", left: 188, img: "https://images.unsplash.com/photo-1551232864-3f0890e580d9?auto=format&fit=crop&w=600&q=80" },
+              { id: "coupon-2", brand: "BENEDETTO", disc: "-10%", title: "Pizza de Calabresa", until: "Até 05/01", left: 191, img: "https://images.unsplash.com/photo-1594007654729-407eedc4be65?auto=format&fit=crop&w=600&q=80" },
+              { id: "coupon-3", brand: "MOCELLIN", disc: "-44%", title: "2 Rodízios R$ 166", until: "Até 05/01", left: 2, img: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80" },
+              { id: "coupon-4", brand: "STARBUCKS", disc: "2x1", title: "Frappuccino em dobro", until: "Até 10/01", left: 320, img: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=600&q=80" },
+            ].map((c) => (
+              <button key={c.id} onClick={() => navigate(`/coupondetail?id=${c.id}`)} className="rounded-[20px] overflow-hidden text-left active:scale-[0.98] transition-transform" style={{ background: CARD, border: `1px solid ${BORDER}` }}>
+                <div className="relative">
+                  <img src={c.img} alt={c.title} loading="lazy" className="w-full h-24 object-cover" />
+                  <span className="absolute top-2 right-2 text-[11px] font-black px-2 py-0.5 rounded-full" style={{ background: NEON, color: "#000" }}>
+                    {c.disc}
+                  </span>
+                </div>
+                <div className="p-3">
+                  <p className="text-[9.5px] font-bold tracking-wider" style={{ color: TEXT_MUTED }}>{c.brand}</p>
+                  <p className="text-[12px] font-semibold leading-tight mt-0.5 line-clamp-2">{c.title}</p>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-[10px]" style={{ color: TEXT_MUTED }}>{c.until}</span>
+                    <span className="text-[10px] font-semibold" style={{ color: NEON }}>{c.left} restantes</span>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
       </div>
 
       {/* Bottom Nav */}
