@@ -345,7 +345,7 @@ const Index = () => {
             </div>
             <button className="text-[13px] font-semibold" style={{ color: NEON }}>Ver todas</button>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
             {[
               { name: "Pizzaria Bella Napoli", cat: "Restaurante", rating: 4.9, cta: "Ver Cardápio", img: "https://images.unsplash.com/photo-1590947132387-155cc02f3212?auto=format&fit=crop&w=400&q=80" },
               { name: "TopFit Academia", cat: "Fitness", rating: 4.7, cta: "Treinar Agora", img: "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?auto=format&fit=crop&w=400&q=80" },
@@ -380,7 +380,7 @@ const Index = () => {
             </div>
             <button onClick={() => navigate("/zuufood")} className="text-[13px] font-semibold" style={{ color: NEON }}>Ver todos</button>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
             {[
               { name: "Restaurante Mitsuba", cat: "Japonês", img: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=800&q=80", icon: "🍣" },
               { name: "Bondinho Carioca", cat: "Lanches", img: "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=800&q=80", icon: "🍔", badge: "WHATSAPP" },
@@ -422,7 +422,7 @@ const Index = () => {
             </div>
             <button className="text-[13px] font-semibold" style={{ color: NEON }}>Ver todos</button>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
             {[
               { id: "coupon-1", brand: "SHOULDER", disc: "-30%", title: "Jaquetas importadas", until: "Até 05/01", left: 188, img: "https://images.unsplash.com/photo-1551232864-3f0890e580d9?auto=format&fit=crop&w=600&q=80" },
               { id: "coupon-2", brand: "BENEDETTO", disc: "-10%", title: "Pizza de Calabresa", until: "Até 05/01", left: 191, img: "https://images.unsplash.com/photo-1594007654729-407eedc4be65?auto=format&fit=crop&w=600&q=80" },
