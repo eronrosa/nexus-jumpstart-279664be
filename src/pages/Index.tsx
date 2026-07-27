@@ -228,64 +228,83 @@ const Index = () => {
 
         {/* Balance Card */}
         <div
-          className="rounded-[24px] p-6"
+          className="rounded-[24px] p-5 sm:p-6"
           style={{ background: CARD, border: `1px solid ${BORDER}` }}
         >
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-[13px] font-medium" style={{ color: TEXT_MUTED }}>
-                  Saldo Zuuppi
-                </span>
-                <button onClick={() => setBalanceHidden((v) => !v)} aria-label="Ocultar saldo">
-                  {balanceHidden ? (
-                    <EyeOff size={14} style={{ color: TEXT_MUTED }} />
-                  ) : (
-                    <Eye size={14} style={{ color: TEXT_MUTED }} />
-                  )}
-                </button>
-              </div>
-              <p className="text-[34px] font-extrabold mt-1 leading-none">
-                {balanceHidden ? "R$ ••••" : "R$ 250,00"}
-              </p>
+          {/* Top: label + balance */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-[13px] font-medium" style={{ color: TEXT_MUTED }}>
+                Saldo Zuuppi
+              </span>
+              <button onClick={() => setBalanceHidden((v) => !v)} aria-label="Ocultar saldo">
+                {balanceHidden ? (
+                  <EyeOff size={14} style={{ color: TEXT_MUTED }} />
+                ) : (
+                  <Eye size={14} style={{ color: TEXT_MUTED }} />
+                )}
+              </button>
             </div>
-            <div className="flex gap-2 shrink-0">
-              {[
-                { icon: QrCode, label: "Pix" },
-                { icon: CreditCard, label: "Pagar" },
-                { icon: ArrowRight, label: "Transferir" },
-              ].map((b) => {
-                const Icon = b.icon;
-                return (
-                  <button
-                    key={b.label}
-                    className="w-[62px] h-[62px] rounded-2xl flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform"
+            <button className="text-[12px] font-semibold flex items-center gap-1" style={{ color: NEON }}>
+              Extrato <ArrowRight size={12} />
+            </button>
+          </div>
+
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-[15px] font-semibold" style={{ color: TEXT_MUTED }}>R$</span>
+            <span className="text-[38px] font-extrabold leading-none tracking-tight text-white">
+              {balanceHidden ? "••••••" : "250,00"}
+            </span>
+          </div>
+
+          {/* Divider */}
+          <div className="my-5 h-px w-full" style={{ background: BORDER }} />
+
+          {/* Action buttons row */}
+          <div className="grid grid-cols-4 gap-2">
+            {[
+              { icon: QrCode, label: "Pix" },
+              { icon: CreditCard, label: "Pagar" },
+              { icon: ArrowRight, label: "Transferir" },
+              { icon: Plus, label: "Depositar" },
+            ].map((b) => {
+              const Icon = b.icon;
+              return (
+                <button
+                  key={b.label}
+                  className="flex flex-col items-center gap-2 py-2 active:scale-95 transition-transform"
+                >
+                  <span
+                    className="w-11 h-11 rounded-full flex items-center justify-center"
                     style={{ background: "#1A1A1A", border: `1px solid ${BORDER}` }}
                   >
-                    <Icon size={16} strokeWidth={1.8} style={{ color: NEON }} />
-                    <span className="text-[9.5px] font-semibold text-white">{b.label}</span>
-                  </button>
-                );
-              })}
-            </div>
+                    <Icon size={18} strokeWidth={2} style={{ color: NEON }} />
+                  </span>
+                  <span className="text-[11px] font-semibold text-white">{b.label}</span>
+                </button>
+              );
+            })}
           </div>
+
+          {/* Points row */}
           <button
-            className="mt-5 w-full flex items-center gap-3 px-4 py-3 rounded-2xl"
+            className="mt-4 w-full flex items-center gap-3 px-4 py-3 rounded-2xl"
             style={{ background: "#0C0C0C", border: `1px solid ${BORDER}` }}
           >
             <span
-              className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-[9px] font-black"
               style={{ background: NEON, color: "#000" }}
             >
-              ZP
+              ZUU
             </span>
-            <span className="text-[14px] font-bold">1.250 pts</span>
+            <span className="text-[14px] font-bold text-white">1.250 pts</span>
             <span className="text-[12px] flex-1 text-left" style={{ color: TEXT_MUTED }}>
               Resgate descontos e vantagens
             </span>
             <ArrowRight size={14} style={{ color: TEXT_MUTED }} />
           </button>
         </div>
+
 
         {/* Ofertas do dia */}
         <section>
