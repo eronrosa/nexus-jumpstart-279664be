@@ -489,7 +489,7 @@ const Index = () => {
             { icon: Home, label: "Início", path: "/", active: true },
             { icon: ClipboardList, label: "Atividades", path: "/pedidos" },
             { center: true },
-            { icon: Star, label: "ZP Points", path: "/" },
+            { icon: Star, label: "ZuuPoints", path: "/" },
             { icon: User, label: "Perfil", path: user ? "/perfil" : "/auth" },
           ].map((item, i) => {
             if ((item as any).center) {
