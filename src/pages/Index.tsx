@@ -379,7 +379,7 @@ const Index = () => {
               </div>
             </div>
           </div>
-        )}
+        ), document.body)}
 
         {/* Empresas em Destaque */}
         <section>
