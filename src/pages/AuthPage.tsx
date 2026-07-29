@@ -302,19 +302,31 @@ const AuthPage = () => {
         <div className="space-y-2.5">
           <button
             onClick={handleGoogle}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold text-white active:scale-[0.98] transition-all"
+            disabled={googleLoading || loading}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold text-white active:scale-[0.98] transition-all disabled:opacity-60"
             style={{ background: CARD, border: `1px solid ${BORDER}` }}
           >
-            <GoogleG /> Continuar com Google
+            {googleLoading ? (
+              <>
+                <AuthSpinner size={16} tone="light" />
+                <span>Conectando ao Google...</span>
+              </>
+            ) : (
+              <>
+                <GoogleG /> Continuar com Google
+              </>
+            )}
           </button>
           <button
             onClick={() => navigate("/auth/phone")}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold text-white active:scale-[0.98] transition-all"
+            disabled={loading || googleLoading}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold text-white active:scale-[0.98] transition-all disabled:opacity-60"
             style={{ background: CARD, border: `1px solid ${BORDER}` }}
           >
             <Phone size={16} style={{ color: LIME }} /> Continuar com celular
           </button>
         </div>
+
 
         <p className="text-center text-xs mt-6" style={{ color: TEXT_MUTED }}>
           Ao continuar, você concorda com os{" "}
