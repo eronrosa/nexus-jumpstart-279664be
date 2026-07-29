@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import burgerBanner from "@/assets/home-burger-banner.jpg";
+import WalletCard from "@/components/WalletCard";
+
 
 import zuuppiZLogo from "@/assets/zuuppi-z-logo.png.asset.json";
 import pizzahutLogo from "@/assets/pizzahut-logo.png.asset.json";
