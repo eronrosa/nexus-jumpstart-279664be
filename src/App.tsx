@@ -13,6 +13,8 @@ import PhoneAuthPage from "./pages/PhoneAuthPage";
 import VerifyCodePage from "./pages/VerifyCodePage";
 import CouponDetail from "./pages/CouponDetail";
 import AuthPage from "./pages/AuthPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ProfilePage from "./pages/ProfilePage";
 import ZuuFood from "./pages/ZuuFood";
 import PedidosPage from "./pages/PedidosPage";
