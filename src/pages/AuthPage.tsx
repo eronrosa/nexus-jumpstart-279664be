@@ -78,26 +78,28 @@ const AuthPage = () => {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-4 py-8"
+      className="min-h-[100dvh] flex items-center justify-center px-5 sm:px-4"
       style={{
         background: `radial-gradient(circle at 50% 0%, rgba(198,255,0,0.08) 0%, ${BG} 45%, ${BG} 100%)`,
         color: "#fff",
         fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        paddingTop: "max(1.25rem, env(safe-area-inset-top))",
+        paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))",
       }}
     >
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="w-full max-w-sm"
+        transition={{ duration: 0.35 }}
+        className="w-full max-w-sm mx-auto"
       >
         {/* Logo hex + brand */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <motion.div
             initial={{ scale: 0.85, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 220, delay: 0.1 }}
-            className="inline-flex items-center justify-center w-20 h-20 mb-4 mx-auto"
+            className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 mb-3 sm:mb-4 mx-auto"
             style={{
               background: LIME_SOFT,
               border: `2px solid ${LIME_BORDER}`,
@@ -105,15 +107,15 @@ const AuthPage = () => {
               boxShadow: `0 0 40px rgba(198,255,0,0.25)`,
             }}
           >
-            <Leaf className="w-10 h-10" style={{ color: LIME }} fill="currentColor" strokeWidth={1.5} />
+            <Leaf className="w-8 h-8 sm:w-10 sm:h-10" style={{ color: LIME }} fill="currentColor" strokeWidth={1.5} />
           </motion.div>
           <h1
-            className="text-3xl font-extrabold tracking-tight"
+            className="text-2xl sm:text-3xl font-extrabold tracking-tight"
             style={{ color: "#fff", textShadow: `0 0 24px rgba(198,255,0,0.25)` }}
           >
             ZUUPPI
           </h1>
-          <p className="text-sm mt-1" style={{ color: TEXT_MUTED }}>
+          <p className="text-[13px] sm:text-sm mt-1" style={{ color: TEXT_MUTED }}>
             Tudo que você precisa
           </p>
         </div>
