@@ -47,7 +47,7 @@ const offers = [
 
 
 
-const services = [
+const allServices = [
   { icon: Utensils, label: "ZuuFood", color: "#C8FF00", path: "/zuufood" },
   { icon: Car, label: "ZuuMob", color: "#00D9FF", path: "/zuumob" },
   { icon: CreditCard, label: "ZuuPass", color: "#FF3EA5", path: "/zuupass" },
@@ -62,14 +62,57 @@ const services = [
   { icon: Tag, label: "Cupons", color: "#FFB800", path: "/" },
   { icon: Phone, label: "ZuuCall", color: "#4A9EFF", path: "/" },
   { icon: Shield, label: "ZuuSeg", color: "#B87BFF", path: "/" },
-  { icon: Grid3x3, label: "Mais", color: "#A0A0A0", path: "/" },
 ];
+
+const USAGE_KEY = "zuuppi:services:usage";
+type UsageEntry = { count: number; last: number };
+type UsageMap = Record<string, UsageEntry>;
+
+const readUsage = (): UsageMap => {
+  try { return JSON.parse(localStorage.getItem(USAGE_KEY) || "{}"); }
+  catch { return {}; }
+};
+const writeUsage = (m: UsageMap) => {
+  try { localStorage.setItem(USAGE_KEY, JSON.stringify(m)); } catch {}
+};
+const scoreEntry = (e?: UsageEntry) => {
+  if (!e) return 0;
+  // recency-weighted: count + recency boost (last 7 days)
+  const daysAgo = (Date.now() - e.last) / 86_400_000;
+  const recency = Math.max(0, 7 - daysAgo);
+  return e.count * 2 + recency;
+};
 
 const Index = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [activeShortcut, setActiveShortcut] = useState(0);
   const [balanceHidden, setBalanceHidden] = useState(false);
+  const [usage, setUsage] = useState<UsageMap>(() => readUsage());
+  const [showAllServices, setShowAllServices] = useState(false);
+
+  const topServices = [...allServices]
+    .sort((a, b) => scoreEntry(usage[b.label]) - scoreEntry(usage[a.label]))
+    .slice(0, 5);
+  const visibleServices = [
+    ...topServices,
+    { icon: Grid3x3, label: "Mais", color: "#A0A0A0", path: "__more__" },
+  ];
+
+  const handleServiceClick = (label: string, path: string) => {
+    if (label === "Mais" || path === "__more__") {
+      setShowAllServices(true);
+      return;
+    }
+    const next: UsageMap = {
+      ...usage,
+      [label]: { count: (usage[label]?.count ?? 0) + 1, last: Date.now() },
+    };
+    setUsage(next);
+    writeUsage(next);
+    if (path && path !== "/") navigate(path);
+  };
+
 
   const displayName = profile?.display_name?.split(" ")[0] ?? "você";
 
@@ -263,17 +306,20 @@ const Index = () => {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[18px] font-bold">Nossos serviços</h3>
-            <button className="text-[13px] font-semibold" style={{ color: NEON }}>
-              Editar
+            <button
+              onClick={() => setShowAllServices(true)}
+              className="text-[13px] font-semibold" style={{ color: NEON }}
+            >
+              Ver todos
             </button>
           </div>
-          <div className="grid grid-cols-5 gap-2.5">
-            {services.map((s) => {
+          <div className="grid grid-cols-6 gap-2.5">
+            {visibleServices.map((s) => {
               const Icon = s.icon;
               return (
                 <button
                   key={s.label}
-                  onClick={() => s.path !== "/" && navigate(s.path)}
+                  onClick={() => handleServiceClick(s.label, s.path)}
                   className="aspect-square rounded-[18px] flex flex-col items-center justify-center gap-1.5 p-1.5 active:scale-95 transition-transform"
                   style={{ background: CARD, border: `1px solid ${BORDER}` }}
                 >
@@ -286,6 +332,53 @@ const Index = () => {
             })}
           </div>
         </section>
+
+        {showAllServices && (
+          <div
+            className="fixed inset-0 z-[100] flex items-end justify-center"
+            onClick={() => setShowAllServices(false)}
+          >
+            <div className="absolute inset-0 bg-black/70" />
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-md rounded-t-3xl p-5 pb-[max(24px,env(safe-area-inset-bottom))] max-h-[80vh] overflow-y-auto"
+              style={{ background: "#0A0A0A", border: `1px solid ${BORDER}` }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-[17px] font-bold">Todos os mini apps</h2>
+                <button
+                  onClick={() => setShowAllServices(false)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ background: CARD, border: `1px solid ${BORDER}` }}
+                  aria-label="Fechar"
+                >
+                  <Plus size={16} className="text-white rotate-45" />
+                </button>
+              </div>
+              <div className="grid grid-cols-4 gap-2.5">
+                {allServices.map((s) => {
+                  const Icon = s.icon;
+                  return (
+                    <button
+                      key={s.label}
+                      onClick={() => {
+                        setShowAllServices(false);
+                        handleServiceClick(s.label, s.path);
+                      }}
+                      className="aspect-square rounded-[18px] flex flex-col items-center justify-center gap-1.5 p-1.5 active:scale-95 transition-transform"
+                      style={{ background: CARD, border: `1px solid ${BORDER}` }}
+                    >
+                      <Icon size={24} strokeWidth={1.6} style={{ color: s.color }} />
+                      <span className="text-[10px] font-semibold text-white text-center leading-tight px-0.5">
+                        {s.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Empresas em Destaque */}
         <section>
