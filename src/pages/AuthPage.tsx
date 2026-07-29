@@ -105,9 +105,8 @@ const AuthPage = () => {
     }
   };
 
-  };
-
   return (
+
     <div
       className="min-h-[100dvh] flex items-center justify-center px-5 sm:px-4"
       style={{
