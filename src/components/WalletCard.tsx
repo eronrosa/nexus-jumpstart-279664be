@@ -110,7 +110,11 @@ export default function WalletCard() {
             return (
               <button
                 key={b.label}
-                onClick={() => user ? setOpenOp(b.op) : navigate("/auth")}
+                onClick={async () => {
+                  const { data } = await supabase.auth.getSession();
+                  if (data.session) setOpenOp(b.op);
+                  else navigate("/auth");
+                }}
                 className="flex flex-col items-center gap-1.5 py-1 active:scale-95 transition-transform"
               >
                 <span className="w-9 h-9 rounded-full flex items-center justify-center"
