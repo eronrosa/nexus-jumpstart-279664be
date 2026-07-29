@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Leaf } from "lucide-react";
+import { toast } from "sonner";
+import { friendlyAuthError } from "@/lib/authErrors";
+import { AuthSpinner } from "@/components/AuthSpinner";
+
 
 const CODE_LEN = 5;
 const RESEND_SECONDS = 110;
@@ -14,7 +18,10 @@ const VerifyCodePage = () => {
   const [digits, setDigits] = useState<string[]>(Array(CODE_LEN).fill(""));
   const [seconds, setSeconds] = useState(RESEND_SECONDS);
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [error, setError] = useState("");
   const inputs = useRef<Array<HTMLInputElement | null>>([]);
+
 
   useEffect(() => {
     inputs.current[0]?.focus();
@@ -55,20 +62,53 @@ const VerifyCodePage = () => {
   const canSubmit = code.length === CODE_LEN;
 
   const handleSubmit = async () => {
-    if (!canSubmit) return;
+    if (!canSubmit || loading) return;
+    setError("");
     setLoading(true);
-    await new Promise(r => setTimeout(r, 600));
-    setLoading(false);
-    localStorage.setItem("zuuppi_welcomed", "1");
-    navigate("/home");
+    try {
+      // TODO: substituir pelo verifyOtp real (whatsapp) quando integrado
+      await new Promise((r) => setTimeout(r, 600));
+      localStorage.setItem("zuuppi_welcomed", "1");
+      toast.success("Número verificado!");
+      navigate("/home");
+    } catch (err: unknown) {
+      const message = friendlyAuthError(err);
+      setError(message);
+      toast.error(message);
+      setDigits(Array(CODE_LEN).fill(""));
+      inputs.current[0]?.focus();
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleResend = () => {
-    if (seconds > 0) return;
-    setSeconds(RESEND_SECONDS);
-    setDigits(Array(CODE_LEN).fill(""));
-    inputs.current[0]?.focus();
+  // Auto-submit ao completar os 5 dígitos
+  useEffect(() => {
+    if (canSubmit && !loading) {
+      handleSubmit();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canSubmit]);
+
+  const handleResend = async () => {
+    if (seconds > 0 || resending) return;
+    setError("");
+    setResending(true);
+    try {
+      await new Promise((r) => setTimeout(r, 500));
+      setSeconds(RESEND_SECONDS);
+      setDigits(Array(CODE_LEN).fill(""));
+      inputs.current[0]?.focus();
+      toast.success("Novo código enviado para seu WhatsApp.");
+    } catch (err: unknown) {
+      const message = friendlyAuthError(err);
+      setError(message);
+      toast.error(message);
+    } finally {
+      setResending(false);
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-white text-zinc-900 flex flex-col px-6 pt-6 pb-8 max-w-md mx-auto">
@@ -125,12 +165,28 @@ const VerifyCodePage = () => {
         ))}
       </div>
 
+      {error && (
+        <motion.p
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          role="alert"
+          className="mt-4 text-xs rounded-xl px-3 py-2 bg-red-50 border border-red-200 text-red-600 text-center"
+        >
+          {error}
+        </motion.p>
+      )}
+
       <p className="text-center text-sm text-zinc-500 mt-5">
         {seconds > 0 ? (
           <>Reenviar código <span className="text-zinc-900 font-medium tabular-nums">{mm}:{ss}</span></>
         ) : (
-          <button onClick={handleResend} className="text-[hsl(160_70%_35%)] font-semibold">
-            Reenviar código
+          <button
+            onClick={handleResend}
+            disabled={resending}
+            className="text-[hsl(160_70%_35%)] font-semibold inline-flex items-center gap-2 disabled:opacity-60"
+          >
+            {resending && <AuthSpinner size={14} tone="dark" />}
+            {resending ? "Reenviando..." : "Reenviar código"}
           </button>
         )}
       </p>
@@ -139,11 +195,19 @@ const VerifyCodePage = () => {
         <button
           onClick={handleSubmit}
           disabled={!canSubmit || loading}
-          className="w-full h-14 rounded-2xl bg-zinc-900 text-white font-semibold active:scale-[0.98] transition disabled:opacity-50"
+          className="w-full h-14 rounded-2xl bg-zinc-900 text-white font-semibold flex items-center justify-center gap-3 active:scale-[0.98] transition disabled:opacity-50"
         >
-          {loading ? "Verificando..." : "Enviar"}
+          {loading ? (
+            <>
+              <AuthSpinner size={18} tone="light" />
+              <span>Verificando...</span>
+            </>
+          ) : (
+            "Verificar"
+          )}
         </button>
       </div>
+
     </div>
   );
 };

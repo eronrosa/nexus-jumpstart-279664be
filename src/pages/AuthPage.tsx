@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, User, ArrowRight, Leaf, Phone } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { friendlyAuthError } from "@/lib/authErrors";
+import { AuthSpinner } from "@/components/AuthSpinner";
+
 
 type Mode = "login" | "signup";
 
@@ -38,6 +42,7 @@ const AuthPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setError("");
     setSuccess("");
     setLoading(true);
@@ -53,30 +58,55 @@ const AuthPage = () => {
           },
         });
         if (error) throw error;
-        setSuccess("Conta criada! Verifique seu email para confirmar o cadastro.");
+        const msg = "Conta criada! Verifique seu email para confirmar o cadastro.";
+        setSuccess(msg);
+        toast.success(msg);
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: form.email,
           password: form.password,
         });
         if (error) throw error;
+
+        // Confirma que a sessão realmente foi criada antes de redirecionar
+        const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
+        if (sessionErr || !sessionData.session) {
+          throw new Error("session missing");
+        }
+        toast.success("Bem-vindo de volta!");
         navigate("/");
       }
-    } catch (err: any) {
-      setError(err.message ?? "Ocorreu um erro. Tente novamente.");
+    } catch (err: unknown) {
+      const message = friendlyAuthError(err);
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
+  const [googleLoading, setGoogleLoading] = useState(false);
+
   const handleGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.origin + "/home" },
-    });
+    if (googleLoading) return;
+    setGoogleLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: window.location.origin + "/home" },
+      });
+      if (error) throw error;
+      // Fluxo continua no redirect do provedor — mantemos o loading até a página sair.
+    } catch (err: unknown) {
+      const message = friendlyAuthError(err);
+      setError(message);
+      toast.error(message);
+      setGoogleLoading(false);
+    }
   };
 
   return (
+
     <div
       className="min-h-[100dvh] flex items-center justify-center px-5 sm:px-4"
       style={{
@@ -246,13 +276,17 @@ const AuthPage = () => {
               }}
             >
               {loading ? (
-                <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                <>
+                  <AuthSpinner size={16} tone="dark" />
+                  <span>{mode === "login" ? "Entrando..." : "Criando conta..."}</span>
+                </>
               ) : (
                 <>
                   {mode === "login" ? "Entrar" : "Criar conta"}
                   <ArrowRight size={16} />
                 </>
               )}
+
             </motion.button>
           </motion.form>
         </AnimatePresence>
@@ -268,19 +302,31 @@ const AuthPage = () => {
         <div className="space-y-2.5">
           <button
             onClick={handleGoogle}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold text-white active:scale-[0.98] transition-all"
+            disabled={googleLoading || loading}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold text-white active:scale-[0.98] transition-all disabled:opacity-60"
             style={{ background: CARD, border: `1px solid ${BORDER}` }}
           >
-            <GoogleG /> Continuar com Google
+            {googleLoading ? (
+              <>
+                <AuthSpinner size={16} tone="light" />
+                <span>Conectando ao Google...</span>
+              </>
+            ) : (
+              <>
+                <GoogleG /> Continuar com Google
+              </>
+            )}
           </button>
           <button
             onClick={() => navigate("/auth/phone")}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold text-white active:scale-[0.98] transition-all"
+            disabled={loading || googleLoading}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold text-white active:scale-[0.98] transition-all disabled:opacity-60"
             style={{ background: CARD, border: `1px solid ${BORDER}` }}
           >
             <Phone size={16} style={{ color: LIME }} /> Continuar com celular
           </button>
         </div>
+
 
         <p className="text-center text-xs mt-6" style={{ color: TEXT_MUTED }}>
           Ao continuar, você concorda com os{" "}

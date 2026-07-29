@@ -2,7 +2,11 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Apple, ChevronDown, Leaf } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { friendlyAuthError } from "@/lib/authErrors";
+import { AuthSpinner } from "@/components/AuthSpinner";
+
 
 const countries = [
   { code: "BR", dial: "+55", flag: "🇧🇷", label: "Brasil" },
@@ -27,6 +31,9 @@ const PhoneAuthPage = () => {
   const [openCountry, setOpenCountry] = useState(false);
   const [phone, setPhone] = useState("");
   const [tourist, setTourist] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const formatPhone = (v: string) => {
     const digits = v.replace(/\D/g, "").slice(0, 11);
@@ -35,19 +42,46 @@ const PhoneAuthPage = () => {
     return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
   };
 
-  const handleContinue = () => {
-    if (phone.replace(/\D/g, "").length < 10) return;
-    localStorage.setItem("zuuppi_welcomed", "1");
-    navigate("/auth/verify", { state: { phone: `${country.dial} ${phone}` } });
+  const handleContinue = async () => {
+    if (sending || googleLoading) return;
+    if (phone.replace(/\D/g, "").length < 10) {
+      setError("Digite um número válido com DDD.");
+      return;
+    }
+    setError("");
+    setSending(true);
+    try {
+      // Pequeno delay para o loading state ficar perceptível e evitar double-tap
+      await new Promise((r) => setTimeout(r, 400));
+      localStorage.setItem("zuuppi_welcomed", "1");
+      navigate("/auth/verify", { state: { phone: `${country.dial} ${phone}` } });
+    } catch (err: unknown) {
+      const message = friendlyAuthError(err);
+      setError(message);
+      toast.error(message);
+      setSending(false);
+    }
   };
 
   const handleGoogle = async () => {
-    localStorage.setItem("zuuppi_welcomed", "1");
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.origin + "/home" },
-    });
+    if (googleLoading || sending) return;
+    setError("");
+    setGoogleLoading(true);
+    try {
+      localStorage.setItem("zuuppi_welcomed", "1");
+      const { error: oauthErr } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: window.location.origin + "/home" },
+      });
+      if (oauthErr) throw oauthErr;
+    } catch (err: unknown) {
+      const message = friendlyAuthError(err);
+      setError(message);
+      toast.error(message);
+      setGoogleLoading(false);
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-white text-zinc-900 flex flex-col px-6 pt-6 pb-8 max-w-md mx-auto">
@@ -135,23 +169,54 @@ const PhoneAuthPage = () => {
         </button>
       </div>
 
+      {error && (
+        <motion.p
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          role="alert"
+          className="mt-4 text-xs rounded-xl px-3 py-2 bg-red-50 border border-red-200 text-red-600"
+        >
+          {error}
+        </motion.p>
+      )}
+
       <div className="space-y-3 mt-auto pt-8">
         <button
           onClick={handleContinue}
           className="w-full h-14 rounded-2xl bg-zinc-900 text-white font-semibold flex items-center justify-center gap-3 active:scale-[0.98] transition disabled:opacity-50"
-          disabled={phone.replace(/\D/g, "").length < 10}
+          disabled={sending || googleLoading || phone.replace(/\D/g, "").length < 10}
         >
-          <Apple className="w-5 h-5" fill="currentColor" />
-          Continuar com Apple
+          {sending ? (
+            <>
+              <AuthSpinner size={18} tone="light" />
+              <span>Enviando código...</span>
+            </>
+          ) : (
+            <>
+              <Apple className="w-5 h-5" fill="currentColor" />
+              Continuar
+            </>
+          )}
         </button>
         <button
           onClick={handleGoogle}
-          className="w-full h-14 rounded-2xl bg-white border border-zinc-200 text-zinc-900 font-semibold flex items-center justify-center gap-3 active:scale-[0.98] transition"
+          disabled={googleLoading || sending}
+          className="w-full h-14 rounded-2xl bg-white border border-zinc-200 text-zinc-900 font-semibold flex items-center justify-center gap-3 active:scale-[0.98] transition disabled:opacity-60"
         >
-          <GoogleG />
-          Continuar com Google
+          {googleLoading ? (
+            <>
+              <AuthSpinner size={18} tone="dark" />
+              <span>Conectando ao Google...</span>
+            </>
+          ) : (
+            <>
+              <GoogleG />
+              Continuar com Google
+            </>
+          )}
         </button>
       </div>
+
     </div>
   );
 };
