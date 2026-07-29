@@ -276,13 +276,17 @@ const AuthPage = () => {
               }}
             >
               {loading ? (
-                <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                <>
+                  <AuthSpinner size={16} tone="dark" />
+                  <span>{mode === "login" ? "Entrando..." : "Criando conta..."}</span>
+                </>
               ) : (
                 <>
                   {mode === "login" ? "Entrar" : "Criar conta"}
                   <ArrowRight size={16} />
                 </>
               )}
+
             </motion.button>
           </motion.form>
         </AnimatePresence>
