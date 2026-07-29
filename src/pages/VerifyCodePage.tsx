@@ -1,27 +1,44 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Leaf } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
 import { friendlyAuthError } from "@/lib/authErrors";
 import { AuthSpinner } from "@/components/AuthSpinner";
 
+const CODE_LEN = 6;
+const RESEND_SECONDS = 60;
 
-const CODE_LEN = 5;
-const RESEND_SECONDS = 110;
+const codeSchema = z
+  .string()
+  .regex(new RegExp(`^\\d{${CODE_LEN}}$`), `O código precisa ter ${CODE_LEN} dígitos.`);
+
+const maskPhone = (p: string) => {
+  if (!p || p === "seu WhatsApp") return "seu WhatsApp";
+  const visible = p.slice(-4);
+  return `${p.slice(0, Math.max(3, p.length - 6))}••${visible}`;
+};
 
 const VerifyCodePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const phone = (location.state as { phone?: string } | null)?.phone ?? "seu WhatsApp";
+  const phone = (location.state as { phone?: string } | null)?.phone ?? "";
 
   const [digits, setDigits] = useState<string[]>(Array(CODE_LEN).fill(""));
   const [seconds, setSeconds] = useState(RESEND_SECONDS);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [error, setError] = useState("");
+  const [attempts, setAttempts] = useState(0);
+  const submittedForRef = useRef<string>("");
   const inputs = useRef<Array<HTMLInputElement | null>>([]);
 
+  // Se o usuário abriu direto sem passar pela tela de telefone, volta.
+  useEffect(() => {
+    if (!phone) navigate("/auth/phone", { replace: true });
+  }, [phone, navigate]);
 
   useEffect(() => {
     inputs.current[0]?.focus();
@@ -36,16 +53,24 @@ const VerifyCodePage = () => {
   const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
   const ss = String(seconds % 60).padStart(2, "0");
 
+  const clearInputs = useCallback(() => {
+    setDigits(Array(CODE_LEN).fill(""));
+    setTimeout(() => inputs.current[0]?.focus(), 0);
+  }, []);
+
   const setAt = (i: number, v: string) => {
     const char = v.replace(/\D/g, "").slice(-1);
     const next = [...digits];
     next[i] = char;
     setDigits(next);
+    if (error) setError("");
     if (char && i < CODE_LEN - 1) inputs.current[i + 1]?.focus();
   };
 
   const onKeyDown = (i: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Backspace" && !digits[i] && i > 0) inputs.current[i - 1]?.focus();
+    if (e.key === "ArrowLeft" && i > 0) inputs.current[i - 1]?.focus();
+    if (e.key === "ArrowRight" && i < CODE_LEN - 1) inputs.current[i + 1]?.focus();
   };
 
   const onPaste = (e: React.ClipboardEvent) => {
@@ -55,50 +80,71 @@ const VerifyCodePage = () => {
     const next = Array(CODE_LEN).fill("");
     for (let i = 0; i < text.length; i++) next[i] = text[i];
     setDigits(next);
+    if (error) setError("");
     inputs.current[Math.min(text.length, CODE_LEN - 1)]?.focus();
   };
 
   const code = digits.join("");
   const canSubmit = code.length === CODE_LEN;
 
-  const handleSubmit = async () => {
-    if (!canSubmit || loading) return;
+  const handleSubmit = useCallback(async () => {
+    if (!canSubmit || loading || !phone) return;
     setError("");
+
+    const parsed = codeSchema.safeParse(code);
+    if (!parsed.success) {
+      setError(parsed.error.issues[0].message);
+      return;
+    }
+
     setLoading(true);
     try {
-      // TODO: substituir pelo verifyOtp real (whatsapp) quando integrado
-      await new Promise((r) => setTimeout(r, 600));
+      const { data, error: verifyErr } = await supabase.auth.verifyOtp({
+        phone,
+        token: parsed.data,
+        type: "sms",
+      });
+      if (verifyErr) throw verifyErr;
+      if (!data.session) throw new Error("Sessão não estabelecida. Tente novamente.");
+
       localStorage.setItem("zuuppi_welcomed", "1");
       toast.success("Número verificado!");
-      navigate("/home");
+      navigate("/home", { replace: true });
     } catch (err: unknown) {
       const message = friendlyAuthError(err);
       setError(message);
       toast.error(message);
-      setDigits(Array(CODE_LEN).fill(""));
-      inputs.current[0]?.focus();
+      setAttempts(a => a + 1);
+      clearInputs();
     } finally {
       setLoading(false);
     }
-  };
+  }, [canSubmit, loading, phone, code, navigate, clearInputs]);
 
-  // Auto-submit ao completar os 5 dígitos
+  // Auto-submit apenas uma vez por código completo (evita loop após erro)
   useEffect(() => {
-    if (canSubmit && !loading) {
+    if (canSubmit && !loading && submittedForRef.current !== code) {
+      submittedForRef.current = code;
       handleSubmit();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canSubmit]);
+    if (!canSubmit && submittedForRef.current) {
+      submittedForRef.current = "";
+    }
+  }, [canSubmit, loading, code, handleSubmit]);
 
   const handleResend = async () => {
-    if (seconds > 0 || resending) return;
+    if (seconds > 0 || resending || !phone) return;
     setError("");
     setResending(true);
     try {
-      await new Promise((r) => setTimeout(r, 500));
+      const { error: otpErr } = await supabase.auth.signInWithOtp({
+        phone,
+        options: { channel: "whatsapp" },
+      });
+      if (otpErr) throw otpErr;
       setSeconds(RESEND_SECONDS);
-      setDigits(Array(CODE_LEN).fill(""));
-      inputs.current[0]?.focus();
+      setAttempts(0);
+      clearInputs();
       toast.success("Novo código enviado para seu WhatsApp.");
     } catch (err: unknown) {
       const message = friendlyAuthError(err);
@@ -109,9 +155,8 @@ const VerifyCodePage = () => {
     }
   };
 
-
   return (
-    <div className="min-h-screen bg-white text-zinc-900 flex flex-col px-6 pt-6 pb-8 max-w-md mx-auto">
+    <div className="min-h-[100dvh] bg-white text-zinc-900 flex flex-col px-6 pt-6 pb-8 max-w-md mx-auto">
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigate(-1)}
@@ -143,10 +188,10 @@ const VerifyCodePage = () => {
         Verifique seu<br />número de celular
       </h1>
       <p className="text-sm text-zinc-500 text-center mt-3">
-        Um código de verificação foi enviado<br />para o seu WhatsApp {phone !== "seu WhatsApp" ? phone : ""}
+        Enviamos um código de {CODE_LEN} dígitos<br />para {maskPhone(phone)}
       </p>
 
-      <div className="flex justify-center gap-3 mt-8" onPaste={onPaste}>
+      <div className="flex justify-center gap-2 sm:gap-3 mt-8" onPaste={onPaste}>
         {digits.map((d, i) => (
           <input
             key={i}
@@ -155,9 +200,15 @@ const VerifyCodePage = () => {
             onChange={(e) => setAt(i, e.target.value)}
             onKeyDown={(e) => onKeyDown(i, e)}
             inputMode="numeric"
+            autoComplete="one-time-code"
             maxLength={1}
-            className={`w-12 h-14 rounded-xl text-center text-xl font-bold outline-none transition border-2 ${
-              d
+            aria-label={`Dígito ${i + 1} de ${CODE_LEN}`}
+            aria-invalid={!!error}
+            disabled={loading}
+            className={`w-10 h-14 sm:w-12 rounded-xl text-center text-xl font-bold outline-none transition border-2 disabled:opacity-60 ${
+              error
+                ? "border-red-300 bg-red-50 text-red-600"
+                : d
                 ? "border-[hsl(160_70%_35%)] text-[hsl(160_70%_30%)] bg-[hsl(160_70%_95%)]"
                 : "border-zinc-200 bg-white text-zinc-900 focus:border-[hsl(160_70%_35%)]"
             }`}
@@ -173,12 +224,17 @@ const VerifyCodePage = () => {
           className="mt-4 text-xs rounded-xl px-3 py-2 bg-red-50 border border-red-200 text-red-600 text-center"
         >
           {error}
+          {attempts >= 3 && (
+            <span className="block mt-1 text-[11px] text-red-500">
+              Solicite um novo código para continuar.
+            </span>
+          )}
         </motion.p>
       )}
 
       <p className="text-center text-sm text-zinc-500 mt-5">
         {seconds > 0 ? (
-          <>Reenviar código <span className="text-zinc-900 font-medium tabular-nums">{mm}:{ss}</span></>
+          <>Reenviar código em <span className="text-zinc-900 font-medium tabular-nums">{mm}:{ss}</span></>
         ) : (
           <button
             onClick={handleResend}
@@ -207,7 +263,6 @@ const VerifyCodePage = () => {
           )}
         </button>
       </div>
-
     </div>
   );
 };

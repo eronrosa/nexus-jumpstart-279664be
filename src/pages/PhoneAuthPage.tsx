@@ -1,20 +1,27 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Apple, ChevronDown, Leaf } from "lucide-react";
+import { ArrowLeft, ChevronDown, Leaf, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { friendlyAuthError } from "@/lib/authErrors";
 import { AuthSpinner } from "@/components/AuthSpinner";
 
+type Country = { code: string; dial: string; flag: string; label: string; min: number; max: number };
 
-const countries = [
-  { code: "BR", dial: "+55", flag: "🇧🇷", label: "Brasil" },
-  { code: "US", dial: "+1", flag: "🇺🇸", label: "United States" },
-  { code: "PT", dial: "+351", flag: "🇵🇹", label: "Portugal" },
-  { code: "ES", dial: "+34", flag: "🇪🇸", label: "España" },
-  { code: "AR", dial: "+54", flag: "🇦🇷", label: "Argentina" },
+const countries: Country[] = [
+  { code: "BR", dial: "+55", flag: "🇧🇷", label: "Brasil", min: 10, max: 11 },
+  { code: "US", dial: "+1", flag: "🇺🇸", label: "United States", min: 10, max: 10 },
+  { code: "PT", dial: "+351", flag: "🇵🇹", label: "Portugal", min: 9, max: 9 },
+  { code: "ES", dial: "+34", flag: "🇪🇸", label: "España", min: 9, max: 9 },
+  { code: "AR", dial: "+54", flag: "🇦🇷", label: "Argentina", min: 10, max: 11 },
 ];
+
+const phoneSchema = z
+  .string()
+  .trim()
+  .regex(/^\+[1-9]\d{7,14}$/, "Número de celular inválido.");
 
 const GoogleG = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden>
@@ -25,9 +32,15 @@ const GoogleG = () => (
   </svg>
 );
 
+const formatBR = (digits: string) => {
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+};
+
 const PhoneAuthPage = () => {
   const navigate = useNavigate();
-  const [country, setCountry] = useState(countries[0]);
+  const [country, setCountry] = useState<Country>(countries[0]);
   const [openCountry, setOpenCountry] = useState(false);
   const [phone, setPhone] = useState("");
   const [tourist, setTourist] = useState(false);
@@ -35,30 +48,43 @@ const PhoneAuthPage = () => {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const formatPhone = (v: string) => {
-    const digits = v.replace(/\D/g, "").slice(0, 11);
-    if (digits.length <= 2) return digits;
-    if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  const rawDigits = useMemo(() => phone.replace(/\D/g, ""), [phone]);
+  const isValid = rawDigits.length >= country.min && rawDigits.length <= country.max;
+  const e164 = `${country.dial}${rawDigits}`;
+
+  const handlePhoneChange = (v: string) => {
+    const digits = v.replace(/\D/g, "").slice(0, country.max);
+    setPhone(country.code === "BR" ? formatBR(digits) : digits);
+    if (error) setError("");
   };
 
   const handleContinue = async () => {
     if (sending || googleLoading) return;
-    if (phone.replace(/\D/g, "").length < 10) {
-      setError("Digite um número válido com DDD.");
+    setError("");
+
+    // Client-side validation with zod (defense-in-depth + friendly UX)
+    const parsed = phoneSchema.safeParse(e164);
+    if (!parsed.success || !isValid) {
+      const msg = parsed.success ? "Número incompleto para este país." : parsed.error.issues[0].message;
+      setError(msg);
       return;
     }
-    setError("");
+
     setSending(true);
     try {
-      // Pequeno delay para o loading state ficar perceptível e evitar double-tap
-      await new Promise((r) => setTimeout(r, 400));
+      const { error: otpErr } = await supabase.auth.signInWithOtp({
+        phone: parsed.data,
+        options: { channel: "whatsapp" },
+      });
+      if (otpErr) throw otpErr;
       localStorage.setItem("zuuppi_welcomed", "1");
-      navigate("/auth/verify", { state: { phone: `${country.dial} ${phone}` } });
+      toast.success("Código enviado para seu WhatsApp.");
+      navigate("/auth/verify", { state: { phone: parsed.data, tourist } });
     } catch (err: unknown) {
       const message = friendlyAuthError(err);
       setError(message);
       toast.error(message);
+    } finally {
       setSending(false);
     }
   };
@@ -82,9 +108,8 @@ const PhoneAuthPage = () => {
     }
   };
 
-
   return (
-    <div className="min-h-screen bg-white text-zinc-900 flex flex-col px-6 pt-6 pb-8 max-w-md mx-auto">
+    <div className="min-h-[100dvh] bg-white text-zinc-900 flex flex-col px-6 pt-6 pb-8 max-w-md mx-auto">
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigate(-1)}
@@ -114,14 +139,21 @@ const PhoneAuthPage = () => {
         Informe seu<br />número de celular
       </h1>
       <p className="text-sm text-zinc-500 text-center mt-3">
-        Digite o número para continuar
+        Enviaremos um código pelo WhatsApp
       </p>
 
       <div className="mt-6 relative">
-        <div className="flex items-center gap-2 h-14 rounded-2xl border border-zinc-200 px-3">
+        <div
+          className={`flex items-center gap-2 h-14 rounded-2xl border px-3 transition ${
+            error ? "border-red-300" : "border-zinc-200 focus-within:border-[hsl(160_70%_35%)]"
+          }`}
+        >
           <button
+            type="button"
             onClick={() => setOpenCountry(o => !o)}
             className="flex items-center gap-1.5 pr-3 border-r border-zinc-200 h-full"
+            aria-haspopup="listbox"
+            aria-expanded={openCountry}
           >
             <span className="text-xl leading-none">{country.flag}</span>
             <span className="text-sm font-semibold">{country.code}</span>
@@ -131,19 +163,24 @@ const PhoneAuthPage = () => {
           <input
             type="tel"
             inputMode="numeric"
+            autoComplete="tel"
             value={phone}
-            onChange={(e) => setPhone(formatPhone(e.target.value))}
-            placeholder="(11) 91234-5678"
+            onChange={(e) => handlePhoneChange(e.target.value)}
+            placeholder={country.code === "BR" ? "(11) 91234-5678" : "número"}
+            aria-invalid={!!error}
+            aria-describedby={error ? "phone-error" : undefined}
             className="flex-1 h-full bg-transparent outline-none text-sm placeholder:text-zinc-400"
           />
         </div>
 
         {openCountry && (
-          <div className="absolute top-16 left-0 right-0 bg-white rounded-2xl shadow-xl border border-zinc-100 overflow-hidden z-10">
+          <div className="absolute top-16 left-0 right-0 bg-white rounded-2xl shadow-xl border border-zinc-100 overflow-hidden z-10" role="listbox">
             {countries.map(c => (
               <button
                 key={c.code}
-                onClick={() => { setCountry(c); setOpenCountry(false); }}
+                role="option"
+                aria-selected={c.code === country.code}
+                onClick={() => { setCountry(c); setPhone(""); setError(""); setOpenCountry(false); }}
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-zinc-50 text-left"
               >
                 <span className="text-xl">{c.flag}</span>
@@ -171,6 +208,7 @@ const PhoneAuthPage = () => {
 
       {error && (
         <motion.p
+          id="phone-error"
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           role="alert"
@@ -184,7 +222,7 @@ const PhoneAuthPage = () => {
         <button
           onClick={handleContinue}
           className="w-full h-14 rounded-2xl bg-zinc-900 text-white font-semibold flex items-center justify-center gap-3 active:scale-[0.98] transition disabled:opacity-50"
-          disabled={sending || googleLoading || phone.replace(/\D/g, "").length < 10}
+          disabled={sending || googleLoading || !isValid}
         >
           {sending ? (
             <>
@@ -193,8 +231,8 @@ const PhoneAuthPage = () => {
             </>
           ) : (
             <>
-              <Apple className="w-5 h-5" fill="currentColor" />
-              Continuar
+              <MessageCircle className="w-5 h-5" />
+              Enviar código pelo WhatsApp
             </>
           )}
         </button>
@@ -216,7 +254,6 @@ const PhoneAuthPage = () => {
           )}
         </button>
       </div>
-
     </div>
   );
 };
