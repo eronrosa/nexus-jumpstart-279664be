@@ -18,7 +18,10 @@ const VerifyCodePage = () => {
   const [digits, setDigits] = useState<string[]>(Array(CODE_LEN).fill(""));
   const [seconds, setSeconds] = useState(RESEND_SECONDS);
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [error, setError] = useState("");
   const inputs = useRef<Array<HTMLInputElement | null>>([]);
+
 
   useEffect(() => {
     inputs.current[0]?.focus();
