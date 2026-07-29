@@ -55,6 +55,8 @@ const AnimatedRoutes = () => {
         <Route path="/auth" element={<PageTransition><AuthPage /></PageTransition>} />
         <Route path="/auth/phone" element={<PageTransition><PhoneAuthPage /></PageTransition>} />
         <Route path="/auth/verify" element={<PageTransition><VerifyCodePage /></PageTransition>} />
+        <Route path="/auth/forgot" element={<PageTransition><ForgotPasswordPage /></PageTransition>} />
+        <Route path="/reset-password" element={<PageTransition><ResetPasswordPage /></PageTransition>} />
         <Route path="/perfil" element={<ProtectedRoute><PageTransition><ProfilePage /></PageTransition></ProtectedRoute>} />
         <Route path="/zuumob" element={<PageTransition><ZuuMob /></PageTransition>} />
         <Route path="/motorista" element={<ProtectedRoute><PageTransition><MotoristaPage /></PageTransition></ProtectedRoute>} />
