@@ -88,7 +88,11 @@ export default function WalletCard() {
             </span>
           </div>
           <button
-            onClick={() => user ? setOpenExtrato(true) : navigate("/auth")}
+            onClick={async () => {
+              const { data } = await supabase.auth.getSession();
+              if (data.session) setOpenExtrato(true);
+              else navigate("/auth");
+            }}
             className="text-[11px] font-semibold flex items-center gap-1" style={{ color: NEON }}
           >
             Extrato <ArrowRight size={11} />
@@ -106,7 +110,11 @@ export default function WalletCard() {
             return (
               <button
                 key={b.label}
-                onClick={() => user ? setOpenOp(b.op) : navigate("/auth")}
+                onClick={async () => {
+                  const { data } = await supabase.auth.getSession();
+                  if (data.session) setOpenOp(b.op);
+                  else navigate("/auth");
+                }}
                 className="flex flex-col items-center gap-1.5 py-1 active:scale-95 transition-transform"
               >
                 <span className="w-9 h-9 rounded-full flex items-center justify-center"
