@@ -165,12 +165,28 @@ const VerifyCodePage = () => {
         ))}
       </div>
 
+      {error && (
+        <motion.p
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          role="alert"
+          className="mt-4 text-xs rounded-xl px-3 py-2 bg-red-50 border border-red-200 text-red-600 text-center"
+        >
+          {error}
+        </motion.p>
+      )}
+
       <p className="text-center text-sm text-zinc-500 mt-5">
         {seconds > 0 ? (
           <>Reenviar código <span className="text-zinc-900 font-medium tabular-nums">{mm}:{ss}</span></>
         ) : (
-          <button onClick={handleResend} className="text-[hsl(160_70%_35%)] font-semibold">
-            Reenviar código
+          <button
+            onClick={handleResend}
+            disabled={resending}
+            className="text-[hsl(160_70%_35%)] font-semibold inline-flex items-center gap-2 disabled:opacity-60"
+          >
+            {resending && <AuthSpinner size={14} tone="dark" />}
+            {resending ? "Reenviando..." : "Reenviar código"}
           </button>
         )}
       </p>
@@ -179,11 +195,19 @@ const VerifyCodePage = () => {
         <button
           onClick={handleSubmit}
           disabled={!canSubmit || loading}
-          className="w-full h-14 rounded-2xl bg-zinc-900 text-white font-semibold active:scale-[0.98] transition disabled:opacity-50"
+          className="w-full h-14 rounded-2xl bg-zinc-900 text-white font-semibold flex items-center justify-center gap-3 active:scale-[0.98] transition disabled:opacity-50"
         >
-          {loading ? "Verificando..." : "Enviar"}
+          {loading ? (
+            <>
+              <AuthSpinner size={18} tone="light" />
+              <span>Verificando...</span>
+            </>
+          ) : (
+            "Verificar"
+          )}
         </button>
       </div>
+
     </div>
   );
 };
