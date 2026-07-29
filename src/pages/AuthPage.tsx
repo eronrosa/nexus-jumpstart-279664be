@@ -42,6 +42,7 @@ const AuthPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setError("");
     setSuccess("");
     setLoading(true);
@@ -57,27 +58,53 @@ const AuthPage = () => {
           },
         });
         if (error) throw error;
-        setSuccess("Conta criada! Verifique seu email para confirmar o cadastro.");
+        const msg = "Conta criada! Verifique seu email para confirmar o cadastro.";
+        setSuccess(msg);
+        toast.success(msg);
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: form.email,
           password: form.password,
         });
         if (error) throw error;
+
+        // Confirma que a sessão realmente foi criada antes de redirecionar
+        const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
+        if (sessionErr || !sessionData.session) {
+          throw new Error("session missing");
+        }
+        toast.success("Bem-vindo de volta!");
         navigate("/");
       }
-    } catch (err: any) {
-      setError(err.message ?? "Ocorreu um erro. Tente novamente.");
+    } catch (err: unknown) {
+      const message = friendlyAuthError(err);
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
+  const [googleLoading, setGoogleLoading] = useState(false);
+
   const handleGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.origin + "/home" },
-    });
+    if (googleLoading) return;
+    setGoogleLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: window.location.origin + "/home" },
+      });
+      if (error) throw error;
+      // Fluxo continua no redirect do provedor — mantemos o loading até a página sair.
+    } catch (err: unknown) {
+      const message = friendlyAuthError(err);
+      setError(message);
+      toast.error(message);
+      setGoogleLoading(false);
+    }
+  };
+
   };
 
   return (
