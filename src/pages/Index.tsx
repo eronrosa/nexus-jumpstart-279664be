@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -333,7 +334,7 @@ const Index = () => {
           </div>
         </section>
 
-        {showAllServices && (
+        {showAllServices && createPortal((
           <div
             className="fixed inset-0 z-[100] flex items-end justify-center"
             onClick={() => setShowAllServices(false)}
@@ -378,7 +379,7 @@ const Index = () => {
               </div>
             </div>
           </div>
-        )}
+        ), document.body)}
 
         {/* Empresas em Destaque */}
         <section>
