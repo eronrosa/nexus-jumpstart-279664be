@@ -45,24 +45,25 @@ export default function ZuuMobHome({ onSearchOpen, onOpenRides }: { onSearchOpen
   return (
     <div
       className="absolute inset-0 z-[55] flex flex-col overflow-hidden"
-      style={{ background: BG, color: "#fff", fontFamily: FONT, letterSpacing: "-0.01em" }}
+      style={{ background: BG, color: "#fff", fontFamily: FONT, letterSpacing: "-0.01em", height: "100dvh" }}
     >
-      <div className="flex-1 overflow-y-auto overscroll-contain max-w-md w-full mx-auto px-4 sm:px-5 pt-4 pb-4">
+      {/* Fixed back button (always accessible) */}
+      <button
+        onClick={() => navigate("/")}
+        aria-label="Voltar ao início"
+        className="fixed z-[60] w-11 h-11 rounded-full flex items-center justify-center active:scale-95 transition-transform shadow-lg"
+        style={{
+          background: CARD,
+          border: `1px solid ${BORDER}`,
+          top: "max(12px, env(safe-area-inset-top))",
+          left: "max(12px, env(safe-area-inset-left))",
+        }}
+      >
+        <ArrowLeft size={20} strokeWidth={2} style={{ color: NEON }} />
+      </button>
 
+      <div className="flex-1 overflow-y-auto overscroll-contain max-w-md w-full mx-auto px-4 sm:px-5 pt-16 pb-4">
 
-        {/* Top bar with back button */}
-        <div className="flex items-center justify-between mb-4">
-          <button
-            onClick={() => navigate("/")}
-            aria-label="Voltar"
-            className="w-10 h-10 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-            style={{ background: CARD, border: `1px solid ${BORDER}` }}
-          >
-            <ArrowLeft size={18} strokeWidth={1.8} style={{ color: NEON }} />
-          </button>
-          <span className="w-10" />
-          <span className="w-10" />
-        </div>
 
         {/* Search */}
         <motion.button
