@@ -47,22 +47,28 @@ export default function ZuuMobHome({ onSearchOpen, onOpenRides }: { onSearchOpen
       className="absolute inset-0 z-[55] flex flex-col overflow-hidden"
       style={{ background: BG, color: "#fff", fontFamily: FONT, letterSpacing: "-0.01em", height: "100dvh" }}
     >
-      {/* Fixed back button (always accessible) */}
+      {/* Fixed back button with safe-area & 48px+ touch target (WCAG AAA) */}
       <button
         onClick={() => navigate("/")}
         aria-label="Voltar ao início"
-        className="fixed z-[60] w-11 h-11 rounded-full flex items-center justify-center active:scale-95 transition-transform shadow-lg"
+        className="fixed z-[60] flex items-center justify-center active:scale-95 transition-transform shadow-xl"
         style={{
-          background: CARD,
-          border: `1px solid ${BORDER}`,
           top: "max(12px, env(safe-area-inset-top))",
           left: "max(12px, env(safe-area-inset-left))",
+          width: 52,
+          height: 52,
+          borderRadius: 9999,
+          background: CARD,
+          border: `1px solid ${BORDER}`,
+          WebkitTapHighlightColor: "transparent",
+          touchAction: "manipulation",
         }}
       >
-        <ArrowLeft size={20} strokeWidth={2} style={{ color: NEON }} />
+        <ArrowLeft size={22} strokeWidth={2.2} style={{ color: NEON }} />
       </button>
 
-      <div className="flex-1 overflow-y-auto overscroll-contain max-w-md w-full mx-auto px-4 sm:px-5 pt-16 pb-4">
+      <div className="flex-1 overflow-y-auto overscroll-contain max-w-md w-full mx-auto px-4 sm:px-5 pt-20 pb-4">
+
 
 
         {/* Search */}
