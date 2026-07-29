@@ -242,6 +242,19 @@ const AuthPage = () => {
               </button>
             </div>
 
+            {mode === "login" && (
+              <div className="flex justify-end -mt-1">
+                <button
+                  type="button"
+                  onClick={() => navigate("/auth/forgot")}
+                  className="text-xs font-semibold hover:underline"
+                  style={{ color: LIME }}
+                >
+                  Esqueci minha senha
+                </button>
+              </div>
+            )}
+
             {error && (
               <motion.p
                 initial={{ opacity: 0 }}
