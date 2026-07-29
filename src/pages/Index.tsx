@@ -47,7 +47,7 @@ const offers = [
 
 
 
-const services = [
+const allServices = [
   { icon: Utensils, label: "ZuuFood", color: "#C8FF00", path: "/zuufood" },
   { icon: Car, label: "ZuuMob", color: "#00D9FF", path: "/zuumob" },
   { icon: CreditCard, label: "ZuuPass", color: "#FF3EA5", path: "/zuupass" },
@@ -62,8 +62,26 @@ const services = [
   { icon: Tag, label: "Cupons", color: "#FFB800", path: "/" },
   { icon: Phone, label: "ZuuCall", color: "#4A9EFF", path: "/" },
   { icon: Shield, label: "ZuuSeg", color: "#B87BFF", path: "/" },
-  { icon: Grid3x3, label: "Mais", color: "#A0A0A0", path: "/" },
 ];
+
+const USAGE_KEY = "zuuppi:services:usage";
+type UsageEntry = { count: number; last: number };
+type UsageMap = Record<string, UsageEntry>;
+
+const readUsage = (): UsageMap => {
+  try { return JSON.parse(localStorage.getItem(USAGE_KEY) || "{}"); }
+  catch { return {}; }
+};
+const writeUsage = (m: UsageMap) => {
+  try { localStorage.setItem(USAGE_KEY, JSON.stringify(m)); } catch {}
+};
+const scoreEntry = (e?: UsageEntry) => {
+  if (!e) return 0;
+  // recency-weighted: count + recency boost (last 7 days)
+  const daysAgo = (Date.now() - e.last) / 86_400_000;
+  const recency = Math.max(0, 7 - daysAgo);
+  return e.count * 2 + recency;
+};
 
 const Index = () => {
   const { user, profile } = useAuth();
