@@ -306,17 +306,20 @@ const Index = () => {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[18px] font-bold">Nossos serviços</h3>
-            <button className="text-[13px] font-semibold" style={{ color: NEON }}>
-              Editar
+            <button
+              onClick={() => setShowAllServices(true)}
+              className="text-[13px] font-semibold" style={{ color: NEON }}
+            >
+              Ver todos
             </button>
           </div>
-          <div className="grid grid-cols-5 gap-2.5">
-            {services.map((s) => {
+          <div className="grid grid-cols-6 gap-2.5">
+            {visibleServices.map((s) => {
               const Icon = s.icon;
               return (
                 <button
                   key={s.label}
-                  onClick={() => s.path !== "/" && navigate(s.path)}
+                  onClick={() => handleServiceClick(s.label, s.path)}
                   className="aspect-square rounded-[18px] flex flex-col items-center justify-center gap-1.5 p-1.5 active:scale-95 transition-transform"
                   style={{ background: CARD, border: `1px solid ${BORDER}` }}
                 >
@@ -329,6 +332,53 @@ const Index = () => {
             })}
           </div>
         </section>
+
+        {showAllServices && (
+          <div
+            className="fixed inset-0 z-[100] flex items-end justify-center"
+            onClick={() => setShowAllServices(false)}
+          >
+            <div className="absolute inset-0 bg-black/70" />
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-md rounded-t-3xl p-5 pb-[max(24px,env(safe-area-inset-bottom))] max-h-[80vh] overflow-y-auto"
+              style={{ background: "#0A0A0A", border: `1px solid ${BORDER}` }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-[17px] font-bold">Todos os mini apps</h2>
+                <button
+                  onClick={() => setShowAllServices(false)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ background: CARD, border: `1px solid ${BORDER}` }}
+                  aria-label="Fechar"
+                >
+                  <Plus size={16} className="text-white rotate-45" />
+                </button>
+              </div>
+              <div className="grid grid-cols-4 gap-2.5">
+                {allServices.map((s) => {
+                  const Icon = s.icon;
+                  return (
+                    <button
+                      key={s.label}
+                      onClick={() => {
+                        setShowAllServices(false);
+                        handleServiceClick(s.label, s.path);
+                      }}
+                      className="aspect-square rounded-[18px] flex flex-col items-center justify-center gap-1.5 p-1.5 active:scale-95 transition-transform"
+                      style={{ background: CARD, border: `1px solid ${BORDER}` }}
+                    >
+                      <Icon size={24} strokeWidth={1.6} style={{ color: s.color }} />
+                      <span className="text-[10px] font-semibold text-white text-center leading-tight px-0.5">
+                        {s.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Empresas em Destaque */}
         <section>
