@@ -31,6 +31,9 @@ const PhoneAuthPage = () => {
   const [openCountry, setOpenCountry] = useState(false);
   const [phone, setPhone] = useState("");
   const [tourist, setTourist] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const formatPhone = (v: string) => {
     const digits = v.replace(/\D/g, "").slice(0, 11);
@@ -39,19 +42,46 @@ const PhoneAuthPage = () => {
     return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
   };
 
-  const handleContinue = () => {
-    if (phone.replace(/\D/g, "").length < 10) return;
-    localStorage.setItem("zuuppi_welcomed", "1");
-    navigate("/auth/verify", { state: { phone: `${country.dial} ${phone}` } });
+  const handleContinue = async () => {
+    if (sending || googleLoading) return;
+    if (phone.replace(/\D/g, "").length < 10) {
+      setError("Digite um número válido com DDD.");
+      return;
+    }
+    setError("");
+    setSending(true);
+    try {
+      // Pequeno delay para o loading state ficar perceptível e evitar double-tap
+      await new Promise((r) => setTimeout(r, 400));
+      localStorage.setItem("zuuppi_welcomed", "1");
+      navigate("/auth/verify", { state: { phone: `${country.dial} ${phone}` } });
+    } catch (err: unknown) {
+      const message = friendlyAuthError(err);
+      setError(message);
+      toast.error(message);
+      setSending(false);
+    }
   };
 
   const handleGoogle = async () => {
-    localStorage.setItem("zuuppi_welcomed", "1");
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.origin + "/home" },
-    });
+    if (googleLoading || sending) return;
+    setError("");
+    setGoogleLoading(true);
+    try {
+      localStorage.setItem("zuuppi_welcomed", "1");
+      const { error: oauthErr } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: window.location.origin + "/home" },
+      });
+      if (oauthErr) throw oauthErr;
+    } catch (err: unknown) {
+      const message = friendlyAuthError(err);
+      setError(message);
+      toast.error(message);
+      setGoogleLoading(false);
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-white text-zinc-900 flex flex-col px-6 pt-6 pb-8 max-w-md mx-auto">
