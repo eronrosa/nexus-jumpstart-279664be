@@ -62,20 +62,53 @@ const VerifyCodePage = () => {
   const canSubmit = code.length === CODE_LEN;
 
   const handleSubmit = async () => {
-    if (!canSubmit) return;
+    if (!canSubmit || loading) return;
+    setError("");
     setLoading(true);
-    await new Promise(r => setTimeout(r, 600));
-    setLoading(false);
-    localStorage.setItem("zuuppi_welcomed", "1");
-    navigate("/home");
+    try {
+      // TODO: substituir pelo verifyOtp real (whatsapp) quando integrado
+      await new Promise((r) => setTimeout(r, 600));
+      localStorage.setItem("zuuppi_welcomed", "1");
+      toast.success("Número verificado!");
+      navigate("/home");
+    } catch (err: unknown) {
+      const message = friendlyAuthError(err);
+      setError(message);
+      toast.error(message);
+      setDigits(Array(CODE_LEN).fill(""));
+      inputs.current[0]?.focus();
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleResend = () => {
-    if (seconds > 0) return;
-    setSeconds(RESEND_SECONDS);
-    setDigits(Array(CODE_LEN).fill(""));
-    inputs.current[0]?.focus();
+  // Auto-submit ao completar os 5 dígitos
+  useEffect(() => {
+    if (canSubmit && !loading) {
+      handleSubmit();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canSubmit]);
+
+  const handleResend = async () => {
+    if (seconds > 0 || resending) return;
+    setError("");
+    setResending(true);
+    try {
+      await new Promise((r) => setTimeout(r, 500));
+      setSeconds(RESEND_SECONDS);
+      setDigits(Array(CODE_LEN).fill(""));
+      inputs.current[0]?.focus();
+      toast.success("Novo código enviado para seu WhatsApp.");
+    } catch (err: unknown) {
+      const message = friendlyAuthError(err);
+      setError(message);
+      toast.error(message);
+    } finally {
+      setResending(false);
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-white text-zinc-900 flex flex-col px-6 pt-6 pb-8 max-w-md mx-auto">
