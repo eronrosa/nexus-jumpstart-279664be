@@ -49,25 +49,31 @@ export default function ZuuMobHome({ onSearchOpen, onOpenRides }: { onSearchOpen
       className="absolute inset-0 z-[55] flex flex-col overflow-hidden"
       style={{ background: BG, color: "#fff", fontFamily: FONT, letterSpacing: "-0.01em", height: "100dvh" }}
     >
-      {/* Fixed back button with safe-area & 48px+ touch target (WCAG AAA) */}
-      <button
-        onClick={() => navigate("/")}
-        aria-label="Voltar ao início"
-        className="fixed z-[60] flex items-center justify-center active:scale-95 transition-transform shadow-xl"
-        style={{
-          top: "max(12px, env(safe-area-inset-top))",
-          left: "max(12px, env(safe-area-inset-left))",
-          width: 52,
-          height: 52,
-          borderRadius: 9999,
-          background: CARD,
-          border: `1px solid ${BORDER}`,
-          WebkitTapHighlightColor: "transparent",
-          touchAction: "manipulation",
-        }}
-      >
-        <ArrowLeft size={22} strokeWidth={2.2} style={{ color: NEON }} />
-      </button>
+      {/* Fixed back button portaled to <body> — escapes any transformed/scrolled ancestor */}
+      {createPortal(
+        <button
+          onClick={() => navigate("/")}
+          aria-label="Voltar ao início"
+          className="fixed flex items-center justify-center active:scale-95 transition-transform shadow-xl"
+          style={{
+            top: "max(12px, env(safe-area-inset-top))",
+            left: "max(12px, env(safe-area-inset-left))",
+            width: 52,
+            height: 52,
+            borderRadius: 9999,
+            background: CARD,
+            border: `1px solid ${BORDER}`,
+            zIndex: 2147483000,
+            WebkitTapHighlightColor: "transparent",
+            touchAction: "manipulation",
+            pointerEvents: "auto",
+          }}
+        >
+          <ArrowLeft size={22} strokeWidth={2.2} style={{ color: NEON }} />
+        </button>,
+        document.body
+      )}
+
 
       <div className="flex-1 overflow-y-auto overscroll-contain max-w-md w-full mx-auto px-4 sm:px-5 pt-20 pb-4">
 
