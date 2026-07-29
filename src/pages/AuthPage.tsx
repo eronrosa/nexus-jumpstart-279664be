@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, User, ArrowRight, Leaf, Phone } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { friendlyAuthError } from "@/lib/authErrors";
+import { AuthSpinner } from "@/components/AuthSpinner";
+
 
 type Mode = "login" | "signup";
 
