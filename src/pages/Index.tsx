@@ -184,58 +184,9 @@ const Index = () => {
         <SponsoredCarousel onGo={() => navigate("/zuufood")} />
 
 
-        {/* Balance Card — clean & compact */}
-        <div
-          className="rounded-2xl px-4 py-3.5"
-          style={{ background: CARD, border: `1px solid ${BORDER}` }}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: TEXT_MUTED }}>
-                Saldo
-              </span>
-              <button onClick={() => setBalanceHidden((v) => !v)} aria-label="Ocultar saldo">
-                {balanceHidden ? (
-                  <EyeOff size={12} style={{ color: TEXT_MUTED }} />
-                ) : (
-                  <Eye size={12} style={{ color: TEXT_MUTED }} />
-                )}
-              </button>
-              <span className="ml-2 text-[20px] font-bold leading-none tracking-tight text-white">
-                {balanceHidden ? "R$ ••••" : "R$ 250,00"}
-              </span>
-            </div>
-            <button className="text-[11px] font-semibold flex items-center gap-1" style={{ color: NEON }}>
-              Extrato <ArrowRight size={11} />
-            </button>
-          </div>
+        {/* Balance Card — functional */}
+        <WalletCard />
 
-          {/* Action buttons row */}
-          <div className="mt-3.5 grid grid-cols-4 gap-1">
-            {[
-              { icon: QrCode, label: "Pix" },
-              { icon: CreditCard, label: "Pagar" },
-              { icon: ArrowRight, label: "Transferir" },
-              { icon: Plus, label: "Depositar" },
-            ].map((b) => {
-              const Icon = b.icon;
-              return (
-                <button
-                  key={b.label}
-                  className="flex flex-col items-center gap-1.5 py-1 active:scale-95 transition-transform"
-                >
-                  <span
-                    className="w-9 h-9 rounded-full flex items-center justify-center"
-                    style={{ background: "#1A1A1A", border: `1px solid ${BORDER}` }}
-                  >
-                    <Icon size={15} strokeWidth={2} style={{ color: NEON }} />
-                  </span>
-                  <span className="text-[10.5px] font-medium text-white">{b.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
 
         {/* Points row — separado, mais leve */}
         <button
