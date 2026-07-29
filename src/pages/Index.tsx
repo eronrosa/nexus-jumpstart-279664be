@@ -88,6 +88,31 @@ const Index = () => {
   const navigate = useNavigate();
   const [activeShortcut, setActiveShortcut] = useState(0);
   const [balanceHidden, setBalanceHidden] = useState(false);
+  const [usage, setUsage] = useState<UsageMap>(() => readUsage());
+  const [showAllServices, setShowAllServices] = useState(false);
+
+  const topServices = [...allServices]
+    .sort((a, b) => scoreEntry(usage[b.label]) - scoreEntry(usage[a.label]))
+    .slice(0, 5);
+  const visibleServices = [
+    ...topServices,
+    { icon: Grid3x3, label: "Mais", color: "#A0A0A0", path: "__more__" },
+  ];
+
+  const handleServiceClick = (label: string, path: string) => {
+    if (label === "Mais" || path === "__more__") {
+      setShowAllServices(true);
+      return;
+    }
+    const next: UsageMap = {
+      ...usage,
+      [label]: { count: (usage[label]?.count ?? 0) + 1, last: Date.now() },
+    };
+    setUsage(next);
+    writeUsage(next);
+    if (path && path !== "/") navigate(path);
+  };
+
 
   const displayName = profile?.display_name?.split(" ")[0] ?? "você";
 
