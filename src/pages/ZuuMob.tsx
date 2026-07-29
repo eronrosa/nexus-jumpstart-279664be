@@ -423,7 +423,7 @@ const ZuuMob = () => {
   })) : [];
 
   return (
-    <div className="zuumob-dark relative h-screen w-full overflow-hidden font-dm" style={{ backgroundColor: "#000000" }}>
+    <div className="zuumob-dark relative w-full overflow-hidden font-dm" style={{ backgroundColor: "#000000", height: "100dvh" }}>
       {showPreview && <ZuuMobHome onSearchOpen={dismissPreview} onOpenRides={openRides} />}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes zm-pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(198,255,0,0.4); } 70% { box-shadow: 0 0 0 15px rgba(198,255,0,0); } 100% { box-shadow: 0 0 0 0 rgba(198,255,0,0); } }
