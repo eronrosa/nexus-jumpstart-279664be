@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Leaf } from "lucide-react";
+import { toast } from "sonner";
+import { friendlyAuthError } from "@/lib/authErrors";
+import { AuthSpinner } from "@/components/AuthSpinner";
+
 
 const CODE_LEN = 5;
 const RESEND_SECONDS = 110;
