@@ -169,23 +169,54 @@ const PhoneAuthPage = () => {
         </button>
       </div>
 
+      {error && (
+        <motion.p
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          role="alert"
+          className="mt-4 text-xs rounded-xl px-3 py-2 bg-red-50 border border-red-200 text-red-600"
+        >
+          {error}
+        </motion.p>
+      )}
+
       <div className="space-y-3 mt-auto pt-8">
         <button
           onClick={handleContinue}
           className="w-full h-14 rounded-2xl bg-zinc-900 text-white font-semibold flex items-center justify-center gap-3 active:scale-[0.98] transition disabled:opacity-50"
-          disabled={phone.replace(/\D/g, "").length < 10}
+          disabled={sending || googleLoading || phone.replace(/\D/g, "").length < 10}
         >
-          <Apple className="w-5 h-5" fill="currentColor" />
-          Continuar com Apple
+          {sending ? (
+            <>
+              <AuthSpinner size={18} tone="light" />
+              <span>Enviando código...</span>
+            </>
+          ) : (
+            <>
+              <Apple className="w-5 h-5" fill="currentColor" />
+              Continuar
+            </>
+          )}
         </button>
         <button
           onClick={handleGoogle}
-          className="w-full h-14 rounded-2xl bg-white border border-zinc-200 text-zinc-900 font-semibold flex items-center justify-center gap-3 active:scale-[0.98] transition"
+          disabled={googleLoading || sending}
+          className="w-full h-14 rounded-2xl bg-white border border-zinc-200 text-zinc-900 font-semibold flex items-center justify-center gap-3 active:scale-[0.98] transition disabled:opacity-60"
         >
-          <GoogleG />
-          Continuar com Google
+          {googleLoading ? (
+            <>
+              <AuthSpinner size={18} tone="dark" />
+              <span>Conectando ao Google...</span>
+            </>
+          ) : (
+            <>
+              <GoogleG />
+              Continuar com Google
+            </>
+          )}
         </button>
       </div>
+
     </div>
   );
 };
